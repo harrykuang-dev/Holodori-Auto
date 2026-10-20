@@ -41,6 +41,8 @@ jobs:
           assert m.version('torch') == '2.8.0+cu128', m.version('torch');
           assert m.version('torchvision') == '0.23.0+cu128', m.version('torchvision');
           print('Verified PyTorch 2.8.0 / torchvision 0.23.0 with CUDA 12.8')"
+      - name: Download pinned cooking models
+        run: python tools/fetch_models.py
       - name: Compile integration and upstream Python sources
         run: python -m compileall -q holodori tools upstream
       - name: Run integration and offline updater tests
@@ -69,8 +71,6 @@ jobs:
           LOCALAPPDATA: ${{ runner.temp }}/upstream-test-userdata/cooking
           PYTHONDONTWRITEBYTECODE: '1'
         run: python -m unittest discover -s tests -v
-      - name: Download pinned cooking models
-        run: python tools/fetch_models.py
       - name: Warm up both original cooking models from source
         run: python tools/check_models_runtime.py --report work/source-model-runtime.json
       - name: Open all four original interfaces inside the host
