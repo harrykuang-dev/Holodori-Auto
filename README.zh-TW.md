@@ -1,6 +1,6 @@
 # Holodori-Auto
 
-[English](README.md) · [繁體中文](README.zh-TW.md)
+[English](README.md) · [繁體中文](README.zh-TW.md) · [日本語](README.ja.md) · [한국어](README.ko.md) · [Indonesian](README.id.md) · [简体中文](README.zh-CN.md)
 
 將 *hololive Dreams* 的 **High & Low**、**釣魚**、**跳繩**與**料理**整合至同一個視窗的 Windows 程式。四個功能共用語言與開始／停止快捷鍵，並保留原本的遊戲邏輯、操作介面、統計與診斷功能。導覽及共用設定沿用相同的 Fluent 美術風格，並使用各功能原有的圖示與主題色。
 

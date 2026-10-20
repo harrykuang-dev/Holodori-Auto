@@ -1,15 +1,15 @@
 # Holodori-Auto
 
-[English](README.md) · [繁體中文](README.zh-TW.md)
+[English](README.md) · [繁體中文](README.zh-TW.md) · [日本語](README.ja.md) · [한국어](README.ko.md) · [Indonesian](README.id.md) · [简体中文](README.zh-CN.md)
 
-A Windows program that brings **High & Low**, **Fishing**, **Jump Rope**, and **Collect Cooking** for *hololive Dreams* into one window. The four modules share language and Start/Stop shortcuts while keeping their original game logic, controls, statistics, and diagnostics. Navigation and shared settings follow the same Fluent visual style and use each module's original artwork and accent color.
+A Windows program that brings **High & Low**, **Fishing**, **Jump Rope**, and **Cooking** for *hololive Dreams* into one window. The four modules share language and Start/Stop shortcuts while keeping their original game logic, controls, statistics, and diagnostics. Navigation and shared settings follow the same Fluent visual style and use each module's original artwork and accent color.
 
 | Module | Original program |
 | --- | --- |
 | High & Low | [Hololive-Dreams-High-low-Auto-Personal](https://github.com/harrykuang-dev/Hololive-Dreams-High-low-Auto-Personal) |
 | Fishing | [Hololive-Dreams-Fishing-Auto](https://github.com/harrykuang-dev/Hololive-Dreams-Fishing-Auto) |
 | Jump Rope | [Hololive-Dreams-Jump-Rope-Auto](https://github.com/harrykuang-dev/Hololive-Dreams-Jump-Rope-Auto) |
-| Collect Cooking | [Hololie-Dreams-Collect-Cooking-Auto](https://github.com/harrykuang-dev/Hololie-Dreams-Collect-Cooking-Auto) |
+| Cooking | [Hololie-Dreams-Collect-Cooking-Auto](https://github.com/harrykuang-dev/Hololie-Dreams-Collect-Cooking-Auto) |
 
 ## Usage
 
