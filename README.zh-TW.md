@@ -38,6 +38,8 @@ python tools/fetch_models.py
 python main.py
 ```
 
+依賴包含 CUDA 12.8 執行環境；料理會自動使用可用的 NVIDIA GPU，否則使用 CPU，沿用原本的運作方式。
+
 模型安裝命令會下載料理版本附帶的 `models.zip`，核對鎖定版本的檔案大小與 SHA-256，再逐一驗證模型後安裝。只安裝缺少的模型並保留既有檔案；若既有模型內容不同，請先將該檔移至備份位置後重試。料理介面仍需手動載入模型。
 
 已下載料理 Release 模型壓縮包時，可執行 `python tools/fetch_models.py --archive C:\path\models.zip`。只需離線核對已安裝模型時，執行 `python tools/fetch_models.py --check`。

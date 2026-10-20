@@ -38,6 +38,8 @@ python tools/fetch_models.py
 python main.py
 ```
 
+Dependencies include the CUDA 12.8 runtime; cooking uses an available NVIDIA GPU automatically and falls back to CPU, preserving its original behavior.
+
 The model command downloads the cooking release's `models.zip` and verifies its pinned size and SHA-256, then verifies every checkpoint before installation. It installs missing models and preserves existing files. If an existing model differs, move it to a backup location before retrying. Model loading remains an explicit action in the cooking interface.
 
 To install an archive already downloaded from the cooking release, use `python tools/fetch_models.py --archive C:\path\models.zip`. To verify installed models without network access, use `python tools/fetch_models.py --check`.

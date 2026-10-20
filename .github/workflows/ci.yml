@@ -20,6 +20,8 @@ jobs:
     name: Windows integration and portable build
     runs-on: windows-latest
     timeout-minutes: 60
+    env:
+      PIP_NO_CACHE_DIR: '1'
     steps:
       - uses: actions/checkout@v4
         with:
@@ -28,11 +30,17 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.13'
-          cache: pip
       - name: Verify exact upstream pins
         run: python tools/sync_upstreams.py --verify
       - name: Install runtime and build dependencies
         run: python -m pip install -r requirements.txt -r requirements-build.txt
+      - name: Verify the CUDA-capable cooking runtime
+        run: >-
+          python -c "import importlib.metadata as m, torch;
+          assert torch.version.cuda == '12.8', torch.version.cuda;
+          assert m.version('torch') == '2.8.0+cu128', m.version('torch');
+          assert m.version('torchvision') == '0.23.0+cu128', m.version('torchvision');
+          print('Verified PyTorch 2.8.0 / torchvision 0.23.0 with CUDA 12.8')"
       - name: Compile integration and upstream Python sources
         run: python -m compileall -q holodori tools upstream
       - name: Run integration and offline updater tests
