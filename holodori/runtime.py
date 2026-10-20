@@ -486,7 +486,10 @@ def embedded_main():
         start_configured = defer_hotkey_start(upstream) if spec.id == 'fishing' else None
         if spec.id == 'high_low':
             upstream.prepare_user_data(upstream.auto_bot.APP_DIR)
-        app = getattr(upstream, spec.app_class)(root)
+        constructor = getattr(upstream, spec.app_class)
+        app = (constructor(root, shortcuts=dict(start_key=args.start_key, stop_key=args.stop_key),
+                           persist_shortcuts=False)
+               if spec.id == 'fishing' else constructor(root))
         saved = read_json(args.channel / 'restore.json', {})
         if saved:
             restore(app, spec, saved)
