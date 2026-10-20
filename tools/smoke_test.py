@@ -50,11 +50,12 @@ def isolated_data(directory: Path):
 
 def exercise(*, executable: Path | None, timeout: float, screenshot: Path | None) -> dict:
     import tkinter as tk
+    import win32gui
     import win32job
 
     sys.path.insert(0, str(ROOT))
     from holodori.app import HolodoriApp, PROJECT_URL
-    from holodori.runtime import dpi_awareness
+    from holodori.runtime import LANGUAGES, dpi_awareness
 
     report = {"mode": "packaged" if executable else "source", "modules": [], "errors": []}
     if executable:
@@ -136,6 +137,9 @@ def exercise(*, executable: Path | None, timeout: float, screenshot: Path | None
                 assert app.instructions.cget('text') == app.last_status['instructions']
                 assert app.status.cget('text') == app.last_status['display_status']
                 assert app.version_label.cget('text') == 'v1.0.0'
+                assert root.title() == 'Holodori-Auto', f'{module} changed the Tk window title'
+                window = win32gui.GetAncestor(root.winfo_id(), 2)
+                assert win32gui.GetWindowText(window) == 'Holodori-Auto', f'{module} changed the native window title'
                 assert not app.note.cget('text'), 'Unexpected component version in host footer'
                 assert not app.last_status.get("capture_active"), f"{module} shortcut capture remains active"
                 assert not app.last_status.get("busy"), f"{module} started an automation unexpectedly"
@@ -201,6 +205,13 @@ def exercise(*, executable: Path | None, timeout: float, screenshot: Path | None
                         ready(module)
                         assert previous.poll() == 0, f"Previous child did not close cleanly: {previous.poll()}"
                     assert_shared(module)
+                    for language in LANGUAGES:
+                        app.language.set(language)
+                        app.change_language()
+                        assert_shared(module, dict(SHARED_SETTINGS, language=language))
+                    app.language.set(SHARED_SETTINGS['language'])
+                    app.change_language()
+                    assert_shared(module)
                     fields = FIELDS[module]
                     request("set_fields", fields=fields)
                     snapshot = app.last_status["snapshot"]
@@ -225,6 +236,7 @@ def exercise(*, executable: Path | None, timeout: float, screenshot: Path | None
                         "dialog_checked": True, "resize_and_restore": True,
                         "native_job_processes": live_count(),
                         "shared_preferences_applied": True, "shared_controls_hidden": True,
+                        "window_title": "Holodori-Auto", "languages_checked": len(LANGUAGES),
                     })
 
                 # Revisiting each page verifies the actual process replacement and restore contract.

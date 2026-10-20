@@ -217,6 +217,18 @@ def dpi_awareness():
         pass
 
 
+def preserve_host_title(root):
+    """Embedded Tk shares the host's native window; only the host names it."""
+    original_title = root.wm_title
+
+    def embedded_title(string=None):
+        if string is None:
+            return original_title()
+        return ''
+
+    root.title = root.wm_title = embedded_title
+
+
 def activate_source(module_id):
     module = BY_ID[module_id]
     if not (module.path / (module.entry + '.py')).is_file():
@@ -483,6 +495,7 @@ def embedded_main():
                 original = upstream.HololiveBotUI.__init__
                 upstream.HololiveBotUI.__init__ = lambda self, root: original(self, root, hotkey_factory=NoHotkey)
         root = tk.Tk(use=args.container)
+        preserve_host_title(root)
         start_configured = defer_hotkey_start(upstream) if spec.id == 'fishing' else None
         if spec.id == 'high_low':
             upstream.prepare_user_data(upstream.auto_bot.APP_DIR)

@@ -4,8 +4,9 @@
 
 - 將 High & Low、釣魚、跳繩與料理整合至同一個 Fluent 風格視窗，保留各功能原有的遊戲邏輯、統計及診斷。
 - 六種介面語言與開始／停止快捷鍵共用並自動儲存，切換功能後沿用設定。
-- 點擊左下角的 v1.0.0 可開啟 Holodori-Auto 專案頁。
+- 主視窗標題固定為 Holodori-Auto；點擊左下角的 v1.0.0 可開啟專案頁。
 - 包含跳繩透明 NVIDIA 覆蓋視窗誤判修正，以及釣魚啟動時顯示既有快捷鍵的修正。
+- 狀態檔短暫被 Windows 占用時會重試寫入，避免通訊中斷。
 - 附帶料理模型及 CPU／NVIDIA CUDA 執行環境。CUDA 並非必要；AMD 顯卡電腦的料理功能使用 CPU。
 
 ### 下載與執行
@@ -16,8 +17,9 @@
 
 - Combines High & Low, Fishing, Jump Rope, and Cooking in one Fluent-style window while preserving each module's game logic, statistics, and diagnostics.
 - Shares and saves six interface languages and Start/Stop shortcuts across modules.
-- Opens the Holodori-Auto project page when the v1.0.0 footer is clicked.
+- Keeps the main window title as Holodori-Auto across languages and modules; clicking the v1.0.0 footer opens the project page.
 - Includes the Jump Rope fix for transparent NVIDIA overlay detection and the Fishing fix for displaying saved shortcuts at startup.
+- Retries status writes when Windows briefly locks the file to prevent interrupted communication.
 - Includes cooking models and CPU/NVIDIA CUDA runtimes. CUDA is optional; cooking uses the CPU on computers with AMD graphics.
 
 ### Download and run
