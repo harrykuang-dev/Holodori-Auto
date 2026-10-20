@@ -20,7 +20,7 @@ ROOT = Path(__file__).resolve().parents[1]
 COOKING_ROOT = ROOT / "upstream" / "cooking"
 RELEASE_BASE = (
     "https://github.com/harrykuang-dev/"
-    "Hololie-Dreams-Collect-Cooking-Auto/releases/download"
+    "Hololive-Dreams-Collect-Cooking-Auto/releases/download"
 )
 CHUNK_SIZE = 1024 * 1024
 

@@ -24,7 +24,7 @@
     },
     "cooking": {
       "path": "upstream/cooking",
-      "repository": "https://github.com/harrykuang-dev/Hololie-Dreams-Collect-Cooking-Auto.git",
+      "repository": "https://github.com/harrykuang-dev/Hololive-Dreams-Collect-Cooking-Auto.git",
       "branch": "main",
       "commit": "afc37d893fe8d5b10fe9fb391379d19045aa2441",
       "version": "1.0.1"

@@ -14,7 +14,7 @@ upstream/
   high_low/    Hololive-Dreams-High-low-Auto-Personal
   fishing/     Hololive-Dreams-Fishing-Auto
   jump_rope/   Hololive-Dreams-Jump-Rope-Auto
-  cooking/     Hololie-Dreams-Collect-Cooking-Auto
+  cooking/     Hololive-Dreams-Collect-Cooking-Auto
 ```
 
 Each project remains an unmodified Git submodule. The adapter contract records its entry module, application class, original artwork, accent color, and settings exposed to the host. The adapter hides each page's duplicate language and shortcut rows and passes common preferences through the original controls; it does not patch game algorithms. Module execution uses a separate process and its original resource directory, preventing collisions between names such as `gui`, `vision`, and `app_locale`. The host embeds the original Tk window as a Windows child window.
