@@ -19,7 +19,7 @@
       "path": "upstream/jump_rope",
       "repository": "https://github.com/harrykuang-dev/Hololive-Dreams-Jump-Rope-Auto.git",
       "branch": "main",
-      "commit": "73fd4ed4db59ea2e241b9ddf5b3ab7fac5fbad81",
+      "commit": "2f73d0caad0e609594e42473955c2557a940f8a0",
       "version": "1.2.1"
     },
     "cooking": {
