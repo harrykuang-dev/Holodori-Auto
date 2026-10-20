@@ -1,0 +1,100 @@
+name: Check upstream updates
+
+on:
+  schedule:
+    - cron: '15 2 * * *'
+  workflow_dispatch:
+    inputs:
+      module:
+        description: Upstream to update
+        type: choice
+        default: all
+        options: [all, high_low, fishing, jump_rope, cooking]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: sync-upstreams
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    name: Propose updated upstream pins
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    outputs:
+      changed: ${{ steps.sync.outputs.changed }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+          submodules: recursive
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Verify existing pins
+        run: python tools/sync_upstreams.py --verify
+      - name: Fetch and update selected upstreams
+        id: sync
+        env:
+          SELECTED_MODULE: ${{ inputs.module || 'all' }}
+        shell: bash
+        run: |
+          args=()
+          if [[ "$SELECTED_MODULE" != "all" ]]; then
+            args+=(--module "$SELECTED_MODULE")
+          fi
+          python tools/sync_upstreams.py "${args[@]}" --json > "$RUNNER_TEMP/upstream-report.json"
+          cat "$RUNNER_TEMP/upstream-report.json"
+          git add upstream upstream-lock.json
+          python tools/sync_upstreams.py --verify
+          if git diff --cached --quiet; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Test updater without external network
+        if: steps.sync.outputs.changed == 'true'
+        run: python -m unittest discover -s tests -p test_sync_upstreams.py -v
+      - name: Commit update and open or refresh a pull request
+        if: steps.sync.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          branch=automation/sync-upstreams
+          git switch -C "$branch"
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m 'Update upstream program pins'
+          git push --force-with-lease origin "HEAD:refs/heads/$branch"
+          python - <<'PY'
+          import json, os
+          from pathlib import Path
+          report = json.loads((Path(os.environ['RUNNER_TEMP']) / 'upstream-report.json').read_text())
+          lines = ['Update original program commits and their exact lock entries.', '', '| Program | Before | After | Version |', '| --- | --- | --- | --- |']
+          for item in report['modules']:
+              if item['changed']:
+                  lines.append(f"| {item['name']} | `{item['before'][:12]}` | `{item['after'][:12]}` | {item['after_version'] or 'not declared'} |")
+          lines += ['', 'The upstream source files are unchanged. Windows integration tests, original interface smoke checks, and the portable build run in this workflow. Review the checks and behavior before merging.']
+          (Path(os.environ['RUNNER_TEMP']) / 'upstream-pr.md').write_text('\n'.join(lines) + '\n')
+          PY
+          number=$(gh pr list --head "$branch" --base main --state open --json number --jq '.[0].number')
+          if [[ -n "$number" ]]; then
+            gh pr edit "$number" --title 'Update upstream program pins' --body-file "$RUNNER_TEMP/upstream-pr.md"
+          else
+            gh pr create --head "$branch" --base main --title 'Update upstream program pins' --body-file "$RUNNER_TEMP/upstream-pr.md"
+          fi
+
+  validate:
+    name: Validate proposed upstream update
+    needs: sync
+    if: needs.sync.outputs.changed == 'true'
+    uses: ./.github/workflows/ci.yml
+    with:
+      ref: automation/sync-upstreams
+    permissions:
+      contents: read

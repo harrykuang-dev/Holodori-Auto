@@ -1,0 +1,33 @@
+{
+  "schema_version": 1,
+  "modules": {
+    "high_low": {
+      "path": "upstream/high_low",
+      "repository": "https://github.com/harrykuang-dev/Hololive-Dreams-High-low-Auto-Personal.git",
+      "branch": "main",
+      "commit": "7a75c42d57f095be1d480932fe15ce35d22ae652",
+      "version": "1.1.1"
+    },
+    "fishing": {
+      "path": "upstream/fishing",
+      "repository": "https://github.com/harrykuang-dev/Hololive-Dreams-Fishing-Auto.git",
+      "branch": "main",
+      "commit": "acd0b1a718a8ebc5a6abec845c2ad24996ad5117",
+      "version": "1.1.1"
+    },
+    "jump_rope": {
+      "path": "upstream/jump_rope",
+      "repository": "https://github.com/harrykuang-dev/Hololive-Dreams-Jump-Rope-Auto.git",
+      "branch": "main",
+      "commit": "26eb0049ce18f27d272ff863f88d22de49dc54cb",
+      "version": "1.2.0"
+    },
+    "cooking": {
+      "path": "upstream/cooking",
+      "repository": "https://github.com/harrykuang-dev/Hololie-Dreams-Collect-Cooking-Auto.git",
+      "branch": "main",
+      "commit": "afc37d893fe8d5b10fe9fb391379d19045aa2441",
+      "version": "1.0.1"
+    }
+  }
+}

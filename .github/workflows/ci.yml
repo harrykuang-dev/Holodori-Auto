@@ -1,0 +1,81 @@
+name: Validate and build
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+  workflow_call:
+    inputs:
+      ref:
+        description: Git ref to validate
+        required: false
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    name: Windows integration and portable build
+    runs-on: windows-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref || github.ref }}
+          submodules: recursive
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+          cache: pip
+      - name: Verify exact upstream pins
+        run: python tools/sync_upstreams.py --verify
+      - name: Install runtime and build dependencies
+        run: python -m pip install -r requirements.txt -r requirements-build.txt
+      - name: Compile integration and upstream Python sources
+        run: python -m compileall -q holodori tools upstream
+      - name: Run integration and offline updater tests
+        run: python -m unittest discover -s tests -v
+      - name: Test original High and Low program
+        working-directory: upstream/high_low
+        env:
+          LOCALAPPDATA: ${{ runner.temp }}/upstream-test-userdata/high_low
+          PYTHONDONTWRITEBYTECODE: '1'
+        run: python -m unittest discover -s tests -v
+      - name: Test original fishing program
+        working-directory: upstream/fishing
+        env:
+          LOCALAPPDATA: ${{ runner.temp }}/upstream-test-userdata/fishing
+          PYTHONDONTWRITEBYTECODE: '1'
+        run: python -m unittest discover -s tests -v
+      - name: Test original jump rope program including its interface
+        working-directory: upstream/jump_rope
+        env:
+          LOCALAPPDATA: ${{ runner.temp }}/upstream-test-userdata/jump_rope
+          PYTHONDONTWRITEBYTECODE: '1'
+        run: python -m pytest tests -q -o addopts=
+      - name: Test original cooking program
+        working-directory: upstream/cooking
+        env:
+          LOCALAPPDATA: ${{ runner.temp }}/upstream-test-userdata/cooking
+          PYTHONDONTWRITEBYTECODE: '1'
+        run: python -m unittest discover -s tests -v
+      - name: Download pinned cooking models
+        run: python tools/fetch_models.py
+      - name: Warm up both original cooking models from source
+        run: python tools/check_models_runtime.py --report work/source-model-runtime.json
+      - name: Open all four original interfaces inside the host
+        run: python tools/smoke_test.py
+      - name: Build portable Windows program
+        run: python tools/build_release.py --output dist/Holodori-Auto
+      - name: Warm up both cooking models in the packaged program
+        run: python tools/check_models_runtime.py --executable dist/Holodori-Auto/Holodori-Auto.exe --report work/packaged-model-runtime.json
+      - name: Check all four interfaces in the packaged program
+        run: python tools/smoke_test.py --executable dist/Holodori-Auto/Holodori-Auto.exe
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Holodori-Auto-windows
+          path: dist/*
+          if-no-files-found: error
+          retention-days: 14

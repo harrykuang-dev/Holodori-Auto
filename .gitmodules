@@ -1,0 +1,16 @@
+[submodule "upstream/high_low"]
+	path = upstream/high_low
+	url = https://github.com/harrykuang-dev/Hololive-Dreams-High-low-Auto-Personal.git
+	branch = main
+[submodule "upstream/fishing"]
+	path = upstream/fishing
+	url = https://github.com/harrykuang-dev/Hololive-Dreams-Fishing-Auto.git
+	branch = main
+[submodule "upstream/jump_rope"]
+	path = upstream/jump_rope
+	url = https://github.com/harrykuang-dev/Hololive-Dreams-Jump-Rope-Auto.git
+	branch = main
+[submodule "upstream/cooking"]
+	path = upstream/cooking
+	url = https://github.com/harrykuang-dev/Hololie-Dreams-Collect-Cooking-Auto.git
+	branch = main
