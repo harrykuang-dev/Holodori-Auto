@@ -263,6 +263,20 @@ class RuntimeContractTests(unittest.TestCase):
                 session.poll()
                 self.assertEqual(write.call_count, 1)
 
+    def test_changed_status_is_republished_without_a_settings_change(self):
+        class Caption(Widget):
+            text = 'Ready'
+            def cget(self, name): return self.text if name == 'text' else '#6D43AA'
+        with tempfile.TemporaryDirectory() as temporary:
+            channel = Path(temporary)
+            app = shared_app('fishing')
+            app.instructions, app.status = Caption(), Caption()
+            session = EmbeddedSession(SimpleNamespace(after=Mock()), app,
+                SimpleNamespace(id='fishing', fields=()), channel)
+            app.status.text = 'Running'
+            session.poll()
+            self.assertEqual(read_json(channel / 'status.json')['display_status'], 'Running')
+
 
 if __name__ == '__main__':
     unittest.main()

@@ -79,6 +79,7 @@ class LifecycleTests(unittest.TestCase):
         self.app._startup_error = None
         self.app.language = mock.Mock(get=mock.Mock(return_value="English"))
         self.app.note = self.app.progress = self.app.placeholder = self.app.reload = mock.Mock()
+        self.app.instructions = self.app.status = mock.Mock()
         self.app.buttons = {module.id: mock.Mock() for module in MODULES}
         self.app.container = None
         self.app.body = mock.Mock()

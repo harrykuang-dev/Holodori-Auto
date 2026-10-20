@@ -127,6 +127,15 @@ def exercise(*, executable: Path | None, timeout: float, screenshot: Path | None
                 pump_until(lambda: shared_settings_match(expected), module + " shared preferences")
                 assert app.last_status.get("shared_controls_hidden") is True, f"{module} duplicate shared controls remain visible"
                 assert app.last_status.get("language_selector_hidden") is True, f"{module} original language selector remains visible"
+                assert app.last_status.get('embedded_chrome_hidden') is True, f'{module} repeated heading or version remains visible'
+                assert app.last_status.get('instructions'), f'{module} instruction text missing'
+                assert app.last_status.get('display_status'), f'{module} status text missing'
+                root.update_idletasks()
+                assert app.navigation.winfo_y() < app.intro.winfo_y() < app.shared_card.winfo_y() < app.body.winfo_y(), 'Shared layout order differs'
+                assert app.instructions.cget('text') == app.last_status['instructions']
+                assert app.status.cget('text') == app.last_status['display_status']
+                assert app.version_label.cget('text') == 'v1.0.0'
+                assert not app.note.cget('text'), 'Unexpected component version in host footer'
                 assert not app.last_status.get("capture_active"), f"{module} shortcut capture remains active"
                 assert not app.last_status.get("busy"), f"{module} started an automation unexpectedly"
 

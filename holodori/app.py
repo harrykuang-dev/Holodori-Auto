@@ -13,7 +13,7 @@ from tkinter import ttk, messagebox
 from PIL import Image, ImageTk
 from holodori import __version__
 from holodori.channel import read_json, write_json
-from holodori.modules import MODULES, BY_ID, ROOT, versions
+from holodori.modules import MODULES, BY_ID, ROOT
 from holodori.runtime import dpi_awareness
 from holodori.settings import load_settings, save_settings, captured_hotkey, hotkeys_conflict
 
@@ -78,7 +78,6 @@ class HolodoriApp:
         self.last_status = {}
         self.last_error = None
         self.icons = []
-        self.source_versions = versions()
         # Each module and its nested workers share one job. A replacement
         # module waits until the previous job has no live processes.
         self.job = None
@@ -102,10 +101,6 @@ class HolodoriApp:
         root.protocol('WM_DELETE_WINDOW', self.close)
         root.tk.call('tk', 'scaling', self.scale*96/72)
         self.theme = family_theme(root, self.px)
-        header = tk.Frame(root, bg=BG)
-        header.pack(fill='x', padx=self.px(20), pady=(self.px(14), self.px(8)))
-        tk.Label(header, text='Holodori-Auto', bg=BG, fg=TEXT,
-                 font=('Segoe UI', 17, 'bold')).pack(side='left')
         self.language = tk.StringVar(root, self.settings['language'])
         self.shared_card = ttk.Frame(root, style='Card.TFrame', padding=self.px(12))
         self.shared_card.pack(fill='x', padx=self.px(20), pady=(0,self.px(8)))
@@ -158,6 +153,16 @@ class HolodoriApp:
                 self.icons.append(icon)
                 button.configure(image=icon, compound='top')
             self.buttons[module.id] = button
+        self.navigation.pack_configure(before=self.shared_card, pady=(self.px(12),self.px(8)))
+        self.intro = tk.Frame(root, bg=BG)
+        self.intro.pack(before=self.shared_card, fill='x', padx=self.px(20), pady=(0,self.px(12)))
+        self.instructions = tk.Label(self.intro, bg=BG, fg=MUTED, font=('Segoe UI',10),
+                                     justify='left', anchor='w')
+        self.instructions.pack(fill='x')
+        self.status = tk.Label(self.intro, bg=BG, fg='#6D43AA', font=('Segoe UI',10),
+                               justify='left', anchor='w')
+        self.status.pack(fill='x', pady=(self.px(8),0))
+        self.intro.bind('<Configure>', lambda event: self.instructions.configure(wraplength=event.width))
         self.body = tk.Frame(root, bg=BG)
         self.body.pack(fill='both', expand=True)
         self.container = None
@@ -170,8 +175,9 @@ class HolodoriApp:
         self.footer = tk.Frame(root, bg=BG)
         self.footer.pack(side='bottom', before=self.body, fill='x', padx=self.px(20),
                          pady=(self.px(4), self.px(8)))
-        tk.Label(self.footer, text='v'+__version__, bg=BG, fg=MUTED,
-                 font=('Segoe UI', 9)).pack(side='left')
+        self.version_label = tk.Label(self.footer, text='v'+__version__, bg=BG, fg=MUTED,
+                                      font=('Segoe UI',9))
+        self.version_label.pack(side='left')
         self.note = tk.Label(self.footer, bg=BG, fg=MUTED, font=('Segoe UI', 9), anchor='e')
         self.note.pack(side='right', fill='x', expand=True)
         self.translate()
@@ -345,6 +351,8 @@ class HolodoriApp:
         self.placeholder.lift()
         self.reload.pack_forget()
         self.progress.configure(text=LABELS[self.language.get()][4])
+        self.instructions.configure(text='')
+        self.status.configure(text=LABELS[self.language.get()][4], fg=BY_ID[module_id].accent)
         self.note.configure(text='')
         for module in MODULES:
             self.buttons[module.id].configure(
@@ -406,6 +414,10 @@ class HolodoriApp:
     def _read_status(self):
         status = read_json(self.channel / 'status.json', {})
         self.last_status = status
+        if hasattr(self,'instructions'):
+            self.instructions.configure(text=status.get('instructions',''))
+            self.status.configure(text=status.get('display_status',''),
+                                  fg=status.get('status_color') or '#6D43AA')
         if status.get('snapshot'):
             self.snapshots[self.active] = status['snapshot']
         return status
@@ -464,8 +476,7 @@ class HolodoriApp:
             elif state == 'ready' and not self.closing and not self.waiting_switch and not self._session_draining:
                 self.ready = True
                 self.placeholder.lower()
-                version = self.source_versions.get(self.active, {}).get('version') or ''
-                self.note.configure(text=('v'+version) if version else '')
+                self.note.configure(text='')
             elif state == 'closing':
                 self.ready = False
                 self.note.configure(text=LABELS[self.language.get()][6])

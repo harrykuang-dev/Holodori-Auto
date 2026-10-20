@@ -6,6 +6,7 @@ import ctypes
 import importlib
 import importlib.util
 import os
+import re
 from pathlib import Path
 import runpy
 import sys
@@ -72,6 +73,7 @@ def hide_shared_controls(app):
     widgets = tuple(widget for name in ('language_label', 'language_choice')
                     if (widget := getattr(app, name, None)) is not None)
     widgets += shortcut_widgets(app)
+    widgets += chrome_widgets(app)
     for name in ('form_rows', 'form_labels'):
         rows = getattr(app, name, None)
         if isinstance(rows, list):
@@ -82,6 +84,35 @@ def hide_shared_controls(app):
         elif widget.winfo_manager() == 'pack':
             widget.pack_forget()
     return all(not widget.winfo_manager() for widget in widgets)
+
+
+def chrome_widgets(app):
+    """Move introductory text to the host and hide repeated headings/versions."""
+    widgets = []
+    for name in ('title_label','subtitle','title'):
+        heading = getattr(getattr(app,name,None),'master',None)
+        if heading is not None:
+            widgets.append(heading)
+    widgets.extend(widget for name in ('instructions','status','version_label')
+                   if (widget := getattr(app,name,None)) is not None)
+    root = getattr(app,'root',None)
+    if root is not None and hasattr(root,'winfo_children'):
+        pending = list(root.winfo_children())
+        while pending:
+            widget = pending.pop()
+            pending.extend(widget.winfo_children())
+            if 'text' in widget.keys() and re.fullmatch(r'[vV]\d+\.\d+(?:\.\d+)?', str(widget.cget('text')).strip()):
+                widgets.append(widget)
+    return tuple(dict.fromkeys(widgets))
+
+
+def intro_status(app):
+    def label_value(name, option):
+        widget = getattr(app,name,None)
+        return str(widget.cget(option)) if widget is not None else ''
+    return dict(instructions=label_value('instructions','text'),
+                display_status=label_value('status','text'),
+                status_color=label_value('status','foreground'))
 
 
 def language_selector_hidden(app):
@@ -288,8 +319,9 @@ class EmbeddedSession:
                     language_enabled=language_enabled(self.app),
                     language_selector_hidden=language_selector_hidden(self.app),
                     shared_controls_hidden=hidden,
+                    embedded_chrome_hidden=all(not widget.winfo_manager() for widget in chrome_widgets(self.app)),
                     shortcuts_enabled=shortcuts_enabled(self.app, self.spec.id, shared_capture=self.capture_active),
-                    capture_active=self.capture_active, **shortcut_values(self.app))
+                    capture_active=self.capture_active, **shortcut_values(self.app), **intro_status(self.app))
 
     def publish(self, state, **extra):
         self.last_state = state
