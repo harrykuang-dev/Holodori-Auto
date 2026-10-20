@@ -13,7 +13,7 @@
 
 ## 下載
 
-從 [v1.0.0](https://github.com/harrykuang-dev/Holodori-Auto/releases/tag/v1.0.0) 下載全部三個 `Holodori-Auto-v1.0.0-windows-*of3.zip`。將三個 ZIP 分別解壓至同一位置，讓內容合併至同一個 `Holodori-Auto` 資料夾，再執行其中的 `Holodori-Auto.exe`。請保留完整資料夾，無須另外安裝 Python 或 CUDA Toolkit。
+從 [v1.0.0](https://github.com/harrykuang-dev/Holodori-Auto/releases/tag/v1.0.0) 下載 `Holodori-Auto-v1.0.0-windows.7z.001`、`.002`、`.003` 三個分卷，放在同一個資料夾。使用 7-Zip 只解壓 `.7z.001`，程式會自動讀取其餘分卷，還原完整的 `Holodori-Auto` 資料夾，再執行其中的 `Holodori-Auto.exe`。請保留完整資料夾，無須另外安裝 Python 或 CUDA Toolkit。
 
 CUDA 並非必要條件。料理會自動使用可用的 NVIDIA CUDA GPU，否則使用 CPU，配備 AMD 顯卡的電腦也會使用 CPU。目前不支援 AMD GPU 模型加速；CPU 料理辨識速度取決於處理器效能。High & Low、釣魚及跳繩不需要 CUDA。
 

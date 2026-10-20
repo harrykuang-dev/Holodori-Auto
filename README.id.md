@@ -13,7 +13,7 @@ Program Windows yang menggabungkan **High & Low**, **Memancing**, **Lompat Tali*
 
 ## Unduh
 
-Unduh ketiga berkas `Holodori-Auto-v1.0.0-windows-*of3.zip` dari [v1.0.0](https://github.com/harrykuang-dev/Holodori-Auto/releases/tag/v1.0.0). Ekstrak setiap ZIP ke lokasi yang sama agar isinya tergabung dalam satu folder `Holodori-Auto`, lalu jalankan `Holodori-Auto.exe` di dalamnya. Simpan seluruh isi folder bersama. Python dan CUDA Toolkit tidak perlu dipasang secara terpisah.
+Unduh ketiga volume, `Holodori-Auto-v1.0.0-windows.7z.001`, `.002`, dan `.003`, dari [v1.0.0](https://github.com/harrykuang-dev/Holodori-Auto/releases/tag/v1.0.0) dan simpan dalam folder yang sama. Gunakan 7-Zip untuk mengekstrak hanya `.7z.001`; volume lainnya akan dibaca otomatis untuk memulihkan folder `Holodori-Auto` secara lengkap. Jalankan `Holodori-Auto.exe` di dalamnya dan simpan seluruh isi folder bersama. Python dan CUDA Toolkit tidak perlu dipasang secara terpisah.
 
 CUDA bersifat opsional. Memasak otomatis menggunakan GPU NVIDIA CUDA yang tersedia, atau menggunakan CPU, termasuk pada komputer dengan grafis AMD. Akselerasi model dengan GPU AMD belum didukung; kecepatan pengenalan memasak di CPU bergantung pada prosesor. High & Low, Memancing, dan Lompat Tali tidak memerlukan CUDA.
 
