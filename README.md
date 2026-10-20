@@ -13,7 +13,9 @@ A Windows program that brings **High & Low**, **Fishing**, **Jump Rope**, and **
 
 ## Download
 
-Download all three `Holodori-Auto-v1.0.0-windows-1of3.zip`, `Holodori-Auto-v1.0.0-windows-2of3.zip`, and `Holodori-Auto-v1.0.0-windows-3of3.zip` archives from [v1.0.0](https://github.com/harrykuang-dev/Holodori-Auto/releases/tag/v1.0.0). Extract all three into the same destination so their contents form one `Holodori-Auto` folder, then run `Holodori-Auto.exe` inside it. Keep the complete folder together. The package includes dependencies and cooking models; no separate Python installation is required. `SHA256SUMS.txt` provides archive checksums.
+Download all three `Holodori-Auto-v1.0.0-windows-*of3.zip` files from [v1.0.0](https://github.com/harrykuang-dev/Holodori-Auto/releases/tag/v1.0.0). Extract each ZIP into the same destination so their contents combine in one `Holodori-Auto` folder, then run `Holodori-Auto.exe` inside it. Keep the complete folder together. Python and CUDA Toolkit do not need to be installed separately.
+
+CUDA is optional. Cooking automatically uses an available NVIDIA CUDA GPU and otherwise runs on the CPU, including on computers with AMD graphics. AMD GPU acceleration is not supported; cooking recognition speed on CPU depends on the processor. High & Low, Fishing, and Jump Rope do not require CUDA.
 
 ## Usage
 

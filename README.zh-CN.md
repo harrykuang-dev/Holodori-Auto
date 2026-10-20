@@ -13,7 +13,9 @@
 
 ## 下载
 
-从 [v1.0.0](https://github.com/harrykuang-dev/Holodori-Auto/releases/tag/v1.0.0) 下载全部三个 `Holodori-Auto-v1.0.0-windows-1of3.zip`、`Holodori-Auto-v1.0.0-windows-2of3.zip` 和 `Holodori-Auto-v1.0.0-windows-3of3.zip` 压缩包。将三个文件解压至同一位置，使内容合并为一个 `Holodori-Auto` 文件夹，再运行其中的 `Holodori-Auto.exe`。请保留完整文件夹。安装包已包含依赖和料理模型，无须另行安装 Python。`SHA256SUMS.txt` 提供压缩包校验码。
+从 [v1.0.0](https://github.com/harrykuang-dev/Holodori-Auto/releases/tag/v1.0.0) 下载全部三个 `Holodori-Auto-v1.0.0-windows-*of3.zip`。将三个 ZIP 分别解压到同一位置，让内容合并到同一个 `Holodori-Auto` 文件夹，再运行其中的 `Holodori-Auto.exe`。请保留完整文件夹，无需另外安装 Python 或 CUDA Toolkit。
+
+CUDA 并非必要条件。料理会自动使用可用的 NVIDIA CUDA GPU，否则使用 CPU，配备 AMD 显卡的电脑也会使用 CPU。目前不支持 AMD GPU 模型加速；CPU 料理识别速度取决于处理器性能。High & Low、钓鱼及跳绳不需要 CUDA。
 
 ## 使用方式
 

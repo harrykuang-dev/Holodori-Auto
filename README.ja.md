@@ -13,7 +13,9 @@
 
 ## ダウンロード
 
-[v1.0.0](https://github.com/harrykuang-dev/Holodori-Auto/releases/tag/v1.0.0) から `Holodori-Auto-v1.0.0-windows-1of3.zip`、`Holodori-Auto-v1.0.0-windows-2of3.zip`、`Holodori-Auto-v1.0.0-windows-3of3.zip` の3ファイルをすべてダウンロードします。すべてを同じ場所に展開し、内容を1つの `Holodori-Auto` フォルダーにまとめてから、中の `Holodori-Auto.exe` を実行してください。フォルダー全体を保持してください。依存ライブラリと料理モデルが含まれているため、Python の別途インストールは不要です。`SHA256SUMS.txt` に各アーカイブのチェックサムを記載しています。
+[v1.0.0](https://github.com/harrykuang-dev/Holodori-Auto/releases/tag/v1.0.0) から `Holodori-Auto-v1.0.0-windows-*of3.zip` を3つすべてダウンロードしてください。各 ZIP を同じ場所に展開し、内容を1つの `Holodori-Auto` フォルダーにまとめてから、その中の `Holodori-Auto.exe` を実行します。フォルダー全体を保持してください。Python や CUDA Toolkit を別途インストールする必要はありません。
+
+CUDA は必須ではありません。料理は利用可能な NVIDIA CUDA GPU を自動的に使用し、それ以外は AMD グラフィックス搭載環境を含め CPU で動作します。AMD GPU によるモデルの高速化には対応していません。CPU での料理の認識速度はプロセッサーの性能に依存します。High & Low、釣り、縄跳びには CUDA は不要です。
 
 ## 使い方
 

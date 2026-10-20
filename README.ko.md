@@ -13,7 +13,9 @@
 
 ## 다운로드
 
-[v1.0.0](https://github.com/harrykuang-dev/Holodori-Auto/releases/tag/v1.0.0)에서 `Holodori-Auto-v1.0.0-windows-1of3.zip`, `Holodori-Auto-v1.0.0-windows-2of3.zip`, `Holodori-Auto-v1.0.0-windows-3of3.zip` 세 파일을 모두 다운로드합니다. 세 파일을 같은 위치에 압축 해제하여 하나의 `Holodori-Auto` 폴더로 합친 다음, 그 안의 `Holodori-Auto.exe`를 실행하세요. 전체 폴더를 함께 보관하세요. 종속 라이브러리와 요리 모델이 포함되어 있어 Python을 따로 설치할 필요가 없습니다. `SHA256SUMS.txt`에서 압축 파일의 체크섬을 확인할 수 있습니다.
+[v1.0.0](https://github.com/harrykuang-dev/Holodori-Auto/releases/tag/v1.0.0)에서 `Holodori-Auto-v1.0.0-windows-*of3.zip` 파일 3개를 모두 다운로드하세요. 각 ZIP을 같은 위치에 풀어 내용이 하나의 `Holodori-Auto` 폴더에 합쳐지도록 한 뒤, 그 안의 `Holodori-Auto.exe`를 실행하세요. 전체 폴더를 함께 보관하세요. Python이나 CUDA Toolkit을 별도로 설치할 필요는 없습니다.
+
+CUDA는 필수가 아닙니다. 요리는 사용 가능한 NVIDIA CUDA GPU를 자동으로 사용하고, 그 외에는 AMD 그래픽 탑재 컴퓨터를 포함하여 CPU로 실행됩니다. AMD GPU를 통한 모델 가속은 지원하지 않으며, CPU에서의 요리 인식 속도는 프로세서 성능에 따라 달라집니다. High & Low, 낚시, 줄넘기는 CUDA가 필요하지 않습니다.
 
 ## 사용 방법
 
