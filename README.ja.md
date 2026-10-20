@@ -11,6 +11,10 @@
 | 縄跳び | [Hololive-Dreams-Jump-Rope-Auto](https://github.com/harrykuang-dev/Hololive-Dreams-Jump-Rope-Auto) |
 | 料理 | [Hololie-Dreams-Collect-Cooking-Auto](https://github.com/harrykuang-dev/Hololie-Dreams-Collect-Cooking-Auto) |
 
+## ダウンロード
+
+[v1.0.0](https://github.com/harrykuang-dev/Holodori-Auto/releases/tag/v1.0.0) から `Holodori-Auto-v1.0.0-windows-1of3.zip`、`Holodori-Auto-v1.0.0-windows-2of3.zip`、`Holodori-Auto-v1.0.0-windows-3of3.zip` の3ファイルをすべてダウンロードします。すべてを同じ場所に展開し、内容を1つの `Holodori-Auto` フォルダーにまとめてから、中の `Holodori-Auto.exe` を実行してください。フォルダー全体を保持してください。依存ライブラリと料理モデルが含まれているため、Python の別途インストールは不要です。`SHA256SUMS.txt` に各アーカイブのチェックサムを記載しています。
+
 ## 使い方
 
 1. ゲームを起動し、使用するミニゲームの画面を開きます。

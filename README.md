@@ -11,6 +11,10 @@ A Windows program that brings **High & Low**, **Fishing**, **Jump Rope**, and **
 | Jump Rope | [Hololive-Dreams-Jump-Rope-Auto](https://github.com/harrykuang-dev/Hololive-Dreams-Jump-Rope-Auto) |
 | Cooking | [Hololie-Dreams-Collect-Cooking-Auto](https://github.com/harrykuang-dev/Hololie-Dreams-Collect-Cooking-Auto) |
 
+## Download
+
+Download all three `Holodori-Auto-v1.0.0-windows-1of3.zip`, `Holodori-Auto-v1.0.0-windows-2of3.zip`, and `Holodori-Auto-v1.0.0-windows-3of3.zip` archives from [v1.0.0](https://github.com/harrykuang-dev/Holodori-Auto/releases/tag/v1.0.0). Extract all three into the same destination so their contents form one `Holodori-Auto` folder, then run `Holodori-Auto.exe` inside it. Keep the complete folder together. The package includes dependencies and cooking models; no separate Python installation is required. `SHA256SUMS.txt` provides archive checksums.
+
 ## Usage
 
 1. Open the game and enter the desired minigame.

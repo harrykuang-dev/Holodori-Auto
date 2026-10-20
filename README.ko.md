@@ -11,6 +11,10 @@
 | 줄넘기 | [Hololive-Dreams-Jump-Rope-Auto](https://github.com/harrykuang-dev/Hololive-Dreams-Jump-Rope-Auto) |
 | 요리 | [Hololie-Dreams-Collect-Cooking-Auto](https://github.com/harrykuang-dev/Hololie-Dreams-Collect-Cooking-Auto) |
 
+## 다운로드
+
+[v1.0.0](https://github.com/harrykuang-dev/Holodori-Auto/releases/tag/v1.0.0)에서 `Holodori-Auto-v1.0.0-windows-1of3.zip`, `Holodori-Auto-v1.0.0-windows-2of3.zip`, `Holodori-Auto-v1.0.0-windows-3of3.zip` 세 파일을 모두 다운로드합니다. 세 파일을 같은 위치에 압축 해제하여 하나의 `Holodori-Auto` 폴더로 합친 다음, 그 안의 `Holodori-Auto.exe`를 실행하세요. 전체 폴더를 함께 보관하세요. 종속 라이브러리와 요리 모델이 포함되어 있어 Python을 따로 설치할 필요가 없습니다. `SHA256SUMS.txt`에서 압축 파일의 체크섬을 확인할 수 있습니다.
+
 ## 사용 방법
 
 1. 게임을 실행하고 사용할 미니게임 화면으로 이동합니다.

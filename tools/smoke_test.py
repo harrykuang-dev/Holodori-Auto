@@ -16,6 +16,7 @@ import tempfile
 import time
 import traceback
 from types import SimpleNamespace
+from unittest.mock import patch
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -52,7 +53,7 @@ def exercise(*, executable: Path | None, timeout: float, screenshot: Path | None
     import win32job
 
     sys.path.insert(0, str(ROOT))
-    from holodori.app import HolodoriApp
+    from holodori.app import HolodoriApp, PROJECT_URL
     from holodori.runtime import dpi_awareness
 
     report = {"mode": "packaged" if executable else "source", "modules": [], "errors": []}
@@ -153,6 +154,11 @@ def exercise(*, executable: Path | None, timeout: float, screenshot: Path | None
 
             try:
                 ready("high_low")
+                with patch('holodori.app.webbrowser.open', return_value=True) as browser:
+                    app.version_label.event_generate('<Button-1>')
+                    root.update()
+                    browser.assert_called_once_with(PROJECT_URL)
+                report['version_link'] = PROJECT_URL
                 # Use the host's actual capture methods with synthetic Tk events;
                 # no native keyboard/game input is sent, and smoke listeners are inert.
                 initial = dict(app.settings)

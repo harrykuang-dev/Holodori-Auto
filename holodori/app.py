@@ -8,6 +8,7 @@ import subprocess
 import sys
 import tempfile
 import tkinter as tk
+import webbrowser
 from tkinter import ttk, messagebox
 
 from PIL import Image, ImageTk
@@ -18,6 +19,7 @@ from holodori.runtime import dpi_awareness
 from holodori.settings import load_settings, save_settings, captured_hotkey, hotkeys_conflict
 
 BG, TEXT, MUTED = '#F5F5F5', '#242424', '#616161'
+PROJECT_URL = 'https://github.com/harrykuang-dev/Holodori-Auto'
 SELECTED_BACKGROUNDS = {
     'high_low': '#EDE5F6', 'fishing': '#E5F2FC',
     'jump_rope': '#FFF7D1', 'cooking': '#FDE9EA',
@@ -176,8 +178,9 @@ class HolodoriApp:
         self.footer.pack(side='bottom', before=self.body, fill='x', padx=self.px(20),
                          pady=(self.px(4), self.px(8)))
         self.version_label = tk.Label(self.footer, text='v'+__version__, bg=BG, fg=MUTED,
-                                      font=('Segoe UI',9))
+                                      font=('Segoe UI',9), cursor='hand2')
         self.version_label.pack(side='left')
+        self.version_label.bind('<Button-1>', lambda _event: webbrowser.open(PROJECT_URL))
         self.note = tk.Label(self.footer, bg=BG, fg=MUTED, font=('Segoe UI', 9), anchor='e')
         self.note.pack(side='right', fill='x', expand=True)
         self.translate()

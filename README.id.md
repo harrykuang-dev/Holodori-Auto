@@ -11,6 +11,10 @@ Program Windows yang menggabungkan **High & Low**, **Memancing**, **Lompat Tali*
 | Lompat Tali | [Hololive-Dreams-Jump-Rope-Auto](https://github.com/harrykuang-dev/Hololive-Dreams-Jump-Rope-Auto) |
 | Memasak | [Hololie-Dreams-Collect-Cooking-Auto](https://github.com/harrykuang-dev/Hololie-Dreams-Collect-Cooking-Auto) |
 
+## Unduh
+
+Unduh ketiga arsip `Holodori-Auto-v1.0.0-windows-1of3.zip`, `Holodori-Auto-v1.0.0-windows-2of3.zip`, dan `Holodori-Auto-v1.0.0-windows-3of3.zip` dari [v1.0.0](https://github.com/harrykuang-dev/Holodori-Auto/releases/tag/v1.0.0). Ekstrak semuanya ke lokasi yang sama hingga isinya tergabung dalam satu folder `Holodori-Auto`, lalu jalankan `Holodori-Auto.exe` di dalamnya. Simpan seluruh isi folder bersama-sama. Paket ini sudah menyertakan dependensi dan model memasak; Python tidak perlu dipasang secara terpisah. `SHA256SUMS.txt` menyediakan checksum setiap arsip.
+
 ## Penggunaan
 
 1. Buka game dan masuk ke minigame yang ingin digunakan.
