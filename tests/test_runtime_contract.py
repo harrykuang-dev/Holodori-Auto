@@ -66,6 +66,27 @@ def shared_app(module_id):
 
 
 class RuntimeContractTests(unittest.TestCase):
+    def test_fishing_listener_starts_only_with_the_shared_shortcut(self):
+        reports = []
+
+        class Listener:
+            def __init__(self): self.key = 'F8'
+            def configure(self, value): self.key = value
+            def start(self): reports.append(self.key)
+
+        upstream = SimpleNamespace(GlobalHotkey=Listener)
+        start_configured = runtime.defer_hotkey_start(upstream)
+        listener = upstream.GlobalHotkey()
+        listener.start()
+        listener.start()
+        self.assertEqual(reports, [])
+        listener.configure('PAGEUP')
+        start_configured()
+        self.assertEqual(reports, ['PAGEUP'])
+        self.assertIs(upstream.GlobalHotkey, Listener)
+        start_configured()
+        self.assertEqual(reports, ['PAGEUP'])
+
     def make_session(self, directory, running):
         app = SimpleNamespace(worker=SimpleNamespace(is_alive=lambda: running),
                               counter=SimpleNamespace(total=7, run_catches=7), close=Mock())

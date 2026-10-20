@@ -231,6 +231,27 @@ def cooking_worker():
     runpy.run_path(str(module.path / 'gui.py'), run_name='__main__')
 
 
+def defer_hotkey_start(upstream):
+    """Keep constructor defaults unregistered until shared settings are applied."""
+    original = upstream.GlobalHotkey
+    pending = []
+
+    class DeferredHotkey(original):
+        def start(self):
+            if self not in pending:
+                pending.append(self)
+
+    upstream.GlobalHotkey = DeferredHotkey
+
+    def start_configured():
+        for listener in pending:
+            original.start(listener)
+        pending.clear()
+        upstream.GlobalHotkey = original
+
+    return start_configured
+
+
 def snapshot(app, spec):
     saved = {name: getattr(app, name).get() for name in spec.fields}
     # Keep the displayed result when returning to a stopped function.
@@ -462,6 +483,7 @@ def embedded_main():
                 original = upstream.HololiveBotUI.__init__
                 upstream.HololiveBotUI.__init__ = lambda self, root: original(self, root, hotkey_factory=NoHotkey)
         root = tk.Tk(use=args.container)
+        start_configured = defer_hotkey_start(upstream) if spec.id == 'fishing' else None
         if spec.id == 'high_low':
             upstream.prepare_user_data(upstream.auto_bot.APP_DIR)
         app = getattr(upstream, spec.app_class)(root)
@@ -469,6 +491,8 @@ def embedded_main():
         if saved:
             restore(app, spec, saved)
         apply_shared_settings(app, spec.id, args.language, args.start_key, args.stop_key)
+        if start_configured is not None:
+            start_configured()
         session = EmbeddedSession(root, app, spec, args.channel, smoke=args.smoke)
         root.mainloop()
         write_json(args.channel / 'status.json', dict(state='closed', request=session.request,
