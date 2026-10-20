@@ -189,7 +189,7 @@ exe = EXE(
     pyz, a.scripts, [], exclude_binaries=True, name='Holodori-Auto',
     debug=False, bootloader_ignore_signals=False, strip=False, upx=False,
     console=False, disable_windowed_traceback=False,
-    icon={str(ROOT / 'upstream' / 'high_low' / 'icon.ico')!r},
+    icon={str(ROOT / 'assets' / 'holodori.ico')!r},
 )
 collect = COLLECT(exe, a.binaries, a.datas, strip=False, upx=False, name='Holodori-Auto')
 '''

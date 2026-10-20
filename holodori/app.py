@@ -182,7 +182,7 @@ class HolodoriApp:
         self.note.pack(side='right', fill='x', expand=True)
         self.translate()
         try:
-            root.iconbitmap(default=str(BY_ID['high_low'].path / 'icon.ico'))
+            root.iconbitmap(default=str(ROOT / 'assets' / 'holodori.ico'))
         except tk.TclError:
             pass
         root.after(50, lambda: self.select(initial))
