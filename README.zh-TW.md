@@ -17,7 +17,9 @@
 
 從 [Releases](https://github.com/harrykuang-dev/Holodori-Auto/releases/latest) 下載 `Holodori-Auto-v1.1.1-windows.7z`，使用 7-Zip 解壓後執行 `Holodori-Auto.exe`。請保留完整資料夾，無須另外安裝 Python 或 CUDA Toolkit。
 
-跳繩與料理共用同一套 TensorRT 10.13、CUDA 執行庫與 DirectML。相容的 NVIDIA GPU 自動使用 TensorRT，其他受支援的 GPU 使用 DirectML。跳繩需要相容 GPU；料理亦可回退至 CPU。各功能保留獨立模型與裝置引擎快取。首次使用 TensorRT 時需要建立快取，載入時間較長。
+跳繩與料理共用同一套 TensorRT 10.13、CUDA 執行庫與 DirectML。相容的 NVIDIA GPU 自動使用 TensorRT，其他受支援的 GPU 使用 DirectML。跳繩需要相容 GPU；料理亦可回退至 CPU。各功能保留獨立模型與裝置引擎快取。
+
+> **首次使用提示：** 使用相容的 NVIDIA RTX 20 系列及更新顯示卡時，首次使用跳繩或料理需為本機 GPU 編譯 TensorRT 引擎，預計約 **1～2 分鐘**，實際時間依硬體與系統負載而異。請等候編譯完成；引擎會快取供後續使用。
 
 ## 使用方式
 

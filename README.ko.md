@@ -17,7 +17,9 @@
 
 [Releases](https://github.com/harrykuang-dev/Holodori-Auto/releases/latest)에서 `Holodori-Auto-v1.1.1-windows.7z`를 다운로드하고 7-Zip으로 압축을 푼 뒤 `Holodori-Auto.exe`를 실행하세요. 전체 폴더를 함께 보관하세요. Python이나 CUDA Toolkit을 별도로 설치할 필요는 없습니다.
 
-줄넘기와 요리는 한 패키지의 TensorRT 10.13, CUDA 런타임, DirectML을 공유합니다. 호환 NVIDIA GPU는 TensorRT를, 그 외 지원 GPU는 DirectML을 사용합니다. 줄넘기는 호환 GPU가 필요하며 요리는 CPU로도 전환할 수 있습니다. 모델과 장치별 엔진 캐시는 기능마다 별도로 유지됩니다. TensorRT를 처음 불러올 때는 캐시를 생성하므로 시간이 더 걸릴 수 있습니다.
+줄넘기와 요리는 한 패키지의 TensorRT 10.13, CUDA 런타임, DirectML을 공유합니다. 호환 NVIDIA GPU는 TensorRT를, 그 외 지원 GPU는 DirectML을 사용합니다. 줄넘기는 호환 GPU가 필요하며 요리는 CPU로도 전환할 수 있습니다. 모델과 장치별 엔진 캐시는 기능마다 별도로 유지됩니다.
+
+> **첫 사용 안내:** 호환되는 NVIDIA RTX 20 시리즈 이상 GPU에서는 줄넘기나 요리를 처음 사용할 때 해당 GPU용 TensorRT 엔진을 컴파일합니다. 예상 시간은 **1~2분**이며 하드웨어와 시스템 부하에 따라 달라집니다. 완료될 때까지 기다려 주세요. 엔진은 이후 사용을 위해 캐시됩니다.
 
 ## 사용 방법
 

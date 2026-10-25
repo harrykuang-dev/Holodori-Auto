@@ -17,7 +17,9 @@
 
 [Releases](https://github.com/harrykuang-dev/Holodori-Auto/releases/latest) から `Holodori-Auto-v1.1.1-windows.7z` をダウンロードし、7-Zip で展開して `Holodori-Auto.exe` を実行してください。フォルダー全体を保持してください。Python や CUDA Toolkit の別途インストールは不要です。
 
-縄跳びと料理は、一つのパッケージ内の TensorRT 10.13、CUDA ランタイム、DirectML を共有します。対応する NVIDIA GPU では TensorRT、それ以外の対応 GPU では DirectML を使用します。縄跳びには対応 GPU が必要です。料理は CPU にもフォールバックできます。モデルとデバイス固有のエンジンキャッシュは各機能で独立しています。TensorRT の初回読み込み時はキャッシュを構築するため、時間がかかる場合があります。
+縄跳びと料理は、一つのパッケージ内の TensorRT 10.13、CUDA ランタイム、DirectML を共有します。対応する NVIDIA GPU では TensorRT、それ以外の対応 GPU では DirectML を使用します。縄跳びには対応 GPU が必要です。料理は CPU にもフォールバックできます。モデルとデバイス固有のエンジンキャッシュは各機能で独立しています。
+
+> **初回使用時のヒント：** 対応する NVIDIA RTX 20 シリーズ以降の GPU では、縄跳びまたは料理の初回使用時に、その GPU 用の TensorRT エンジンをコンパイルします。目安は **1～2分**ですが、ハードウェアやシステム負荷によって異なります。完了までお待ちください。エンジンは次回以降の使用のためにキャッシュされます。
 
 ## 使い方
 

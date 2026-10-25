@@ -17,7 +17,9 @@ Program Windows yang menggabungkan **High & Low**, **Memancing**, **Lompat Tali*
 
 Unduh `Holodori-Auto-v1.1.1-windows.7z` dari [Releases](https://github.com/harrykuang-dev/Holodori-Auto/releases/latest), ekstrak dengan 7-Zip, lalu jalankan `Holodori-Auto.exe`. Simpan seluruh isi folder bersama. Python dan CUDA Toolkit tidak perlu dipasang secara terpisah.
 
-Lompat Tali dan Memasak berbagi TensorRT 10.13, pustaka runtime CUDA, dan DirectML dalam satu paket. GPU NVIDIA yang kompatibel otomatis memakai TensorRT; GPU lain yang didukung memakai DirectML. Lompat Tali memerlukan GPU yang kompatibel; Memasak juga dapat beralih ke CPU. Model dan cache engine khusus perangkat tetap terpisah. Pemuatan pertama TensorRT dapat memerlukan waktu lebih lama untuk membangun cache.
+Lompat Tali dan Memasak berbagi TensorRT 10.13, pustaka runtime CUDA, dan DirectML dalam satu paket. GPU NVIDIA yang kompatibel otomatis memakai TensorRT; GPU lain yang didukung memakai DirectML. Lompat Tali memerlukan GPU yang kompatibel; Memasak juga dapat beralih ke CPU. Model dan cache engine khusus perangkat tetap terpisah.
+
+> **Tips penggunaan pertama:** Pada GPU NVIDIA RTX seri 20 dan yang lebih baru yang kompatibel, penggunaan pertama Lompat Tali atau Memasak mengompilasi engine TensorRT untuk GPU tersebut. Perkiraan waktunya **1–2 menit**, tergantung perangkat keras dan beban sistem. Tunggu hingga kompilasi selesai; engine disimpan dalam cache untuk penggunaan berikutnya.
 
 ## Penggunaan
 

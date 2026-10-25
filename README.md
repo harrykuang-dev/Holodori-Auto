@@ -17,7 +17,9 @@ Version **1.1.1** includes High & Low **1.1.2**, Fishing **1.1.2**, Jump Rope **
 
 Download `Holodori-Auto-v1.1.1-windows.7z` from [Releases](https://github.com/harrykuang-dev/Holodori-Auto/releases/latest), extract it with 7-Zip and run `Holodori-Auto.exe`. Keep the complete folder together. Python and CUDA Toolkit do not need to be installed separately.
 
-Jump Rope and Cooking share TensorRT 10.13, CUDA runtime libraries and DirectML in one package. Compatible NVIDIA GPUs use TensorRT automatically; other supported GPUs use DirectML. Jump Rope requires a compatible GPU; Cooking can also fall back to CPU. Models and device-specific engine caches remain separate. The first TensorRT load may take longer while building the engine cache.
+Jump Rope and Cooking share TensorRT 10.13, CUDA runtime libraries and DirectML in one package. Compatible NVIDIA GPUs use TensorRT automatically; other supported GPUs use DirectML. Jump Rope requires a compatible GPU; Cooking can also fall back to CPU. Models and device-specific engine caches remain separate.
+
+> **First-use tip:** On compatible NVIDIA RTX 20-series and newer GPUs, the first use of Jump Rope or Cooking compiles a TensorRT engine for your GPU. Allow about **1–2 minutes**, depending on your hardware and system load. Wait for compilation to finish; the engine is cached for subsequent use.
 
 ## Usage
 
