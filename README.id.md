@@ -81,4 +81,4 @@ GitHub Actions memeriksa pembaruan repositori asal setiap hari dan saat dijalank
 
 ## Hak dan lisensi
 
-Kode sumber, gambar, berkas lisensi, dan pemberitahuan pihak ketiga dari program asal tetap disertakan pada masing-masing fitur di `upstream/`. Lihat repositori asal untuk ketentuan dan atribusinya. Nama game dan gambar merupakan milik pemegang hak masing-masing.
+Lompat Tali 1.3.0 dan bobot turunan YOLO memakai **AGPL-3.0-only**; Memancing memakai **MIT**. Pemberitahuan MIT yang ada untuk komponen yang dirujuk High & Low dan Memasak tetap disertakan. Runtime NVIDIA, dependensi lain, dan gambar game mempertahankan ketentuannya masing-masing. Lihat [lisensi dan kode sumber terkait](LICENSES.md). Release menyediakan `Holodori-Auto-v1.1.0-source.zip` dengan sumber keempat submodul pada commit yang ditetapkan; arsip sumber otomatis GitHub tidak menyertakan submodul.

@@ -81,4 +81,4 @@ GitHub Actions checks for upstream changes daily and on manual runs, opens an up
 
 ## Notices
 
-Original source, artwork, license files, and third-party notices remain with their respective modules under `upstream/`. See the original repositories for their terms and attribution. Game names and artwork belong to their respective rights holders.
+Jump Rope 1.3.0 and its YOLO-derived weights use **AGPL-3.0-only**; Fishing uses **MIT**. Existing MIT notices for components referenced by High & Low and Cooking remain included. NVIDIA libraries, other dependencies and game artwork retain their own terms. See [licensing and corresponding source](LICENSES.md). The Release provides `Holodori-Auto-v1.1.0-source.zip` with all four pinned submodule source trees; GitHub’s automatic source archives omit submodules.
