@@ -79,6 +79,8 @@ Version 1.1.0 uses a single shared TensorRT 10.13.3.9 package, CUDA runtime 12.9
 
 During embedded construction, the adapter records the original DPI-scaled window size and minimum size, then the host applies them once when that module becomes ready. It does not hard-code a second size table or reset a user's resize on each status update. The version footer opens a Fluent card dialog populated from `upstream-lock.json`, with the host and four original repository links.
 
+The host remains withdrawn until the initial module's size is applied, so no temporary large window is shown. The adapter normalizes outer page padding, compensates for a visible page scrollbar, and reports the actual card gap. The host uses that gap below the shared settings card to keep the page aligned across languages and resizing.
+
 Use `python main.py --check-jump-model-only --backend gpu --report work/jump-gpu.json` to load and warm the original jump detector with synthetic pixels. `--backend directml` checks DirectML separately. Cooking's equivalent is `python tools/check_models_runtime.py`. Both also support the packaged executable; no game capture or input is performed.
 
 ## 繁體中文
@@ -104,3 +106,5 @@ Windows 建置需先安裝依賴與通過驗證的料理模型，再執行 `pyth
 `ddddocr` 依賴 CPU 版 `onnxruntime`，因此安裝依賴後需以 `--force-reinstall --no-deps` 重新安裝 `onnxruntime-directml==1.24.4`。建置前會檢查 DirectML 提供者，避免依賴安裝順序覆蓋 GPU 執行環境。
 
 嵌入時記錄原始程式依 DPI 計算的預設及最小視窗尺寸，功能就緒後由主視窗套用一次；後續狀態更新不會覆寫使用者調整的大小。版本彈窗沿用 Fluent 卡片樣式，從 `upstream-lock.json` 顯示四個程式版本與倉庫連結。
+
+主視窗在首個功能尺寸套用後才顯示，避免啟動時先大後小。整合層統一頁面外邊距並補償捲軸寬度，將實際卡片間距回傳給主視窗，作為共用設定框下方的間距；切換語言與調整視窗大小後仍保持對齊。

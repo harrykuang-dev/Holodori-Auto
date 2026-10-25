@@ -67,6 +67,9 @@ def exercise(*, executable: Path | None, timeout: float, screenshot: Path | None
         directory = Path(temporary)
         with isolated_data(directory / "user-data"):
             root = tk.Tk()
+            first_visible_sizes = []
+            root.bind('<Map>', lambda event: first_visible_sizes.append(
+                [root.winfo_width(), root.winfo_height()]) if event.widget is root else None, add='+')
             callback_errors = []
             root.report_callback_exception = lambda kind, error, tb: callback_errors.append(
                 "".join(traceback.format_exception(kind, error, tb)))
@@ -146,6 +149,21 @@ def exercise(*, executable: Path | None, timeout: float, screenshot: Path | None
                 assert not app.last_status.get("capture_active"), f"{module} shortcut capture remains active"
                 assert not app.last_status.get("busy"), f"{module} started an automation unexpectedly"
 
+            def assert_layout(module):
+                def aligned():
+                    layout = app.last_status.get('layout', {})
+                    card = layout.get('first_card')
+                    if not card:
+                        return False
+                    shared_left = app.shared_card.winfo_x()
+                    shared_right = shared_left+app.shared_card.winfo_width()
+                    first_left = app.body.winfo_x()+card['left']
+                    first_right = app.body.winfo_x()+card['right']
+                    gap = app.body.winfo_y()+card['top']-app.shared_card.winfo_y()-app.shared_card.winfo_height()
+                    return abs(first_left-shared_left) <= 1 and abs(first_right-shared_right) <= 1 and gap == layout['card_gap']
+                pump_until(aligned, module+' aligned margins and matching card gaps')
+                return dict(app.last_status['layout'])
+
             def begin_capture(target):
                 app.begin_capture(target)
                 pump_until(lambda: app.capture_target == target and app.capture_ready
@@ -160,6 +178,9 @@ def exercise(*, executable: Path | None, timeout: float, screenshot: Path | None
 
             try:
                 ready("high_low")
+                assert first_visible_sizes[0] == app.last_status['window_defaults']['size'], first_visible_sizes
+                report['first_visible_size'] = first_visible_sizes[0]
+                report['startup_resize_hidden'] = True
                 with patch('holodori.app.webbrowser.open', return_value=True) as browser:
                     app.version_label.event_generate('<Button-1>')
                     root.update()
@@ -228,10 +249,19 @@ def exercise(*, executable: Path | None, timeout: float, screenshot: Path | None
                     root.update_idletasks()
                     expected_size = app.last_status['window_defaults']['size']
                     assert [root.winfo_width(), root.winfo_height()] == expected_size, (module, root.geometry(), expected_size)
+                    default_layout = assert_layout(module)
+                    if screenshot:
+                        from PIL import ImageGrab
+                        settled = time.monotonic()+0.6
+                        pump_until(lambda: time.monotonic() >= settled, module+' painting')
+                        left, top = root.winfo_rootx(), root.winfo_rooty()
+                        ImageGrab.grab(bbox=(left,top,left+root.winfo_width(),top+root.winfo_height())).save(
+                            screenshot.with_stem(screenshot.stem+'-'+module))
                     for language in LANGUAGES:
                         app.language.set(language)
                         app.change_language()
                         assert_shared(module, dict(SHARED_SETTINGS, language=language))
+                        assert_layout(module)
                         if module == 'high_low':
                             dialog = app.show_versions()
                             root.update()
@@ -260,6 +290,7 @@ def exercise(*, executable: Path | None, timeout: float, screenshot: Path | None
                     root.lift()
                     request("snapshot")
                     assert_shared(module)
+                    resized_layout = assert_layout(module)
                     report["modules"].append({
                         "id": module, "pid": app.process.pid, "fields": fields,
                         "dialog_checked": True, "resize_and_restore": True,
@@ -267,6 +298,7 @@ def exercise(*, executable: Path | None, timeout: float, screenshot: Path | None
                         "shared_preferences_applied": True, "shared_controls_hidden": True,
                         "window_title": "Holodori-Auto", "languages_checked": len(LANGUAGES),
                         "default_window_size": expected_size,
+                        "default_layout": default_layout, "resized_layout": resized_layout,
                     })
 
                 # Revisiting each page verifies the actual process replacement and restore contract.
@@ -278,6 +310,7 @@ def exercise(*, executable: Path | None, timeout: float, screenshot: Path | None
                         assert previous.poll() == 0
                     request("snapshot")
                     assert_shared(module)
+                    assert_layout(module)
                     for key, expected in fields.items():
                         actual = app.last_status["snapshot"].get(key)
                         assert actual == expected, f"Restored {module}.{key}: {actual!r} != {expected!r}"

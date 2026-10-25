@@ -71,6 +71,8 @@ def child_command(module_id, container, channel, *, smoke=False, executable=None
 class HolodoriApp:
     def __init__(self, root, *, initial='high_low', smoke=False, session_dir=None, child_executable=None):
         self.root, self.smoke = root, smoke
+        root.withdraw()
+        self._startup_hidden = True
         self.child_executable = child_executable
         self.temporary = tempfile.TemporaryDirectory(prefix='holodori-', dir=session_dir)
         self.session_dir = Path(self.temporary.name)
@@ -275,6 +277,10 @@ class HolodoriApp:
         self.root.minsize(*minimum)
         self.root.geometry(f'{width}x{height}')
         self._size_applied = True
+        if getattr(self, '_startup_hidden', False):
+            self.root.update_idletasks()
+            self.root.deiconify()
+            self._startup_hidden = False
 
     def translate(self):
         labels = LABELS[self.language.get()]
@@ -483,6 +489,9 @@ class HolodoriApp:
         self.progress.configure(text=LABELS[self.language.get()][8])
         self.reload.pack(pady=self.px(12))
         self.note.configure(text=LABELS[self.language.get()][8])
+        if getattr(self, '_startup_hidden', False):
+            self.root.deiconify()
+            self._startup_hidden = False
         if not self.smoke:
             messagebox.showerror('Holodori-Auto', error, parent=self.root)
 
@@ -507,6 +516,11 @@ class HolodoriApp:
             self.instructions.configure(text=status.get('instructions',''))
             self.status.configure(text=status.get('display_status',''),
                                   fg=status.get('status_color') or '#6D43AA')
+        gap = status.get('layout', {}).get('card_gap')
+        if isinstance(gap, int) and gap >= 0 and hasattr(self, 'shared_card'):
+            if getattr(self, '_card_gap', None) != gap:
+                self.shared_card.pack_configure(pady=(0, gap))
+                self._card_gap = gap
         if status.get('snapshot'):
             self.snapshots[self.active] = status['snapshot']
         return status

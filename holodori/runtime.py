@@ -83,7 +83,42 @@ def hide_shared_controls(app):
             widget.grid_remove()
         elif widget.winfo_manager() == 'pack':
             widget.pack_forget()
+    normalize_embedded_layout(app)
     return all(not widget.winfo_manager() for widget in widgets)
+
+
+def normalize_embedded_layout(app):
+    """Let the host own page margins while upstream keeps its card spacing."""
+    main = getattr(app, 'main', None) or getattr(app, 'main_frame', None)
+    if main is None or not hasattr(app, 'px'):
+        return
+    scrollbar = next((widget for name in ('page_scroll', 'window_scroll', 'page_scrollbar')
+                      if (widget := getattr(app, name, None)) is not None), None)
+    gutter = scrollbar.winfo_reqwidth() if scrollbar is not None and scrollbar.winfo_manager() else 0
+    margin = app.px(20)
+    padding = (margin, 0, max(0, margin-gutter), 0)
+    current = tuple(str(value) for value in main.cget('padding'))
+    if current != tuple(map(str, padding)):
+        main.configure(padding=padding)
+
+
+def embedded_layout(app):
+    main = getattr(app, 'main', None) or getattr(app, 'main_frame', None)
+    root = getattr(app, 'root', None)
+    if main is None or root is None:
+        return {}
+    cards = sorted((widget for widget in main.winfo_children()
+                    if widget.winfo_manager() == 'grid' and 'style' in widget.keys()
+                    and str(widget.cget('style')) == 'Card.TFrame'),
+                   key=lambda widget: int(widget.grid_info()['row']))
+    if len(cards) < 2 or cards[0].winfo_width() <= 1:
+        return {}
+    first, second = cards[:2]
+    return dict(first_card={
+        'left': first.winfo_rootx()-root.winfo_rootx(),
+        'right': first.winfo_rootx()-root.winfo_rootx()+first.winfo_width(),
+        'top': first.winfo_rooty()-root.winfo_rooty(),
+    }, card_gap=second.winfo_rooty()-first.winfo_rooty()-first.winfo_height())
 
 
 def chrome_widgets(app):
@@ -419,6 +454,7 @@ class EmbeddedSession:
                     shortcuts_enabled=shortcuts_enabled(self.app, self.spec.id, shared_capture=self.capture_active),
                     capture_active=self.capture_active,
                     window_defaults=getattr(self.app, '_holodori_window_defaults', {}),
+                    layout=embedded_layout(self.app),
                     **shortcut_values(self.app), **intro_status(self.app))
 
     def publish(self, state, **extra):
