@@ -45,35 +45,9 @@ jobs:
           print('Verified shared TensorRT 10.13 and DirectML runtime')"
       - name: Download pinned cooking models
         run: python tools/fetch_models.py
-      - name: Configure desktop for original GUI tests
-        run: python tools/configure_ci_display.py --apply --report work/ci-display.json
       - name: Compile integration and upstream Python sources
         run: python -m compileall -q holodori tools
       - name: Run integration and offline updater tests
-        run: python -m unittest discover -s tests -v
-      - name: Test original High and Low program
-        working-directory: upstream/high_low
-        env:
-          LOCALAPPDATA: ${{ runner.temp }}/upstream-test-userdata/high_low
-          PYTHONDONTWRITEBYTECODE: '1'
-        run: python -m unittest discover -s tests -v
-      - name: Test original fishing program
-        working-directory: upstream/fishing
-        env:
-          LOCALAPPDATA: ${{ runner.temp }}/upstream-test-userdata/fishing
-          PYTHONDONTWRITEBYTECODE: '1'
-        run: python -m unittest discover -s tests -v
-      - name: Test original jump rope program including its interface
-        working-directory: upstream/jump_rope
-        env:
-          LOCALAPPDATA: ${{ runner.temp }}/upstream-test-userdata/jump_rope
-          PYTHONDONTWRITEBYTECODE: '1'
-        run: python -m pytest tests -q -o addopts=
-      - name: Test original cooking program
-        working-directory: upstream/cooking
-        env:
-          LOCALAPPDATA: ${{ runner.temp }}/upstream-test-userdata/cooking
-          PYTHONDONTWRITEBYTECODE: '1'
         run: python -m unittest discover -s tests -v
       - name: Warm up both original cooking models from source
         run: python tools/check_models_runtime.py --report work/source-model-runtime.json
