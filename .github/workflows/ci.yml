@@ -45,6 +45,8 @@ jobs:
           print('Verified shared TensorRT 10.13 and DirectML runtime')"
       - name: Download pinned cooking models
         run: python tools/fetch_models.py
+      - name: Configure desktop for original GUI tests
+        run: python tools/configure_ci_display.py --apply --report work/ci-display.json
       - name: Compile integration and upstream Python sources
         run: python -m compileall -q holodori tools
       - name: Run integration and offline updater tests
