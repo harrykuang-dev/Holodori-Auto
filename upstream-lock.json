@@ -5,8 +5,8 @@
       "path": "upstream/high_low",
       "repository": "https://github.com/harrykuang-dev/Hololive-Dreams-High-low-Auto-Personal.git",
       "branch": "main",
-      "commit": "2fdecfef0400e26ef90f97c220f631fe2a952e70",
-      "version": "1.1.1"
+      "commit": "b404cb8fb52207799917f11dcabdfe51aa0645a5",
+      "version": "1.1.2"
     },
     "fishing": {
       "path": "upstream/fishing",
@@ -26,8 +26,8 @@
       "path": "upstream/cooking",
       "repository": "https://github.com/harrykuang-dev/Hololive-Dreams-Collect-Cooking-Auto.git",
       "branch": "main",
-      "commit": "448ed7bbb1fbcc5f894d200bcb0ccd8e401ec4cb",
-      "version": "1.1.0"
+      "commit": "4dd76135b7f3447c205779a318428be3911df565",
+      "version": "1.1.1"
     }
   }
 }

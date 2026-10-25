@@ -160,7 +160,11 @@ def exercise(*, executable: Path | None, timeout: float, screenshot: Path | None
                     first_left = app.body.winfo_x()+card['left']
                     first_right = app.body.winfo_x()+card['right']
                     gap = app.body.winfo_y()+card['top']-app.shared_card.winfo_y()-app.shared_card.winfo_height()
-                    return abs(first_left-shared_left) <= 1 and abs(first_right-shared_right) <= 1 and gap == layout['card_gap']
+                    actions = layout.get('action_buttons', {})
+                    matching_actions = len(actions) == 2 and all(
+                        button['height'] == app.px(40) for button in actions.values())
+                    return (abs(first_left-shared_left) <= 1 and abs(first_right-shared_right) <= 1
+                            and gap == layout['card_gap'] and matching_actions)
                 pump_until(aligned, module+' aligned margins and matching card gaps')
                 return dict(app.last_status['layout'])
 
@@ -242,13 +246,18 @@ def exercise(*, executable: Path | None, timeout: float, screenshot: Path | None
                 for index, module in enumerate(FIELDS):
                     if index:
                         previous = app.process
+                        retained_size = [root.winfo_width(), root.winfo_height()]
                         app.select(module)
                         ready(module)
                         assert previous.poll() == 0, f"Previous child did not close cleanly: {previous.poll()}"
                     assert_shared(module)
                     root.update_idletasks()
                     expected_size = app.last_status['window_defaults']['size']
-                    assert [root.winfo_width(), root.winfo_height()] == expected_size, (module, root.geometry(), expected_size)
+                    actual_size = [root.winfo_width(), root.winfo_height()]
+                    if index:
+                        assert actual_size == retained_size, (module, 'Switch reset the resized window', actual_size, retained_size)
+                    else:
+                        assert actual_size == expected_size, (module, root.geometry(), expected_size)
                     default_layout = assert_layout(module)
                     if screenshot:
                         from PIL import ImageGrab
@@ -281,7 +290,9 @@ def exercise(*, executable: Path | None, timeout: float, screenshot: Path | None
                     pump_until(lambda: app.last_status.get("request") == number
                                and app.last_status.get("dialog_checked"), module + " original dialog")
                     assert app.process.poll() is None
-                    root.geometry(f"{max(app.px(420), root.minsize()[0])}x{max(app.px(760), root.minsize()[1])}")
+                    # Alternate sizes so every replacement must use the current
+                    # host geometry rather than a module default or stale size.
+                    root.geometry(f"{max(app.px(420+index*30), root.minsize()[0])}x{max(app.px(760+index*20), root.minsize()[1])}")
                     request("snapshot")
                     root.iconify()
                     root.update()
@@ -298,12 +309,15 @@ def exercise(*, executable: Path | None, timeout: float, screenshot: Path | None
                         "shared_preferences_applied": True, "shared_controls_hidden": True,
                         "window_title": "Holodori-Auto", "languages_checked": len(LANGUAGES),
                         "default_window_size": expected_size,
+                        "window_size_on_entry": actual_size,
+                        "retained_window_size": [root.winfo_width(), root.winfo_height()],
                         "default_layout": default_layout, "resized_layout": resized_layout,
                     })
 
                 # Revisiting each page verifies the actual process replacement and restore contract.
                 for module, fields in FIELDS.items():
                     previous = app.process
+                    retained_size = [root.winfo_width(), root.winfo_height()]
                     app.select(module)
                     ready(module)
                     if app.process is not previous:
@@ -311,9 +325,31 @@ def exercise(*, executable: Path | None, timeout: float, screenshot: Path | None
                     request("snapshot")
                     assert_shared(module)
                     assert_layout(module)
+                    assert [root.winfo_width(), root.winfo_height()] == retained_size, (module, 'Revisit reset the window')
                     for key, expected in fields.items():
                         actual = app.last_status["snapshot"].get(key)
                         assert actual == expected, f"Restored {module}.{key}: {actual!r} != {expected!r}"
+
+                report['window_size_preserved_across_switches'] = True
+
+                # Maximizing is also a user size choice. Child replacement
+                # must preserve both the state and the restored normal size.
+                restored_size = [root.winfo_width(), root.winfo_height()]
+                root.state('zoomed')
+                pump_until(lambda: root.state() == 'zoomed', 'maximize host')
+                request('snapshot')
+                maximized_size = [root.winfo_width(), root.winfo_height()]
+                for module in FIELDS:
+                    app.select(module)
+                    ready(module)
+                    assert_layout(module)
+                    assert root.state() == 'zoomed', (module, 'Switch restored a maximized window')
+                    assert [root.winfo_width(), root.winfo_height()] == maximized_size
+                root.state('normal')
+                pump_until(lambda: root.state() == 'normal' and
+                           [root.winfo_width(), root.winfo_height()] == restored_size,
+                           'restore resized host')
+                report['maximized_state_preserved_across_switches'] = True
 
                 # Leave the first feature visible in optional review screenshots.
                 app.select("high_low")

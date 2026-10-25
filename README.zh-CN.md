@@ -11,11 +11,11 @@
 | 跳绳 | [Hololive-Dreams-Jump-Rope-Auto](https://github.com/harrykuang-dev/Hololive-Dreams-Jump-Rope-Auto) |
 | 料理 | [Hololive-Dreams-Collect-Cooking-Auto](https://github.com/harrykuang-dev/Hololive-Dreams-Collect-Cooking-Auto) |
 
-**1.1.0** 包含猜高低 **1.1.1**、钓鱼 **1.1.2**、跳绳 **1.3.0** 与料理 **1.1.0**。点击左下角版本号可查看各独立程序的版本与仓库链接。各模式沿用独立版的默认窗口大小，并按屏幕 DPI 缩放。
+**1.1.1** 包含猜高低 **1.1.2**、钓鱼 **1.1.2**、跳绳 **1.3.0** 与料理 **1.1.1**。点击左下角版本号可查看各独立程序的版本与仓库链接。首次打开时沿用所选独立版的默认窗口大小，并按屏幕 DPI 缩放。手动调整或最大化后，切换模式会保留当前窗口大小与状态。
 
 ## 下载
 
-从 [Releases](https://github.com/harrykuang-dev/Holodori-Auto/releases/latest) 下载 `Holodori-Auto-v1.1.0-windows.7z`，使用 7-Zip 解压后运行 `Holodori-Auto.exe`。请保留完整文件夹，无需另外安装 Python 或 CUDA Toolkit。
+从 [Releases](https://github.com/harrykuang-dev/Holodori-Auto/releases/latest) 下载 `Holodori-Auto-v1.1.1-windows.7z`，使用 7-Zip 解压后运行 `Holodori-Auto.exe`。请保留完整文件夹，无需另外安装 Python 或 CUDA Toolkit。
 
 跳绳与料理共用同一套 TensorRT 10.13、CUDA 运行库与 DirectML。兼容的 NVIDIA GPU 自动使用 TensorRT，其他受支持的 GPU 使用 DirectML。跳绳需要兼容 GPU；料理也可回退到 CPU。各功能保留独立模型与设备引擎缓存。首次使用 TensorRT 时需要建立缓存，加载时间较长。
 
@@ -23,7 +23,7 @@
 
 1. 打开游戏并进入要使用的小游戏。
 2. 启动 Holodori-Auto，在导航栏选择对应功能。
-3. 设置共用语言与开始／停止快捷键，再操作所选功能。料理需要先点击**加载模型**，再点击**开始**。
+3. 设置共用语言与开始／停止快捷键，再操作所选功能。料理点击**开始**后会自动加载所选模型并预热，完成后开始；加载期间可点击**停止**取消。
 4. 切换功能前先停止运行。切换时会等待当前功能完成关闭，再在同一个窗口打开所选功能。
 
 同一时间只运行所选功能。共用语言选择框及快捷键设置会应用到当前功能，切换功能后也会沿用；各页面中重复的设置行会隐藏。录入新快捷键期间，当前功能的快捷键监听会暂停，完成后恢复。
@@ -49,7 +49,7 @@ python main.py
 
 依赖包含共用的 TensorRT 10.13 与 DirectML 运行环境，不再需要 PyTorch。
 
-模型安装命令会下载料理对应版本附带的 `models.zip`，核对锁定版本的文件大小与 SHA-256，再逐一验证模型后安装。只安装缺少的模型并保留已有文件；若已有模型内容不同，请先将该文件移至备份位置后重试。料理界面仍需手动加载模型。
+模型安装命令会下载料理对应版本附带的 `models.zip`，核对锁定版本的文件大小与 SHA-256，再逐一验证模型后安装。只安装缺少的模型并保留已有文件；若已有模型内容不同，请先将该文件移至备份位置后重试。料理点击开始后会自动加载所选模型。
 
 已下载料理 Release 模型压缩包时，可运行 `python tools/fetch_models.py --archive C:\path\models.zip`。只需离线核对已安装模型时，运行 `python tools/fetch_models.py --check`。
 
@@ -81,4 +81,4 @@ GitHub Actions 每日及手动运行时检查上游更新，创建更新 Pull Re
 
 ## 声明与许可
 
-跳绳 1.3.0 与 YOLO 衍生权重采用 **AGPL-3.0-only**，钓鱼采用 **MIT**。猜高低与料理引用组件的现有 MIT 声明继续保留；NVIDIA 运行库、其他依赖及游戏美术维持各自条款。详见[许可与对应源代码](LICENSES.md)。Release 提供包含四个锁定子模块源代码的 `Holodori-Auto-v1.1.0-source.zip`；GitHub 自动生成的源代码压缩包不含子模块。
+跳绳 1.3.0 与 YOLO 衍生权重采用 **AGPL-3.0-only**，钓鱼采用 **MIT**。猜高低与料理引用组件的现有 MIT 声明继续保留；NVIDIA 运行库、其他依赖及游戏美术维持各自条款。详见[许可与对应源代码](LICENSES.md)。Release 提供包含四个锁定子模块源代码的 `Holodori-Auto-v1.1.1-source.zip`；GitHub 自动生成的源代码压缩包不含子模块。

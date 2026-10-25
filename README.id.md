@@ -11,11 +11,11 @@ Program Windows yang menggabungkan **High & Low**, **Memancing**, **Lompat Tali*
 | Lompat Tali | [Hololive-Dreams-Jump-Rope-Auto](https://github.com/harrykuang-dev/Hololive-Dreams-Jump-Rope-Auto) |
 | Memasak | [Hololive-Dreams-Collect-Cooking-Auto](https://github.com/harrykuang-dev/Hololive-Dreams-Collect-Cooking-Auto) |
 
-**1.1.0** mencakup High & Low **1.1.1**, Memancing **1.1.2**, Lompat Tali **1.3.0**, dan Memasak **1.1.0**. Klik versi di sudut kiri bawah untuk melihat versi dan tautan repositori setiap program. Setiap fitur memakai ukuran jendela bawaan program mandirinya, disesuaikan dengan DPI layar.
+**1.1.1** mencakup High & Low **1.1.2**, Memancing **1.1.2**, Lompat Tali **1.3.0**, dan Memasak **1.1.1**. Klik versi di sudut kiri bawah untuk melihat versi dan tautan repositori setiap program. Saat pertama dibuka, jendela memakai ukuran bawaan program mandiri yang dipilih, disesuaikan dengan DPI layar. Setelah ukuran diubah atau jendela dimaksimalkan, pergantian mode mempertahankan ukuran dan keadaan jendela saat ini.
 
 ## Unduh
 
-Unduh `Holodori-Auto-v1.1.0-windows.7z` dari [Releases](https://github.com/harrykuang-dev/Holodori-Auto/releases/latest), ekstrak dengan 7-Zip, lalu jalankan `Holodori-Auto.exe`. Simpan seluruh isi folder bersama. Python dan CUDA Toolkit tidak perlu dipasang secara terpisah.
+Unduh `Holodori-Auto-v1.1.1-windows.7z` dari [Releases](https://github.com/harrykuang-dev/Holodori-Auto/releases/latest), ekstrak dengan 7-Zip, lalu jalankan `Holodori-Auto.exe`. Simpan seluruh isi folder bersama. Python dan CUDA Toolkit tidak perlu dipasang secara terpisah.
 
 Lompat Tali dan Memasak berbagi TensorRT 10.13, pustaka runtime CUDA, dan DirectML dalam satu paket. GPU NVIDIA yang kompatibel otomatis memakai TensorRT; GPU lain yang didukung memakai DirectML. Lompat Tali memerlukan GPU yang kompatibel; Memasak juga dapat beralih ke CPU. Model dan cache engine khusus perangkat tetap terpisah. Pemuatan pertama TensorRT dapat memerlukan waktu lebih lama untuk membangun cache.
 
@@ -23,7 +23,7 @@ Lompat Tali dan Memasak berbagi TensorRT 10.13, pustaka runtime CUDA, dan Direct
 
 1. Buka game dan masuk ke minigame yang ingin digunakan.
 2. Jalankan Holodori-Auto dan pilih fitur yang sesuai melalui navigasi.
-3. Atur bahasa serta pintasan mulai dan berhenti bersama, lalu gunakan kontrol fitur yang dipilih. Untuk Memasak, pilih **Muat model** sebelum **Mulai**.
+3. Atur bahasa serta pintasan mulai dan berhenti bersama, lalu gunakan kontrol fitur yang dipilih. Pada Memasak, **Mulai** otomatis memuat dan melakukan pemanasan model yang dipilih sebelum mulai; **Berhenti** membatalkan pemuatan.
 4. Hentikan proses sebelum berpindah fitur. Program menunggu fitur saat ini selesai ditutup, lalu membuka fitur pilihan dalam jendela yang sama.
 
 Hanya fitur yang dipilih yang berjalan. Pilihan bahasa dan pintasan bersama berlaku untuk fitur aktif dan tetap digunakan saat berpindah fitur. Baris pengaturan yang berulang pada setiap halaman disembunyikan. Saat memasukkan pintasan baru, pemantauan pintasan fitur aktif dijeda hingga pengisian selesai.
@@ -49,7 +49,7 @@ python main.py
 
 Dependensi mencakup runtime TensorRT 10.13 dan DirectML bersama; PyTorch tidak lagi diperlukan.
 
-Perintah pemasangan model mengunduh `models.zip` dari rilis Memasak yang sesuai, memeriksa ukuran berkas dan SHA-256 yang telah ditetapkan, lalu memverifikasi setiap model sebelum pemasangan. Hanya model yang belum ada yang dipasang; berkas yang sudah ada dipertahankan. Jika isi model yang sudah ada berbeda, pindahkan berkas tersebut ke lokasi cadangan sebelum mencoba lagi. Model tetap harus dimuat secara manual melalui antarmuka Memasak.
+Perintah pemasangan model mengunduh `models.zip` dari rilis Memasak yang sesuai, memeriksa ukuran berkas dan SHA-256 yang telah ditetapkan, lalu memverifikasi setiap model sebelum pemasangan. Hanya model yang belum ada yang dipasang; berkas yang sudah ada dipertahankan. Jika isi model yang sudah ada berbeda, pindahkan berkas tersebut ke lokasi cadangan sebelum mencoba lagi. Memasak otomatis memuat model yang dipilih saat Mulai ditekan.
 
 Untuk memakai arsip yang sudah diunduh dari rilis Memasak, jalankan `python tools/fetch_models.py --archive C:\path\models.zip`. Untuk memverifikasi model yang terpasang tanpa koneksi jaringan, jalankan `python tools/fetch_models.py --check`.
 
@@ -81,4 +81,4 @@ GitHub Actions memeriksa pembaruan repositori asal setiap hari dan saat dijalank
 
 ## Hak dan lisensi
 
-Lompat Tali 1.3.0 dan bobot turunan YOLO memakai **AGPL-3.0-only**; Memancing memakai **MIT**. Pemberitahuan MIT yang ada untuk komponen yang dirujuk High & Low dan Memasak tetap disertakan. Runtime NVIDIA, dependensi lain, dan gambar game mempertahankan ketentuannya masing-masing. Lihat [lisensi dan kode sumber terkait](LICENSES.md). Release menyediakan `Holodori-Auto-v1.1.0-source.zip` dengan sumber keempat submodul pada commit yang ditetapkan; arsip sumber otomatis GitHub tidak menyertakan submodul.
+Lompat Tali 1.3.0 dan bobot turunan YOLO memakai **AGPL-3.0-only**; Memancing memakai **MIT**. Pemberitahuan MIT yang ada untuk komponen yang dirujuk High & Low dan Memasak tetap disertakan. Runtime NVIDIA, dependensi lain, dan gambar game mempertahankan ketentuannya masing-masing. Lihat [lisensi dan kode sumber terkait](LICENSES.md). Release menyediakan `Holodori-Auto-v1.1.1-source.zip` dengan sumber keempat submodul pada commit yang ditetapkan; arsip sumber otomatis GitHub tidak menyertakan submodul.

@@ -170,6 +170,22 @@ class LifecycleTests(unittest.TestCase):
         self.assertIsNone(self.app.job)
         self.assertTrue(stream.closed)
 
+    def test_switch_preserves_host_geometry_and_minimum(self):
+        self.app.apply_window_defaults({'window_defaults': {
+            'size': [517, 1055], 'minimum': [400, 740]}})
+        self.app.root.geometry.assert_called_once_with('517x1055')
+        self.app.root.minsize.assert_called_once_with(400, 740)
+        self.app.root.reset_mock()
+        with mock.patch('holodori.app.tk.Frame'), mock.patch(
+            'holodori.app.subprocess.Popen', return_value=FakeProcess()
+        ), mock.patch('holodori.app.subprocess.CREATE_NO_WINDOW', 0, create=True):
+            self.app.launch('fishing')
+        self.app.apply_window_defaults({'window_defaults': {
+            'size': [600, 1000], 'minimum': [500, 800]}})
+        self.app.root.geometry.assert_not_called()
+        self.app.root.minsize.assert_not_called()
+        self.app.stream.close()
+
     def test_popen_error_closes_stream_and_job_without_losing_retry(self):
         with mock.patch("holodori.app.tk.Frame") as frame, mock.patch(
             "holodori.app.subprocess.Popen", side_effect=OSError("missing executable")

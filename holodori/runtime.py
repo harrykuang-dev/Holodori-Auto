@@ -100,6 +100,20 @@ def normalize_embedded_layout(app):
     current = tuple(str(value) for value in main.cget('padding'))
     if current != tuple(map(str, padding)):
         main.configure(padding=padding)
+    # Fishing compresses vertical padding based on the embedded client height.
+    # Reserve the same action row in every mode, independently of that spacing.
+    start, stop = (getattr(app, name, None) for name in ('start_button', 'stop_button'))
+    if start is not None and stop is not None and start.master is stop.master:
+        controls = start.master
+        height = app.px(40)
+        if int(controls.cget('height')) != height:
+            controls.configure(height=height)
+        if controls.grid_propagate():
+            controls.grid_propagate(False)
+        controls.rowconfigure(0, weight=1)
+        for button in (start, stop):
+            if set(button.grid_info()['sticky']) != set('nsew'):
+                button.grid_configure(sticky='nsew')
 
 
 def embedded_layout(app):
@@ -118,7 +132,12 @@ def embedded_layout(app):
         'left': first.winfo_rootx()-root.winfo_rootx(),
         'right': first.winfo_rootx()-root.winfo_rootx()+first.winfo_width(),
         'top': first.winfo_rooty()-root.winfo_rooty(),
-    }, card_gap=second.winfo_rooty()-first.winfo_rooty()-first.winfo_height())
+    }, card_gap=second.winfo_rooty()-first.winfo_rooty()-first.winfo_height(),
+       action_buttons={name: {'height': widget.winfo_height(),
+                              'requested_height': widget.winfo_reqheight(),
+                              'width': widget.winfo_width()}
+                       for name in ('start_button', 'stop_button')
+                       if (widget := getattr(app, name, None)) is not None})
 
 
 def chrome_widgets(app):

@@ -269,6 +269,8 @@ class HolodoriApp:
             self.version_dialog = None
 
     def apply_window_defaults(self, status):
+        # Initialize the host once; replacing a child must not overwrite the
+        # user's current geometry or maximized state.
         defaults = status.get('window_defaults', {})
         if getattr(self, '_size_applied', False) or not defaults.get('size'):
             return
@@ -423,7 +425,6 @@ class HolodoriApp:
         if self.process is not None or self.job is not None or self._session_draining:
             raise RuntimeError('The previous module session has not finished closing.')
         self.active = module_id
-        self._size_applied = False
         self.ready = False
         self.pending = None
         self.waiting_switch = False
