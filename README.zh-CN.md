@@ -11,11 +11,13 @@
 | 跳绳 | [Hololive-Dreams-Jump-Rope-Auto](https://github.com/harrykuang-dev/Hololive-Dreams-Jump-Rope-Auto) |
 | 料理 | [Hololive-Dreams-Collect-Cooking-Auto](https://github.com/harrykuang-dev/Hololive-Dreams-Collect-Cooking-Auto) |
 
+**1.1.0** 包含猜高低 **1.1.1**、钓鱼 **1.1.2**、跳绳 **1.3.0** 与料理 **1.1.0**。点击左下角版本号可查看各独立程序的版本与仓库链接。各模式沿用独立版的默认窗口大小，并按屏幕 DPI 缩放。
+
 ## 下载
 
-从 [v1.0.0](https://github.com/harrykuang-dev/Holodori-Auto/releases/tag/v1.0.0) 下载 `Holodori-Auto-v1.0.0-windows.7z.001`、`.002`、`.003` 三个分卷，放在同一个文件夹。使用 7-Zip 只解压 `.7z.001`，程序会自动读取其余分卷，还原完整的 `Holodori-Auto` 文件夹，再运行其中的 `Holodori-Auto.exe`。请保留完整文件夹，无需另外安装 Python 或 CUDA Toolkit。
+从 [Releases](https://github.com/harrykuang-dev/Holodori-Auto/releases/latest) 下载 `Holodori-Auto-v1.1.0-windows.7z`，使用 7-Zip 解压后运行 `Holodori-Auto.exe`。请保留完整文件夹，无需另外安装 Python 或 CUDA Toolkit。
 
-CUDA 并非必要条件。料理会自动使用可用的 NVIDIA CUDA GPU，否则使用 CPU，配备 AMD 显卡的电脑也会使用 CPU。目前不支持 AMD GPU 模型加速；CPU 料理识别速度取决于处理器性能。High & Low、钓鱼及跳绳不需要 CUDA。
+跳绳与料理共用同一套 TensorRT 10.13、CUDA 运行库与 DirectML。兼容的 NVIDIA GPU 自动使用 TensorRT，其他受支持的 GPU 使用 DirectML。跳绳需要兼容 GPU；料理也可回退到 CPU。各功能保留独立模型与设备引擎缓存。首次使用 TensorRT 时需要建立缓存，加载时间较长。
 
 ## 使用方式
 
@@ -40,11 +42,12 @@ cd Holodori-Auto
 py -3.13 -m venv .venv
 .\.venv\Scripts\Activate.ps1
 python -m pip install -r requirements.txt -r requirements-build.txt
+python -m pip install --force-reinstall --no-deps onnxruntime-directml==1.24.4
 python tools/fetch_models.py
 python main.py
 ```
 
-依赖包含 CUDA 12.8 运行环境；料理会自动使用可用的 NVIDIA GPU，否则使用 CPU，沿用原有的运行方式。
+依赖包含共用的 TensorRT 10.13 与 DirectML 运行环境，不再需要 PyTorch。
 
 模型安装命令会下载料理对应版本附带的 `models.zip`，核对锁定版本的文件大小与 SHA-256，再逐一验证模型后安装。只安装缺少的模型并保留已有文件；若已有模型内容不同，请先将该文件移至备份位置后重试。料理界面仍需手动加载模型。
 

@@ -31,7 +31,7 @@ MODULES = (
             'start_shortcut_display', 'stop_key', 'shortcut_display', 'diagnostics')),
     Module('jump_rope', 'main_ui', 'JumpRopeApp', '#FFE36A', 'assets/jump-rope.png',
            ('language', 'target', 'start_key', 'start_shortcut_display', 'stop_key',
-            'shortcut_display', 'diagnostics', 'timing')),
+            'shortcut_display', 'diagnostics', 'timing', 'score_mode', 'score_amount')),
     Module('cooking', 'gui', 'CookingApp', '#F15B60', 'assets/cooking-icon.png',
            ('language', 'model', 'games', 'developer_mode', 'start_key', 'stop_key',
             'start_display', 'stop_display')),

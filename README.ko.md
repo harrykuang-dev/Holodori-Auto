@@ -11,11 +11,13 @@
 | 줄넘기 | [Hololive-Dreams-Jump-Rope-Auto](https://github.com/harrykuang-dev/Hololive-Dreams-Jump-Rope-Auto) |
 | 요리 | [Hololive-Dreams-Collect-Cooking-Auto](https://github.com/harrykuang-dev/Hololive-Dreams-Collect-Cooking-Auto) |
 
+**1.1.0**에는 하이&로 **1.1.1**, 낚시 **1.1.2**, 줄넘기 **1.3.0**, 요리 **1.1.0**이 포함됩니다. 왼쪽 아래 버전을 클릭하면 각 프로그램의 버전과 저장소 링크를 볼 수 있습니다. 각 기능은 단독 프로그램의 기본 창 크기를 사용하며 화면 DPI에 따라 조정됩니다.
+
 ## 다운로드
 
-[v1.0.0](https://github.com/harrykuang-dev/Holodori-Auto/releases/tag/v1.0.0)에서 `Holodori-Auto-v1.0.0-windows.7z.001`, `.002`, `.003` 파일 3개를 모두 다운로드하여 같은 폴더에 두세요. 7-Zip으로 `.7z.001`만 압축 해제하면 나머지 분할 파일도 자동으로 읽어 완전한 `Holodori-Auto` 폴더를 복원합니다. 그 안의 `Holodori-Auto.exe`를 실행하고 전체 폴더를 함께 보관하세요. Python이나 CUDA Toolkit을 별도로 설치할 필요는 없습니다.
+[Releases](https://github.com/harrykuang-dev/Holodori-Auto/releases/latest)에서 `Holodori-Auto-v1.1.0-windows.7z`를 다운로드하고 7-Zip으로 압축을 푼 뒤 `Holodori-Auto.exe`를 실행하세요. 전체 폴더를 함께 보관하세요. Python이나 CUDA Toolkit을 별도로 설치할 필요는 없습니다.
 
-CUDA는 필수가 아닙니다. 요리는 사용 가능한 NVIDIA CUDA GPU를 자동으로 사용하고, 그 외에는 AMD 그래픽 탑재 컴퓨터를 포함하여 CPU로 실행됩니다. AMD GPU를 통한 모델 가속은 지원하지 않으며, CPU에서의 요리 인식 속도는 프로세서 성능에 따라 달라집니다. High & Low, 낚시, 줄넘기는 CUDA가 필요하지 않습니다.
+줄넘기와 요리는 한 패키지의 TensorRT 10.13, CUDA 런타임, DirectML을 공유합니다. 호환 NVIDIA GPU는 TensorRT를, 그 외 지원 GPU는 DirectML을 사용합니다. 줄넘기는 호환 GPU가 필요하며 요리는 CPU로도 전환할 수 있습니다. 모델과 장치별 엔진 캐시는 기능마다 별도로 유지됩니다. TensorRT를 처음 불러올 때는 캐시를 생성하므로 시간이 더 걸릴 수 있습니다.
 
 ## 사용 방법
 
@@ -40,11 +42,12 @@ cd Holodori-Auto
 py -3.13 -m venv .venv
 .\.venv\Scripts\Activate.ps1
 python -m pip install -r requirements.txt -r requirements-build.txt
+python -m pip install --force-reinstall --no-deps onnxruntime-directml==1.24.4
 python tools/fetch_models.py
 python main.py
 ```
 
-의존성에는 CUDA 12.8 런타임이 포함됩니다. 요리는 기존 동작에 따라 사용 가능한 NVIDIA GPU를 자동으로 사용하며, 사용할 수 없으면 CPU를 사용합니다.
+의존성에는 공통 TensorRT 10.13 및 DirectML 런타임이 포함됩니다. PyTorch는 더 이상 필요하지 않습니다.
 
 모델 설치 명령은 요리의 해당 릴리스에서 `models.zip`을 다운로드하고, 고정된 파일 크기와 SHA-256을 대조합니다. 각 모델도 검증한 후 누락된 모델만 설치합니다. 기존 파일은 유지합니다. 기존 모델의 내용이 다르면 해당 파일을 백업 위치로 이동한 후 다시 실행하세요. 요리 화면에서 모델을 불러오는 조작은 별도로 필요합니다.
 

@@ -57,9 +57,11 @@ def _safe_name(name: object) -> str:
         or path.as_posix() != name
         or any(part in {".", ".."} or part.endswith((".", " ")) for part in path.parts)
         or len(path.parts) < 3
-        or path.parts[0] != "outputs"
-        or path.parts[1] not in {"kitchen-bot", "kitchen-labeler"}
-        or path.suffix != ".pt"
+        or not (
+            path.parts[:2] == ('models', 'inference') and path.suffix in {'.onnx', '.json'}
+            or path.parts[0] == 'outputs' and path.parts[1] in {'kitchen-bot', 'kitchen-labeler'}
+            and path.suffix == '.pt'
+        )
     ):
         raise ModelError(f"Unsafe model path: {name!r}")
     reserved = {"CON", "PRN", "AUX", "NUL"}

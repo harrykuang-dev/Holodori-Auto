@@ -229,6 +229,30 @@ def preserve_host_title(root):
     root.title = root.wm_title = embedded_title
 
 
+def capture_window_size(root):
+    """Record upstream defaults without resizing the native embedded container."""
+    result = {}
+    geometry, minsize = root.geometry, root.minsize
+
+    def embedded_geometry(value=None):
+        if value is None:
+            return geometry()
+        match = re.match(r'^(\d+)x(\d+)', value)
+        if match:
+            result['size'] = [int(item) for item in match.groups()]
+        return ''
+
+    def embedded_minsize(width=None, height=None):
+        if width is None:
+            return tuple(result.get('minimum', minsize()))
+        result['minimum'] = [int(width), int(height)]
+        return ''
+
+    root.geometry = root.wm_geometry = embedded_geometry
+    root.minsize = root.wm_minsize = embedded_minsize
+    return result
+
+
 def activate_source(module_id):
     module = BY_ID[module_id]
     if not (module.path / (module.entry + '.py')).is_file():
@@ -240,7 +264,46 @@ def activate_source(module_id):
 
 def cooking_worker():
     module = activate_source('cooking')
+    # The standalone frozen layout puts models at _MEIPASS/models. Integration
+    # keeps them with the unchanged cooking source and shares the import root.
+    sys.path.insert(0, str(module.path / 'outputs' / 'kitchen-bot'))
+    backend = importlib.import_module('inference_backend')
+    backend.MODEL_DIRECTORY = module.path / 'models' / 'inference'
     runpy.run_path(str(module.path / 'gui.py'), run_name='__main__')
+
+
+def check_jump_model():
+    """Exercise the original detector with synthetic pixels and no game adapter."""
+    import json
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--check-jump-model-only', action='store_true')
+    parser.add_argument('--backend', choices=('auto', 'gpu', 'directml'), default='auto')
+    parser.add_argument('--report', type=Path, required=True)
+    args = parser.parse_args()
+    args.report = args.report.resolve()
+    spec = activate_source('jump_rope')
+    import numpy as np
+    from detector import FullFrameDetector
+    detector = None
+    try:
+        detector = FullFrameDetector(backend=args.backend)
+        observation = detector.observe(np.zeros((720,1280,3), dtype=np.uint8))
+        result = dict(passed=True, backend=detector.backend, fallback_reason=detector.fallback_reason,
+                      detections=len(observation.detections), game_inputs_sent=0,
+                      capture='synthetic arrays only', torch_imported='torch' in sys.modules,
+                      model_directory=str(spec.path/'models'))
+        if 'tensorrt' in sys.modules:
+            import tensorrt
+            result.update(tensorrt=tensorrt.__version__, tensorrt_module=tensorrt.__file__)
+    except Exception:
+        result = dict(passed=False, error=traceback.format_exc(), game_inputs_sent=0)
+    finally:
+        if detector is not None and hasattr(detector.runtime, 'close'):
+            detector.runtime.close()
+    args.report.parent.mkdir(parents=True, exist_ok=True)
+    args.report.write_text(json.dumps(result, indent=2), encoding='utf-8')
+    if not result['passed']:
+        raise SystemExit(1)
 
 
 def defer_hotkey_start(upstream):
@@ -354,14 +417,16 @@ class EmbeddedSession:
                     shared_controls_hidden=hidden,
                     embedded_chrome_hidden=all(not widget.winfo_manager() for widget in chrome_widgets(self.app)),
                     shortcuts_enabled=shortcuts_enabled(self.app, self.spec.id, shared_capture=self.capture_active),
-                    capture_active=self.capture_active, **shortcut_values(self.app), **intro_status(self.app))
+                    capture_active=self.capture_active,
+                    window_defaults=getattr(self.app, '_holodori_window_defaults', {}),
+                    **shortcut_values(self.app), **intro_status(self.app))
 
     def publish(self, state, **extra):
         self.last_state = state
         self.status_extra.update(extra)
         language = self.language_status()
         active = busy(self.app, self.spec.id)
-        self.permission_signature = (active, *language.values())
+        self.permission_signature = repr((active, language))
         write_json(self.channel / 'status.json', dict(
             state=state, request=self.request, module=self.spec.id,
             busy=active, snapshot=snapshot(self.app, self.spec),
@@ -378,7 +443,7 @@ class EmbeddedSession:
 
     def publish_permission_change(self):
         language = self.language_status()
-        signature = (busy(self.app, self.spec.id), *language.values())
+        signature = repr((busy(self.app, self.spec.id), language))
         if signature != self.permission_signature:
             self.publish(self.last_state)
 
@@ -496,6 +561,7 @@ def embedded_main():
                 upstream.HololiveBotUI.__init__ = lambda self, root: original(self, root, hotkey_factory=NoHotkey)
         root = tk.Tk(use=args.container)
         preserve_host_title(root)
+        window_defaults = capture_window_size(root)
         start_configured = defer_hotkey_start(upstream) if spec.id == 'fishing' else None
         if spec.id == 'high_low':
             upstream.prepare_user_data(upstream.auto_bot.APP_DIR)
@@ -503,6 +569,7 @@ def embedded_main():
         app = (constructor(root, shortcuts=dict(start_key=args.start_key, stop_key=args.stop_key),
                            persist_shortcuts=False)
                if spec.id == 'fishing' else constructor(root))
+        app._holodori_window_defaults = window_defaults
         saved = read_json(args.channel / 'restore.json', {})
         if saved:
             restore(app, spec, saved)

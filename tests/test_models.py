@@ -13,6 +13,19 @@ from tools import fetch_models
 
 
 class ModelTests(unittest.TestCase):
+    def test_onnx_manifest_archive_installs_models_and_metadata(self):
+        self.contents = {
+            'models/inference/point-classifier.onnx': b'FP32 ONNX graph',
+            'models/inference/point-classifier.json': b'{"kind":"classifier"}',
+        }
+        self.write_archive()
+        self.assertEqual(fetch_models.install_archive(self.archive, self.root), 2)
+        self.assertEqual(fetch_models.check_models(self.root), 2)
+        for name in ('models/inference/../outside.onnx', 'models/elsewhere/graph.onnx',
+                     'models/inference/plugin.py', 'models/inference/CON.json'):
+            with self.subTest(name=name), self.assertRaises(fetch_models.ModelError):
+                fetch_models._safe_name(name)
+
     def setUp(self):
         self.temporary = tempfile.TemporaryDirectory()
         self.addCleanup(self.temporary.cleanup)

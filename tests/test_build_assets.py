@@ -13,6 +13,17 @@ from holodori import runtime
 
 
 class BuildAssetTests(unittest.TestCase):
+    def test_runtime_excludes_training_and_adjacent_gpu_copies(self):
+        for path in ('annotations/images/game.png', 'training/train.py', 'archive/main_ui.py',
+                     'accelerators/tensorrt/tensorrt_libs/nvinfer_10.dll', 'models/rope.pt',
+                     'models/rope.engine', 'outputs/kitchen-bot/segmenter.py'):
+            with self.subTest(path=path):
+                self.assertFalse(build_release.runtime_file(Path(path)))
+        for path in ('models/rope.fp16.onnx', 'models/rope.directml.onnx',
+                     'models/inference/icon-classifier.onnx', 'third_party/AGPL-3.0.txt'):
+            with self.subTest(path=path):
+                self.assertTrue(build_release.runtime_file(Path(path)))
+
     def setUp(self):
         self.temporary = tempfile.TemporaryDirectory(prefix="holodori-build-assets-")
         self.addCleanup(self.temporary.cleanup)

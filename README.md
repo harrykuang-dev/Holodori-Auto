@@ -11,11 +11,13 @@ A Windows program that brings **High & Low**, **Fishing**, **Jump Rope**, and **
 | Jump Rope | [Hololive-Dreams-Jump-Rope-Auto](https://github.com/harrykuang-dev/Hololive-Dreams-Jump-Rope-Auto) |
 | Cooking | [Hololive-Dreams-Collect-Cooking-Auto](https://github.com/harrykuang-dev/Hololive-Dreams-Collect-Cooking-Auto) |
 
+Version **1.1.0** includes High & Low **1.1.1**, Fishing **1.1.2**, Jump Rope **1.3.0** and Cooking **1.1.0**. Click the version in the lower-left corner to see each program’s version and repository link. Each module opens at its standalone program’s default window size, scaled for the display DPI.
+
 ## Download
 
-Download all three volumes, `Holodori-Auto-v1.0.0-windows.7z.001`, `.002`, and `.003`, from [v1.0.0](https://github.com/harrykuang-dev/Holodori-Auto/releases/tag/v1.0.0) and keep them in the same folder. Use 7-Zip to extract only `.7z.001`; it reads the other volumes automatically and restores the complete `Holodori-Auto` folder. Run `Holodori-Auto.exe` inside it and keep the complete folder together. Python and CUDA Toolkit do not need to be installed separately.
+Download `Holodori-Auto-v1.1.0-windows.7z` from [Releases](https://github.com/harrykuang-dev/Holodori-Auto/releases/latest), extract it with 7-Zip and run `Holodori-Auto.exe`. Keep the complete folder together. Python and CUDA Toolkit do not need to be installed separately.
 
-CUDA is optional. Cooking automatically uses an available NVIDIA CUDA GPU and otherwise runs on the CPU, including on computers with AMD graphics. AMD GPU acceleration is not supported; cooking recognition speed on CPU depends on the processor. High & Low, Fishing, and Jump Rope do not require CUDA.
+Jump Rope and Cooking share TensorRT 10.13, CUDA runtime libraries and DirectML in one package. Compatible NVIDIA GPUs use TensorRT automatically; other supported GPUs use DirectML. Jump Rope requires a compatible GPU; Cooking can also fall back to CPU. Models and device-specific engine caches remain separate. The first TensorRT load may take longer while building the engine cache.
 
 ## Usage
 
@@ -40,11 +42,12 @@ cd Holodori-Auto
 py -3.13 -m venv .venv
 .\.venv\Scripts\Activate.ps1
 python -m pip install -r requirements.txt -r requirements-build.txt
+python -m pip install --force-reinstall --no-deps onnxruntime-directml==1.24.4
 python tools/fetch_models.py
 python main.py
 ```
 
-Dependencies include the CUDA 12.8 runtime; cooking uses an available NVIDIA GPU automatically and falls back to CPU, preserving its original behavior.
+Dependencies include the shared TensorRT 10.13 and DirectML runtime; PyTorch is no longer required.
 
 The model command downloads the cooking release's `models.zip` and verifies its pinned size and SHA-256, then verifies every checkpoint before installation. It installs missing models and preserves existing files. If an existing model differs, move it to a backup location before retrying. Model loading remains an explicit action in the cooking interface.
 

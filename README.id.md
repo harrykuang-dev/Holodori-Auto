@@ -11,11 +11,13 @@ Program Windows yang menggabungkan **High & Low**, **Memancing**, **Lompat Tali*
 | Lompat Tali | [Hololive-Dreams-Jump-Rope-Auto](https://github.com/harrykuang-dev/Hololive-Dreams-Jump-Rope-Auto) |
 | Memasak | [Hololive-Dreams-Collect-Cooking-Auto](https://github.com/harrykuang-dev/Hololive-Dreams-Collect-Cooking-Auto) |
 
+**1.1.0** mencakup High & Low **1.1.1**, Memancing **1.1.2**, Lompat Tali **1.3.0**, dan Memasak **1.1.0**. Klik versi di sudut kiri bawah untuk melihat versi dan tautan repositori setiap program. Setiap fitur memakai ukuran jendela bawaan program mandirinya, disesuaikan dengan DPI layar.
+
 ## Unduh
 
-Unduh ketiga volume, `Holodori-Auto-v1.0.0-windows.7z.001`, `.002`, dan `.003`, dari [v1.0.0](https://github.com/harrykuang-dev/Holodori-Auto/releases/tag/v1.0.0) dan simpan dalam folder yang sama. Gunakan 7-Zip untuk mengekstrak hanya `.7z.001`; volume lainnya akan dibaca otomatis untuk memulihkan folder `Holodori-Auto` secara lengkap. Jalankan `Holodori-Auto.exe` di dalamnya dan simpan seluruh isi folder bersama. Python dan CUDA Toolkit tidak perlu dipasang secara terpisah.
+Unduh `Holodori-Auto-v1.1.0-windows.7z` dari [Releases](https://github.com/harrykuang-dev/Holodori-Auto/releases/latest), ekstrak dengan 7-Zip, lalu jalankan `Holodori-Auto.exe`. Simpan seluruh isi folder bersama. Python dan CUDA Toolkit tidak perlu dipasang secara terpisah.
 
-CUDA bersifat opsional. Memasak otomatis menggunakan GPU NVIDIA CUDA yang tersedia, atau menggunakan CPU, termasuk pada komputer dengan grafis AMD. Akselerasi model dengan GPU AMD belum didukung; kecepatan pengenalan memasak di CPU bergantung pada prosesor. High & Low, Memancing, dan Lompat Tali tidak memerlukan CUDA.
+Lompat Tali dan Memasak berbagi TensorRT 10.13, pustaka runtime CUDA, dan DirectML dalam satu paket. GPU NVIDIA yang kompatibel otomatis memakai TensorRT; GPU lain yang didukung memakai DirectML. Lompat Tali memerlukan GPU yang kompatibel; Memasak juga dapat beralih ke CPU. Model dan cache engine khusus perangkat tetap terpisah. Pemuatan pertama TensorRT dapat memerlukan waktu lebih lama untuk membangun cache.
 
 ## Penggunaan
 
@@ -40,11 +42,12 @@ cd Holodori-Auto
 py -3.13 -m venv .venv
 .\.venv\Scripts\Activate.ps1
 python -m pip install -r requirements.txt -r requirements-build.txt
+python -m pip install --force-reinstall --no-deps onnxruntime-directml==1.24.4
 python tools/fetch_models.py
 python main.py
 ```
 
-Dependensi mencakup runtime CUDA 12.8. Fitur Memasak secara otomatis memakai GPU NVIDIA yang tersedia, atau CPU jika GPU tidak tersedia, sesuai perilaku program asal.
+Dependensi mencakup runtime TensorRT 10.13 dan DirectML bersama; PyTorch tidak lagi diperlukan.
 
 Perintah pemasangan model mengunduh `models.zip` dari rilis Memasak yang sesuai, memeriksa ukuran berkas dan SHA-256 yang telah ditetapkan, lalu memverifikasi setiap model sebelum pemasangan. Hanya model yang belum ada yang dipasang; berkas yang sudah ada dipertahankan. Jika isi model yang sudah ada berbeda, pindahkan berkas tersebut ke lokasi cadangan sebelum mencoba lagi. Model tetap harus dimuat secara manual melalui antarmuka Memasak.
 

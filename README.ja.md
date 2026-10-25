@@ -11,11 +11,13 @@
 | 縄跳び | [Hololive-Dreams-Jump-Rope-Auto](https://github.com/harrykuang-dev/Hololive-Dreams-Jump-Rope-Auto) |
 | 料理 | [Hololive-Dreams-Collect-Cooking-Auto](https://github.com/harrykuang-dev/Hololive-Dreams-Collect-Cooking-Auto) |
 
+**1.1.0** にはハイ＆ロー **1.1.1**、釣り **1.1.2**、縄跳び **1.3.0**、料理 **1.1.0** が含まれます。左下のバージョンをクリックすると、各プログラムのバージョンとリポジトリへのリンクを確認できます。各機能は単体版と同じ初期ウィンドウサイズを使用し、画面の DPI に応じて拡大縮小します。
+
 ## ダウンロード
 
-[v1.0.0](https://github.com/harrykuang-dev/Holodori-Auto/releases/tag/v1.0.0) から `Holodori-Auto-v1.0.0-windows.7z.001`、`.002`、`.003` の3ファイルをすべてダウンロードし、同じフォルダーに置いてください。7-Zip で `.7z.001` のみを展開すると、残りの分割ファイルも自動的に読み込まれ、完全な `Holodori-Auto` フォルダーが復元されます。その中の `Holodori-Auto.exe` を実行し、フォルダー全体を保持してください。Python や CUDA Toolkit を別途インストールする必要はありません。
+[Releases](https://github.com/harrykuang-dev/Holodori-Auto/releases/latest) から `Holodori-Auto-v1.1.0-windows.7z` をダウンロードし、7-Zip で展開して `Holodori-Auto.exe` を実行してください。フォルダー全体を保持してください。Python や CUDA Toolkit の別途インストールは不要です。
 
-CUDA は必須ではありません。料理は利用可能な NVIDIA CUDA GPU を自動的に使用し、それ以外は AMD グラフィックス搭載環境を含め CPU で動作します。AMD GPU によるモデルの高速化には対応していません。CPU での料理の認識速度はプロセッサーの性能に依存します。High & Low、釣り、縄跳びには CUDA は不要です。
+縄跳びと料理は、一つのパッケージ内の TensorRT 10.13、CUDA ランタイム、DirectML を共有します。対応する NVIDIA GPU では TensorRT、それ以外の対応 GPU では DirectML を使用します。縄跳びには対応 GPU が必要です。料理は CPU にもフォールバックできます。モデルとデバイス固有のエンジンキャッシュは各機能で独立しています。TensorRT の初回読み込み時はキャッシュを構築するため、時間がかかる場合があります。
 
 ## 使い方
 
@@ -40,11 +42,12 @@ cd Holodori-Auto
 py -3.13 -m venv .venv
 .\.venv\Scripts\Activate.ps1
 python -m pip install -r requirements.txt -r requirements-build.txt
+python -m pip install --force-reinstall --no-deps onnxruntime-directml==1.24.4
 python tools/fetch_models.py
 python main.py
 ```
 
-依存関係には CUDA 12.8 ランタイムが含まれます。料理は元の動作に従い、利用可能な NVIDIA GPU を自動で使用し、利用できない場合は CPU を使用します。
+依存関係には共通の TensorRT 10.13 と DirectML ランタイムが含まれます。PyTorch は不要です。
 
 モデルのインストールコマンドは、料理の対応リリースから `models.zip` を取得し、固定されたファイルサイズと SHA-256 を照合します。各モデルも検証してから、不足しているものだけをインストールします。既存のファイルは保持されます。既存モデルの内容が異なる場合は、そのファイルをバックアップ先へ移動してから再実行してください。料理画面でのモデル読み込み操作は別途必要です。
 

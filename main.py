@@ -7,7 +7,10 @@ import sys
 
 def main():
     multiprocessing.freeze_support()
-    if '--worker' in sys.argv:
+    if '--check-jump-model-only' in sys.argv:
+        from holodori.runtime import check_jump_model
+        check_jump_model()
+    elif '--worker' in sys.argv:
         from holodori.runtime import cooking_worker
         cooking_worker()
     elif '--embedded' in sys.argv:

@@ -14,7 +14,7 @@ from tkinter import ttk, messagebox
 from PIL import Image, ImageTk
 from holodori import __version__
 from holodori.channel import read_json, write_json
-from holodori.modules import MODULES, BY_ID, ROOT
+from holodori.modules import MODULES, BY_ID, ROOT, versions
 from holodori.runtime import dpi_awareness
 from holodori.settings import load_settings, save_settings, captured_hotkey, hotkeys_conflict
 
@@ -39,6 +39,11 @@ SETTING_LABELS = {
     '한국어': ('언어 / Language', '시작 단축키', '중지 단축키', '단축키를 누르세요…', '시작과 중지 단축키는 중복할 수 없습니다.'),
     'Indonesian': ('Bahasa / Language', 'Pintasan mulai', 'Pintasan berhenti', 'Tekan pintasan…', 'Pintasan mulai dan berhenti tidak boleh tumpang tindih.'),
     '简体中文': ('语言 / Language', '开始快捷键', '停止快捷键', '请按下快捷键…', '开始与停止快捷键不能相同或互相包含。'),
+}
+ABOUT_LABELS = {
+    '繁體中文': ('版本資訊', '關閉'), 'English': ('Version information', 'Close'),
+    '日本語': ('バージョン情報', '閉じる'), '한국어': ('버전 정보', '닫기'),
+    'Indonesian': ('Informasi versi', 'Tutup'), '简体中文': ('版本信息', '关闭'),
 }
 
 
@@ -80,6 +85,8 @@ class HolodoriApp:
         self.last_status = {}
         self.last_error = None
         self.icons = []
+        self.version_dialog = None
+        self._size_applied = False
         # Each module and its nested workers share one job. A replacement
         # module waits until the previous job has no live processes.
         self.job = None
@@ -180,7 +187,10 @@ class HolodoriApp:
         self.version_label = tk.Label(self.footer, text='v'+__version__, bg=BG, fg=MUTED,
                                       font=('Segoe UI',9), cursor='hand2')
         self.version_label.pack(side='left')
-        self.version_label.bind('<Button-1>', lambda _event: webbrowser.open(PROJECT_URL))
+        self.version_label.configure(takefocus=True)
+        self.version_label.bind('<Button-1>', self.show_versions)
+        self.version_label.bind('<Return>', self.show_versions)
+        self.version_label.bind('<space>', self.show_versions)
         self.note = tk.Label(self.footer, bg=BG, fg=MUTED, font=('Segoe UI', 9), anchor='e')
         self.note.pack(side='right', fill='x', expand=True)
         self.translate()
@@ -192,6 +202,79 @@ class HolodoriApp:
             pass
         root.after(50, lambda: self.select(initial))
         root.after(100, self.poll)
+
+    def show_versions(self, _event=None):
+        if self.closing:
+            return
+        if self.version_dialog is not None and self.version_dialog.winfo_exists():
+            self.version_dialog.lift()
+            return self.version_dialog
+        self.end_capture()
+        title, close_text = ABOUT_LABELS[self.language.get()]
+        dialog = self.version_dialog = tk.Toplevel(self.root)
+        dialog.withdraw()
+        dialog.title(title)
+        dialog.transient(self.root)
+        dialog.resizable(False, False)
+        dialog.configure(bg=BG)
+        panel = ttk.Frame(dialog, padding=self.px(20))
+        panel.pack(fill='both', expand=True)
+        wrap = min(self.px(480), self.root.winfo_screenwidth()-self.px(100))
+        records = versions()
+        self.version_links = []
+        for name, version, url in [
+            ('Holodori-Auto', __version__, PROJECT_URL),
+            *((LABELS[self.language.get()][i], records[module.id]['version'],
+               records[module.id]['repository'].removesuffix('.git'))
+              for i, module in enumerate(MODULES)),
+        ]:
+            card = ttk.Frame(panel, style='Card.TFrame', padding=self.px(12))
+            card.pack(fill='x', pady=(0, self.px(8)))
+            ttk.Label(card, text=f'{name}  v{version}', style='Card.TLabel',
+                      font=('Segoe UI',11,'bold')).pack(anchor='w')
+            link = ttk.Label(card, text=url, style='Card.TLabel', foreground='#0067C0',
+                             font=('Segoe UI',9,'underline'), cursor='hand2',
+                             takefocus=True, wraplength=wrap, justify='left')
+            link.pack(anchor='w', pady=(self.px(4),0))
+            for event in ('<Button-1>', '<Return>', '<space>'):
+                link.bind(event, lambda _event, address=url: webbrowser.open(address))
+            self.version_links.append(link)
+        close = ttk.Button(panel, text=close_text, style='Primary.TButton', command=self.close_versions)
+        close.pack(anchor='e', pady=(self.px(4),0))
+        dialog.protocol('WM_DELETE_WINDOW', self.close_versions)
+        dialog.bind('<Escape>', self.close_versions)
+        dialog.update_idletasks()
+        width, height = dialog.winfo_reqwidth(), dialog.winfo_reqheight()
+        x = self.root.winfo_rootx()+(self.root.winfo_width()-width)//2
+        y = self.root.winfo_rooty()+(self.root.winfo_height()-height)//2
+        # Keep the complete dialog on the host monitor's work area.
+        try:
+            import win32api
+            import win32gui
+            window = win32gui.GetAncestor(self.root.winfo_id(), 2)
+            left, top, right, bottom = win32api.GetMonitorInfo(win32api.MonitorFromWindow(window, 2))['Work']
+        except Exception:
+            left, top, right, bottom = 0, 0, self.root.winfo_screenwidth(), self.root.winfo_screenheight()
+        x, y = max(left, min(x, right-width)), max(top, min(y, bottom-height))
+        dialog.geometry(f'{width}x{height}{x:+}{y:+}')
+        dialog.deiconify()
+        close.focus_set()
+        return dialog
+
+    def close_versions(self, _event=None):
+        if self.version_dialog is not None:
+            self.version_dialog.destroy()
+            self.version_dialog = None
+
+    def apply_window_defaults(self, status):
+        defaults = status.get('window_defaults', {})
+        if getattr(self, '_size_applied', False) or not defaults.get('size'):
+            return
+        width, height = defaults['size']
+        minimum = defaults.get('minimum', [self.px(360), self.px(640)])
+        self.root.minsize(*minimum)
+        self.root.geometry(f'{width}x{height}')
+        self._size_applied = True
 
     def translate(self):
         labels = LABELS[self.language.get()]
@@ -334,6 +417,7 @@ class HolodoriApp:
         if self.process is not None or self.job is not None or self._session_draining:
             raise RuntimeError('The previous module session has not finished closing.')
         self.active = module_id
+        self._size_applied = False
         self.ready = False
         self.pending = None
         self.waiting_switch = False
@@ -479,6 +563,7 @@ class HolodoriApp:
                 self.waiting_switch = False
                 self.note.configure(text=LABELS[self.language.get()][5])
             elif state == 'ready' and not self.closing and not self.waiting_switch and not self._session_draining:
+                self.apply_window_defaults(status)
                 self.ready = True
                 self.placeholder.lower()
                 self.note.configure(text='')

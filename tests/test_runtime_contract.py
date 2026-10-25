@@ -66,6 +66,31 @@ def shared_app(module_id):
 
 
 class RuntimeContractTests(unittest.TestCase):
+    def test_cooking_worker_remaps_models_without_changing_shared_frozen_root(self):
+        source = Path('C:/bundle/upstream/cooking')
+        backend = SimpleNamespace(MODEL_DIRECTORY=Path('C:/bundle/models/inference'))
+        with (patch.object(runtime, 'activate_source', return_value=SimpleNamespace(path=source)),
+              patch.object(runtime.importlib, 'import_module', return_value=backend),
+              patch.object(runtime.runpy, 'run_path') as run,
+              patch.object(runtime.sys, 'path', list(runtime.sys.path)),
+              patch.object(runtime.sys, '_MEIPASS', 'C:/bundle', create=True)):
+            runtime.cooking_worker()
+            self.assertEqual(backend.MODEL_DIRECTORY, source/'models/inference')
+            self.assertEqual(runtime.sys._MEIPASS, 'C:/bundle')
+            run.assert_called_once_with(str(source/'gui.py'), run_name='__main__')
+
+    def test_embedded_size_contract_records_original_dpi_scaled_defaults(self):
+        root = SimpleNamespace(geometry=Mock(return_value='500x930+0+0'), minsize=Mock(return_value=(1, 1)))
+        geometry, minimum = root.geometry, root.minsize
+        defaults = runtime.capture_window_size(root)
+        root.geometry('517x1055+100+200')
+        root.minsize(450, 800)
+        self.assertEqual(defaults, {'size': [517, 1055], 'minimum': [450, 800]})
+        geometry.assert_not_called()
+        minimum.assert_not_called()
+        self.assertEqual(root.geometry(), '500x930+0+0')
+        self.assertEqual(root.minsize(), (450, 800))
+
     def test_fishing_listener_starts_only_with_the_shared_shortcut(self):
         reports = []
 

@@ -1,6 +1,6 @@
 """Warm both original cooking model options without desktop capture or input.
 
-The upstream --check-model-only path loads and exercises the real CPU/CUDA
+The upstream --check-model-only path loads and exercises the real inference
 kernels using synthetic arrays, then exits before creating a game adapter.
 Pass --executable to validate the same path inside the portable program.
 """
@@ -79,6 +79,8 @@ def check_one(model: str, expected: dict, directory: Path, *,
         for field, expected_value in required.items():
             if checked.get(field) != expected_value:
                 raise ValueError(f"{model}: {field} was {checked.get(field)!r}; expected {expected_value!r}")
+        if checked.get('torch_imported') is not False:
+            raise ValueError(f'{model} unexpectedly imported PyTorch')
         checked["manifest_verified"] = True
         return checked
     finally:
@@ -106,7 +108,7 @@ def check_models(*, executable: Path | None, timeout: float) -> dict:
     with tempfile.TemporaryDirectory(prefix="holodori-model-check-") as temporary:
         directory = Path(temporary).resolve()
         for model in MODELS:
-            expected = manifest["files"][f"outputs/kitchen-labeler/point-classifier-{model}.pt"]
+            expected = manifest["files"][f"models/inference/point-classifier-{model}.onnx"]
             report["models"].append(check_one(
                 model, expected, directory / model, executable=executable, timeout=timeout))
     report["passed"] = True

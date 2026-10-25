@@ -26,7 +26,7 @@ FIELDS = {
         "target_mode": "count", "target_amount": "7", "target": "7", "diagnostics": True,
     },
     "jump_rope": {
-        "target": "3", "timing": 0.65, "diagnostics": True,
+        "target": "3", "timing": 0.65, "diagnostics": True, "score_mode": "custom", "score_amount": "125",
     },
     "cooking": {
         "model": "resnet101", "games": "3", "developer_mode": True,
@@ -55,6 +55,8 @@ def exercise(*, executable: Path | None, timeout: float, screenshot: Path | None
 
     sys.path.insert(0, str(ROOT))
     from holodori.app import HolodoriApp, PROJECT_URL
+    from holodori import __version__
+    from holodori.modules import versions
     from holodori.runtime import LANGUAGES, dpi_awareness
 
     report = {"mode": "packaged" if executable else "source", "modules": [], "errors": []}
@@ -136,7 +138,7 @@ def exercise(*, executable: Path | None, timeout: float, screenshot: Path | None
                 assert app.navigation.winfo_y() < app.intro.winfo_y() < app.shared_card.winfo_y() < app.body.winfo_y(), 'Shared layout order differs'
                 assert app.instructions.cget('text') == app.last_status['instructions']
                 assert app.status.cget('text') == app.last_status['display_status']
-                assert app.version_label.cget('text') == 'v1.0.0'
+                assert app.version_label.cget('text') == 'v'+__version__
                 assert root.title() == 'Holodori-Auto', f'{module} changed the Tk window title'
                 window = win32gui.GetAncestor(root.winfo_id(), 2)
                 assert win32gui.GetWindowText(window) == 'Holodori-Auto', f'{module} changed the native window title'
@@ -161,8 +163,26 @@ def exercise(*, executable: Path | None, timeout: float, screenshot: Path | None
                 with patch('holodori.app.webbrowser.open', return_value=True) as browser:
                     app.version_label.event_generate('<Button-1>')
                     root.update()
-                    browser.assert_called_once_with(PROJECT_URL)
-                report['version_link'] = PROJECT_URL
+                    assert app.version_dialog.winfo_viewable()
+                    if screenshot:
+                        from PIL import ImageGrab
+                        screenshot.parent.mkdir(parents=True, exist_ok=True)
+                        settled = time.monotonic()+0.7
+                        pump_until(lambda: time.monotonic() >= settled, 'version dialog painting')
+                        left, top = app.version_dialog.winfo_rootx(), app.version_dialog.winfo_rooty()
+                        ImageGrab.grab(bbox=(left, top, left+app.version_dialog.winfo_width(),
+                                            top+app.version_dialog.winfo_height())).save(
+                            screenshot.with_stem(screenshot.stem+'-versions'))
+                    dialog = app.version_dialog
+                    assert app.show_versions() is dialog, 'Duplicate version dialog'
+                    links = [PROJECT_URL, *(entry['repository'].removesuffix('.git') for entry in versions().values())]
+                    assert [link.cget('text') for link in app.version_links] == links
+                    for link in app.version_links:
+                        link.event_generate('<Button-1>')
+                        root.update()
+                    assert [call.args[0] for call in browser.call_args_list] == links
+                    app.close_versions()
+                report['version_dialog'] = {'version': __version__, 'links': links, 'single_instance': True}
                 # Use the host's actual capture methods with synthetic Tk events;
                 # no native keyboard/game input is sent, and smoke listeners are inert.
                 initial = dict(app.settings)
@@ -205,10 +225,19 @@ def exercise(*, executable: Path | None, timeout: float, screenshot: Path | None
                         ready(module)
                         assert previous.poll() == 0, f"Previous child did not close cleanly: {previous.poll()}"
                     assert_shared(module)
+                    root.update_idletasks()
+                    expected_size = app.last_status['window_defaults']['size']
+                    assert [root.winfo_width(), root.winfo_height()] == expected_size, (module, root.geometry(), expected_size)
                     for language in LANGUAGES:
                         app.language.set(language)
                         app.change_language()
                         assert_shared(module, dict(SHARED_SETTINGS, language=language))
+                        if module == 'high_low':
+                            dialog = app.show_versions()
+                            root.update()
+                            assert dialog.winfo_viewable()
+                            assert len(app.version_links) == 5
+                            app.close_versions()
                     app.language.set(SHARED_SETTINGS['language'])
                     app.change_language()
                     assert_shared(module)
@@ -237,6 +266,7 @@ def exercise(*, executable: Path | None, timeout: float, screenshot: Path | None
                         "native_job_processes": live_count(),
                         "shared_preferences_applied": True, "shared_controls_hidden": True,
                         "window_title": "Holodori-Auto", "languages_checked": len(LANGUAGES),
+                        "default_window_size": expected_size,
                     })
 
                 # Revisiting each page verifies the actual process replacement and restore contract.

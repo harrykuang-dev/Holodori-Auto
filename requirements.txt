@@ -1,17 +1,16 @@
 # Shared runtime; original game implementations remain in upstream/.
---extra-index-url https://download.pytorch.org/whl/cu128
 numpy==2.3.2
 Pillow==11.3.0
 opencv-python==4.14.0.94
 ddddocr==1.6.1
-onnxruntime>=1.23,<2
+onnxruntime-directml==1.24.4
+tensorrt-cu12==10.13.3.9.post1
+nvidia-cuda-runtime-cu12==12.9.79
 numba>=0.61,<1
 pygetwindow==0.0.9
 mss>=10,<11
 pydirectinput==1.0.4
 pywin32>=312; sys_platform == 'win32'
 dxcam==0.3.0
-torch==2.8.0+cu128
-torchvision==0.23.0+cu128
 scipy==1.18.1
 moderngl==5.12.0

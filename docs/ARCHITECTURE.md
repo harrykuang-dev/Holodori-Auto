@@ -73,6 +73,14 @@ Use Windows x64, Python 3.13, `requirements.txt`, and `requirements-build.txt`. 
 
 The portable build includes the host, original module resources, shared dependencies, and model files. Preserve module license files and third-party notices. Source checkouts continue to run each original program independently.
 
+Version 1.1.0 uses a single shared TensorRT 10.13.3.9 package, CUDA runtime 12.9.79 and ONNX Runtime DirectML 1.24.4 under `_internal`. Neither module includes a private accelerator copy, and PyTorch is excluded. Jump Rope retains its FP16/DirectML graphs and GPU-specific engine cache; Cooking retains its FP32 models and separate engine cache. The adapter redirects Cooking's standalone frozen model lookup to `upstream/cooking/models/inference`, preserving the shared `_MEIPASS` import root. Keep each original fallback policy: Jump Rope requires TensorRT or a hardware DirectML GPU; Cooking may fall back to CPU.
+
+`ddddocr` declares the CPU `onnxruntime` distribution as a dependency. After dependency installation, reinstall `onnxruntime-directml==1.24.4` with `--force-reinstall --no-deps` to select the shared DirectML implementation. The builder refuses an environment without `DmlExecutionProvider`.
+
+During embedded construction, the adapter records the original DPI-scaled window size and minimum size, then the host applies them once when that module becomes ready. It does not hard-code a second size table or reset a user's resize on each status update. The version footer opens a Fluent card dialog populated from `upstream-lock.json`, with the host and four original repository links.
+
+Use `python main.py --check-jump-model-only --backend gpu --report work/jump-gpu.json` to load and warm the original jump detector with synthetic pixels. `--backend directml` checks DirectML separately. Cooking's equivalent is `python tools/check_models_runtime.py`. Both also support the packaged executable; no game capture or input is performed.
+
 ## 繁體中文
 
 Holodori-Auto 負責共用導覽、語言及開始／停止快捷鍵、程序管理、Windows 視窗嵌入、建置與上游同步；辨識、輸入、策略、模型選擇、計數、專屬選項與診斷由原始功能負責。四個功能均以未修改的 Git 子模組保留；整合適配層隱藏各頁面重複的語言與快捷鍵列，透過原始控制介面套用共用設定，不修改遊戲演算法。
@@ -90,3 +98,9 @@ Git 子模組提交與 `upstream-lock.json` 共同鎖定整合版本。執行 `t
 料理模型以鎖定來源中的 `models-manifest.json` 為準。安裝程式從原始料理倉庫對應版本下載模型，核對壓縮包與每個模型的大小、SHA-256 及允許路徑，全部驗證後才安裝缺少的檔案。既有檔案不會被覆寫，安裝失敗時回復本次新增的模型。`--check` 可離線驗證，不載入推論程式或操作遊戲。
 
 Windows 建置需先安裝依賴與通過驗證的料理模型，再執行 `python tools/build_release.py --output dist/Holodori-Auto`。分發時保留完整可攜式資料夾、各功能資源、授權檔與第三方聲明。
+
+1.1.0 的跳繩與料理共用 `_internal` 中同一套 TensorRT 10.13.3.9、CUDA 執行庫 12.9.79 與 ONNX Runtime DirectML 1.24.4，不包含獨立加速器副本或 PyTorch。各功能維持原本的模型、快取與回退規則：跳繩需要 TensorRT 或硬體 DirectML GPU；料理可回退至 CPU。整合層僅重新指定料理封裝版的模型資料夾，不改動共用 `_MEIPASS` 或原始演算法。
+
+`ddddocr` 依賴 CPU 版 `onnxruntime`，因此安裝依賴後需以 `--force-reinstall --no-deps` 重新安裝 `onnxruntime-directml==1.24.4`。建置前會檢查 DirectML 提供者，避免依賴安裝順序覆蓋 GPU 執行環境。
+
+嵌入時記錄原始程式依 DPI 計算的預設及最小視窗尺寸，功能就緒後由主視窗套用一次；後續狀態更新不會覆寫使用者調整的大小。版本彈窗沿用 Fluent 卡片樣式，從 `upstream-lock.json` 顯示四個程式版本與倉庫連結。
