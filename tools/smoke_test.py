@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import argparse
 from contextlib import contextmanager
+import faulthandler
 import json
 import os
 from pathlib import Path
@@ -81,6 +82,7 @@ def exercise(*, executable: Path | None, timeout: float, screenshot: Path | None
             closed = False
 
             def pump_until(predicate, description):
+                print('[smoke] Waiting for ' + description, file=sys.stderr, flush=True)
                 deadline = time.monotonic() + timeout
                 while time.monotonic() < deadline:
                     try:
@@ -404,6 +406,8 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--executable", type=Path, help="Use the built EXE for the isolated feature processes.")
     parser.add_argument("--timeout", type=float, default=45, help="Maximum seconds for each asynchronous UI step.")
+    parser.add_argument("--wall-timeout", type=float, default=180,
+                        help="Hard limit in seconds, including blocked native window calls and cleanup.")
     parser.add_argument("--screenshot", type=Path, help="Save a PNG of the embedded application after verification.")
     parser.add_argument("--report", type=Path, help="Also save the JSON verification report.")
     args = parser.parse_args()
@@ -411,11 +415,19 @@ def main() -> int:
         parser.error(f"Executable does not exist: {args.executable}")
     if args.timeout <= 0:
         parser.error("--timeout must be positive")
+    if args.wall_timeout <= 0:
+        parser.error("--wall-timeout must be positive")
+    # Tk's native calls can block before pump_until can check its deadline.
+    # faulthandler uses an independent native watchdog and exits nonzero after
+    # dumping all Python stacks. Windows closes the host's kill-on-close jobs.
+    faulthandler.dump_traceback_later(args.wall_timeout, exit=True)
     try:
         result = exercise(executable=args.executable.resolve() if args.executable else None,
                           timeout=args.timeout, screenshot=args.screenshot.resolve() if args.screenshot else None)
     except Exception:
         result = {"passed": False, "error": traceback.format_exc(), "game_automation_started": False}
+    finally:
+        faulthandler.cancel_dump_traceback_later()
     payload = json.dumps(result, ensure_ascii=False, indent=2)
     print(payload)
     if args.report:

@@ -52,13 +52,29 @@ jobs:
       - name: Warm up both original cooking models from source
         run: python tools/check_models_runtime.py --report work/source-model-runtime.json
       - name: Open all four original interfaces inside the host
-        run: python tools/smoke_test.py
+        timeout-minutes: 5
+        run: |
+          python tools/smoke_test.py --wall-timeout 180 --report work/source-ui.json 2>&1 | Tee-Object -FilePath work/source-ui.log
+          exit $LASTEXITCODE
       - name: Build portable Windows program
         run: python tools/build_release.py --output dist/Holodori-Auto
       - name: Warm up both cooking models in the packaged program
         run: python tools/check_models_runtime.py --executable dist/Holodori-Auto/Holodori-Auto.exe --report work/packaged-model-runtime.json
       - name: Check all four interfaces in the packaged program
-        run: python tools/smoke_test.py --executable dist/Holodori-Auto/Holodori-Auto.exe
+        timeout-minutes: 5
+        run: |
+          python tools/smoke_test.py --executable dist/Holodori-Auto/Holodori-Auto.exe --wall-timeout 180 --report work/packaged-ui.json 2>&1 | Tee-Object -FilePath work/packaged-ui.log
+          exit $LASTEXITCODE
+      - name: Upload failure diagnostics
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: integration-failure-diagnostics
+          path: |
+            work/*.log
+            work/*.json
+          if-no-files-found: ignore
+          retention-days: 7
       - uses: actions/upload-artifact@v4
         with:
           name: Holodori-Auto-windows
