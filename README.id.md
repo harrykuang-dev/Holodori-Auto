@@ -11,11 +11,11 @@ Program Windows yang menggabungkan **High & Low**, **Memancing**, **Lompat Tali*
 | Lompat Tali | [Hololive-Dreams-Jump-Rope-Auto](https://github.com/harrykuang-dev/Hololive-Dreams-Jump-Rope-Auto) |
 | Memasak | [Hololive-Dreams-Collect-Cooking-Auto](https://github.com/harrykuang-dev/Hololive-Dreams-Collect-Cooking-Auto) |
 
-**1.1.1** mencakup High & Low **1.1.2**, Memancing **1.1.2**, Lompat Tali **1.3.0**, dan Memasak **1.1.1**. Klik versi di sudut kiri bawah untuk melihat versi dan tautan repositori setiap program. Saat pertama dibuka, jendela memakai ukuran bawaan program mandiri yang dipilih, disesuaikan dengan DPI layar. Setelah ukuran diubah atau jendela dimaksimalkan, pergantian mode mempertahankan ukuran dan keadaan jendela saat ini.
+**1.1.2** mencakup High & Low **1.1.2**, Memancing **1.1.2**, Lompat Tali **1.3.2**, dan Memasak **1.1.1**. Klik versi di sudut kiri bawah untuk melihat versi dan tautan repositori setiap program. Saat pertama dibuka, jendela memakai ukuran bawaan program mandiri yang dipilih, disesuaikan dengan DPI layar. Setelah ukuran diubah atau jendela dimaksimalkan, pergantian mode mempertahankan ukuran dan keadaan jendela saat ini.
 
 ## Unduh
 
-Unduh `Holodori-Auto-v1.1.1-windows.7z` dari [Releases](https://github.com/harrykuang-dev/Holodori-Auto/releases/latest), ekstrak dengan 7-Zip, lalu jalankan `Holodori-Auto.exe`. Simpan seluruh isi folder bersama. Python dan CUDA Toolkit tidak perlu dipasang secara terpisah.
+Unduh `Holodori-Auto-v1.1.2-windows.7z` dari [Releases](https://github.com/harrykuang-dev/Holodori-Auto/releases/latest), ekstrak dengan 7-Zip, lalu jalankan `Holodori-Auto.exe`. Simpan seluruh isi folder bersama. Python dan CUDA Toolkit tidak perlu dipasang secara terpisah.
 
 Lompat Tali dan Memasak berbagi TensorRT 10.13, pustaka runtime CUDA, dan DirectML dalam satu paket. GPU NVIDIA yang kompatibel otomatis memakai TensorRT; GPU lain yang didukung memakai DirectML. Lompat Tali memerlukan GPU yang kompatibel; Memasak juga dapat beralih ke CPU. Model dan cache engine khusus perangkat tetap terpisah.
 
@@ -83,4 +83,4 @@ GitHub Actions memeriksa pembaruan repositori asal setiap hari dan saat dijalank
 
 ## Hak dan lisensi
 
-Lompat Tali 1.3.0 dan bobot turunan YOLO memakai **AGPL-3.0-only**; Memancing memakai **MIT**. Pemberitahuan MIT yang ada untuk komponen yang dirujuk High & Low dan Memasak tetap disertakan. Runtime NVIDIA, dependensi lain, dan gambar game mempertahankan ketentuannya masing-masing. Lihat [lisensi dan kode sumber terkait](LICENSES.md). Release menyediakan `Holodori-Auto-v1.1.1-source.zip` dengan sumber keempat submodul pada commit yang ditetapkan; arsip sumber otomatis GitHub tidak menyertakan submodul.
+Lompat Tali 1.3.2 dan bobot turunan YOLO memakai **AGPL-3.0-only**; Memancing memakai **MIT**. Pemberitahuan MIT yang ada untuk komponen yang dirujuk High & Low dan Memasak tetap disertakan. Runtime NVIDIA, dependensi lain, dan gambar game mempertahankan ketentuannya masing-masing. Lihat [lisensi dan kode sumber terkait](LICENSES.md). Release menyediakan `Holodori-Auto-v1.1.2-source.zip` dengan sumber keempat submodul pada commit yang ditetapkan; arsip sumber otomatis GitHub tidak menyertakan submodul.

@@ -11,11 +11,11 @@
 | 縄跳び | [Hololive-Dreams-Jump-Rope-Auto](https://github.com/harrykuang-dev/Hololive-Dreams-Jump-Rope-Auto) |
 | 料理 | [Hololive-Dreams-Collect-Cooking-Auto](https://github.com/harrykuang-dev/Hololive-Dreams-Collect-Cooking-Auto) |
 
-**1.1.1** にはハイ＆ロー **1.1.2**、釣り **1.1.2**、縄跳び **1.3.0**、料理 **1.1.1** が含まれます。左下のバージョンをクリックすると、各プログラムのバージョンとリポジトリへのリンクを確認できます。初回起動時は選択した単体版の初期ウィンドウサイズを画面の DPI に合わせて使用します。サイズ変更や最大化の後に機能を切り替えても、現在のウィンドウサイズと状態を維持します。
+**1.1.2** にはハイ＆ロー **1.1.2**、釣り **1.1.2**、縄跳び **1.3.2**、料理 **1.1.1** が含まれます。左下のバージョンをクリックすると、各プログラムのバージョンとリポジトリへのリンクを確認できます。初回起動時は選択した単体版の初期ウィンドウサイズを画面の DPI に合わせて使用します。サイズ変更や最大化の後に機能を切り替えても、現在のウィンドウサイズと状態を維持します。
 
 ## ダウンロード
 
-[Releases](https://github.com/harrykuang-dev/Holodori-Auto/releases/latest) から `Holodori-Auto-v1.1.1-windows.7z` をダウンロードし、7-Zip で展開して `Holodori-Auto.exe` を実行してください。フォルダー全体を保持してください。Python や CUDA Toolkit の別途インストールは不要です。
+[Releases](https://github.com/harrykuang-dev/Holodori-Auto/releases/latest) から `Holodori-Auto-v1.1.2-windows.7z` をダウンロードし、7-Zip で展開して `Holodori-Auto.exe` を実行してください。フォルダー全体を保持してください。Python や CUDA Toolkit の別途インストールは不要です。
 
 縄跳びと料理は、一つのパッケージ内の TensorRT 10.13、CUDA ランタイム、DirectML を共有します。対応する NVIDIA GPU では TensorRT、それ以外の対応 GPU では DirectML を使用します。縄跳びには対応 GPU が必要です。料理は CPU にもフォールバックできます。モデルとデバイス固有のエンジンキャッシュは各機能で独立しています。
 
@@ -83,4 +83,4 @@ GitHub Actions は毎日および手動実行時に更新を確認し、更新�
 
 ## 権利とライセンス
 
-縄跳び 1.3.0 と YOLO 派生重みは **AGPL-3.0-only**、釣りは **MIT** です。ハイ＆ローと料理が参照するコンポーネントの既存 MIT 通知は保持されています。NVIDIA ランタイム、その他の依存関係、ゲーム画像にはそれぞれの条件が適用されます。[ライセンスと対応ソース](LICENSES.md)を参照してください。Release の `Holodori-Auto-v1.1.1-source.zip` には固定された四つのサブモジュールのソースが含まれます。GitHub の自動生成ソースアーカイブにはサブモジュールが含まれません。
+縄跳び 1.3.2 と YOLO 派生重みは **AGPL-3.0-only**、釣りは **MIT** です。ハイ＆ローと料理が参照するコンポーネントの既存 MIT 通知は保持されています。NVIDIA ランタイム、その他の依存関係、ゲーム画像にはそれぞれの条件が適用されます。[ライセンスと対応ソース](LICENSES.md)を参照してください。Release の `Holodori-Auto-v1.1.2-source.zip` には固定された四つのサブモジュールのソースが含まれます。GitHub の自動生成ソースアーカイブにはサブモジュールが含まれません。

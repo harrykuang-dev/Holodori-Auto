@@ -73,7 +73,7 @@ Use Windows x64, Python 3.13, `requirements.txt`, and `requirements-build.txt`. 
 
 The portable build includes the host, original module resources, shared dependencies, and model files. Preserve module license files and third-party notices. Source checkouts continue to run each original program independently.
 
-Version 1.1.1 uses a single shared TensorRT 10.13.3.9 package, CUDA runtime 12.9.79 and ONNX Runtime DirectML 1.24.4 under `_internal`. Neither module includes a private accelerator copy, and PyTorch is excluded. Jump Rope retains its FP16/DirectML graphs and GPU-specific engine cache; Cooking retains its FP32 models and separate engine cache. The adapter redirects Cooking's standalone frozen model lookup to `upstream/cooking/models/inference`, preserving the shared `_MEIPASS` import root. Keep each original fallback policy: Jump Rope requires TensorRT or a hardware DirectML GPU; Cooking may fall back to CPU.
+Version 1.1.2 uses a single shared TensorRT 10.13.3.9 package, CUDA runtime 12.9.79 and ONNX Runtime DirectML 1.24.4 under `_internal`. Neither module includes a private accelerator copy, and PyTorch is excluded. Jump Rope retains its FP16/DirectML graphs and GPU-specific engine cache; Cooking retains its FP32 models and separate engine cache. The adapter redirects Cooking's standalone frozen model lookup to `upstream/cooking/models/inference`, preserving the shared `_MEIPASS` import root. Keep each original fallback policy: Jump Rope requires TensorRT or a hardware DirectML GPU; Cooking may fall back to CPU.
 
 `ddddocr` declares the CPU `onnxruntime` distribution as a dependency. After dependency installation, reinstall `onnxruntime-directml==1.24.4` with `--force-reinstall --no-deps` to select the shared DirectML implementation. The builder refuses an environment without `DmlExecutionProvider`.
 
@@ -101,7 +101,7 @@ Git 子模組提交與 `upstream-lock.json` 共同鎖定整合版本。執行 `t
 
 Windows 建置需先安裝依賴與通過驗證的料理模型，再執行 `python tools/build_release.py --output dist/Holodori-Auto`。分發時保留完整可攜式資料夾、各功能資源、授權檔與第三方聲明。
 
-1.1.1 的跳繩與料理共用 `_internal` 中同一套 TensorRT 10.13.3.9、CUDA 執行庫 12.9.79 與 ONNX Runtime DirectML 1.24.4，不包含獨立加速器副本或 PyTorch。各功能維持原本的模型、快取與回退規則：跳繩需要 TensorRT 或硬體 DirectML GPU；料理可回退至 CPU。整合層僅重新指定料理封裝版的模型資料夾，不改動共用 `_MEIPASS` 或原始演算法。
+1.1.2 的跳繩與料理共用 `_internal` 中同一套 TensorRT 10.13.3.9、CUDA 執行庫 12.9.79 與 ONNX Runtime DirectML 1.24.4，不包含獨立加速器副本或 PyTorch。各功能維持原本的模型、快取與回退規則：跳繩需要 TensorRT 或硬體 DirectML GPU；料理可回退至 CPU。整合層僅重新指定料理封裝版的模型資料夾，不改動共用 `_MEIPASS` 或原始演算法。
 
 `ddddocr` 依賴 CPU 版 `onnxruntime`，因此安裝依賴後需以 `--force-reinstall --no-deps` 重新安裝 `onnxruntime-directml==1.24.4`。建置前會檢查 DirectML 提供者，避免依賴安裝順序覆蓋 GPU 執行環境。
 

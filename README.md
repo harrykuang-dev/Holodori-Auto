@@ -11,11 +11,11 @@ A Windows program that brings **High & Low**, **Fishing**, **Jump Rope**, and **
 | Jump Rope | [Hololive-Dreams-Jump-Rope-Auto](https://github.com/harrykuang-dev/Hololive-Dreams-Jump-Rope-Auto) |
 | Cooking | [Hololive-Dreams-Collect-Cooking-Auto](https://github.com/harrykuang-dev/Hololive-Dreams-Collect-Cooking-Auto) |
 
-Version **1.1.1** includes High & Low **1.1.2**, Fishing **1.1.2**, Jump Rope **1.3.0** and Cooking **1.1.1**. Click the version in the lower-left corner to see each program’s version and repository link. The initial window uses the selected standalone program’s default size, scaled for the display DPI. After resizing or maximizing, switching modes preserves the current window size and state.
+Version **1.1.2** includes High & Low **1.1.2**, Fishing **1.1.2**, Jump Rope **1.3.2** and Cooking **1.1.1**. Click the version in the lower-left corner to see each program’s version and repository link. The initial window uses the selected standalone program’s default size, scaled for the display DPI. After resizing or maximizing, switching modes preserves the current window size and state.
 
 ## Download
 
-Download `Holodori-Auto-v1.1.1-windows.7z` from [Releases](https://github.com/harrykuang-dev/Holodori-Auto/releases/latest), extract it with 7-Zip and run `Holodori-Auto.exe`. Keep the complete folder together. Python and CUDA Toolkit do not need to be installed separately.
+Download `Holodori-Auto-v1.1.2-windows.7z` from [Releases](https://github.com/harrykuang-dev/Holodori-Auto/releases/latest), extract it with 7-Zip and run `Holodori-Auto.exe`. Keep the complete folder together. Python and CUDA Toolkit do not need to be installed separately.
 
 Jump Rope and Cooking share TensorRT 10.13, CUDA runtime libraries and DirectML in one package. Compatible NVIDIA GPUs use TensorRT automatically; other supported GPUs use DirectML. Jump Rope requires a compatible GPU; Cooking can also fall back to CPU. Models and device-specific engine caches remain separate.
 
@@ -83,4 +83,4 @@ GitHub Actions checks for upstream changes daily and on manual runs, opens an up
 
 ## Notices
 
-Jump Rope 1.3.0 and its YOLO-derived weights use **AGPL-3.0-only**; Fishing uses **MIT**. Existing MIT notices for components referenced by High & Low and Cooking remain included. NVIDIA libraries, other dependencies and game artwork retain their own terms. See [licensing and corresponding source](LICENSES.md). The Release provides `Holodori-Auto-v1.1.1-source.zip` with all four pinned submodule source trees; GitHub’s automatic source archives omit submodules.
+Jump Rope 1.3.2 and its YOLO-derived weights use **AGPL-3.0-only**; Fishing uses **MIT**. Existing MIT notices for components referenced by High & Low and Cooking remain included. NVIDIA libraries, other dependencies and game artwork retain their own terms. See [licensing and corresponding source](LICENSES.md). The Release provides `Holodori-Auto-v1.1.2-source.zip` with all four pinned submodule source trees; GitHub’s automatic source archives omit submodules.
