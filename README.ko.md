@@ -11,11 +11,11 @@
 | 줄넘기 | [Hololive-Dreams-Jump-Rope-Auto](https://github.com/harrykuang-dev/Hololive-Dreams-Jump-Rope-Auto) |
 | 요리 | [Hololive-Dreams-Collect-Cooking-Auto](https://github.com/harrykuang-dev/Hololive-Dreams-Collect-Cooking-Auto) |
 
-**1.1.2**에는 하이&로 **1.1.2**, 낚시 **1.1.2**, 줄넘기 **1.3.2**, 요리 **1.1.1**이 포함됩니다. 왼쪽 아래 버전을 클릭하면 각 프로그램의 버전과 저장소 링크를 볼 수 있습니다. 처음 열 때는 선택한 단독 프로그램의 기본 창 크기를 화면 DPI에 맞춰 사용합니다. 크기를 조절하거나 최대화한 후 기능을 전환해도 현재 창 크기와 상태가 유지됩니다.
+**1.1.3**에는 하이&로 **1.1.2**, 낚시 **1.1.2**, 줄넘기 **1.3.3**, 요리 **1.1.1**이 포함됩니다. 왼쪽 아래 버전을 클릭하면 각 프로그램의 버전과 저장소 링크를 볼 수 있습니다. 처음 열 때는 선택한 단독 프로그램의 기본 창 크기를 화면 DPI에 맞춰 사용합니다. 크기를 조절하거나 최대화한 후 기능을 전환해도 현재 창 크기와 상태가 유지됩니다.
 
 ## 다운로드
 
-[Releases](https://github.com/harrykuang-dev/Holodori-Auto/releases/latest)에서 `Holodori-Auto-v1.1.2-windows.7z`를 다운로드하고 7-Zip으로 압축을 푼 뒤 `Holodori-Auto.exe`를 실행하세요. 전체 폴더를 함께 보관하세요. Python이나 CUDA Toolkit을 별도로 설치할 필요는 없습니다.
+[Releases](https://github.com/harrykuang-dev/Holodori-Auto/releases/latest)에서 `Holodori-Auto-v1.1.3-windows.7z`를 다운로드하고 7-Zip으로 압축을 푼 뒤 `Holodori-Auto.exe`를 실행하세요. 전체 폴더를 함께 보관하세요. Python이나 CUDA Toolkit을 별도로 설치할 필요는 없습니다.
 
 줄넘기와 요리는 한 패키지의 TensorRT 10.13, CUDA 런타임, DirectML을 공유합니다. 호환 NVIDIA GPU는 TensorRT를, 그 외 지원 GPU는 DirectML을 사용합니다. 줄넘기는 호환 GPU가 필요하며 요리는 CPU로도 전환할 수 있습니다. 모델과 장치별 엔진 캐시는 기능마다 별도로 유지됩니다.
 
@@ -83,4 +83,4 @@ GitHub Actions는 매일 및 수동 실행 시 원본 저장소의 업데이트�
 
 ## 권리 및 라이선스
 
-줄넘기 1.3.2과 YOLO 파생 가중치는 **AGPL-3.0-only**, 낚시는 **MIT**를 사용합니다. 하이&로와 요리가 참조하는 구성 요소의 기존 MIT 고지는 유지됩니다. NVIDIA 런타임, 기타 의존성 및 게임 이미지에는 각각의 조건이 적용됩니다. [라이선스 및 대응 소스](LICENSES.md)를 참조하세요. Release의 `Holodori-Auto-v1.1.2-source.zip`에는 고정된 네 서브모듈의 소스가 포함됩니다. GitHub가 자동 생성하는 소스 압축 파일에는 서브모듈이 포함되지 않습니다.
+줄넘기 1.3.3과 YOLO 파생 가중치는 **AGPL-3.0-only**, 낚시는 **MIT**를 사용합니다. 하이&로와 요리가 참조하는 구성 요소의 기존 MIT 고지는 유지됩니다. NVIDIA 런타임, 기타 의존성 및 게임 이미지에는 각각의 조건이 적용됩니다. [라이선스 및 대응 소스](LICENSES.md)를 참조하세요. Release의 `Holodori-Auto-v1.1.3-source.zip`에는 고정된 네 서브모듈의 소스가 포함됩니다. GitHub가 자동 생성하는 소스 압축 파일에는 서브모듈이 포함되지 않습니다.

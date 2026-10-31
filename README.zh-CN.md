@@ -11,11 +11,11 @@
 | 跳绳 | [Hololive-Dreams-Jump-Rope-Auto](https://github.com/harrykuang-dev/Hololive-Dreams-Jump-Rope-Auto) |
 | 料理 | [Hololive-Dreams-Collect-Cooking-Auto](https://github.com/harrykuang-dev/Hololive-Dreams-Collect-Cooking-Auto) |
 
-**1.1.2** 包含猜高低 **1.1.2**、钓鱼 **1.1.2**、跳绳 **1.3.2** 与料理 **1.1.1**。点击左下角版本号可查看各独立程序的版本与仓库链接。首次打开时沿用所选独立版的默认窗口大小，并按屏幕 DPI 缩放。手动调整或最大化后，切换模式会保留当前窗口大小与状态。
+**1.1.3** 包含猜高低 **1.1.2**、钓鱼 **1.1.2**、跳绳 **1.3.3** 与料理 **1.1.1**。点击左下角版本号可查看各独立程序的版本与仓库链接。首次打开时沿用所选独立版的默认窗口大小，并按屏幕 DPI 缩放。手动调整或最大化后，切换模式会保留当前窗口大小与状态。
 
 ## 下载
 
-从 [Releases](https://github.com/harrykuang-dev/Holodori-Auto/releases/latest) 下载 `Holodori-Auto-v1.1.2-windows.7z`，使用 7-Zip 解压后运行 `Holodori-Auto.exe`。请保留完整文件夹，无需另外安装 Python 或 CUDA Toolkit。
+从 [Releases](https://github.com/harrykuang-dev/Holodori-Auto/releases/latest) 下载 `Holodori-Auto-v1.1.3-windows.7z`，使用 7-Zip 解压后运行 `Holodori-Auto.exe`。请保留完整文件夹，无需另外安装 Python 或 CUDA Toolkit。
 
 跳绳与料理共用同一套 TensorRT 10.13、CUDA 运行库与 DirectML。兼容的 NVIDIA GPU 自动使用 TensorRT，其他受支持的 GPU 使用 DirectML。跳绳需要兼容 GPU；料理也可回退到 CPU。各功能保留独立模型与设备引擎缓存。
 
@@ -83,4 +83,4 @@ GitHub Actions 每日及手动运行时检查上游更新，创建更新 Pull Re
 
 ## 声明与许可
 
-跳绳 1.3.2 与 YOLO 衍生权重采用 **AGPL-3.0-only**，钓鱼采用 **MIT**。猜高低与料理引用组件的现有 MIT 声明继续保留；NVIDIA 运行库、其他依赖及游戏美术维持各自条款。详见[许可与对应源代码](LICENSES.md)。Release 提供包含四个锁定子模块源代码的 `Holodori-Auto-v1.1.2-source.zip`；GitHub 自动生成的源代码压缩包不含子模块。
+跳绳 1.3.3 与 YOLO 衍生权重采用 **AGPL-3.0-only**，钓鱼采用 **MIT**。猜高低与料理引用组件的现有 MIT 声明继续保留；NVIDIA 运行库、其他依赖及游戏美术维持各自条款。详见[许可与对应源代码](LICENSES.md)。Release 提供包含四个锁定子模块源代码的 `Holodori-Auto-v1.1.3-source.zip`；GitHub 自动生成的源代码压缩包不含子模块。
