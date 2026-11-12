@@ -202,14 +202,20 @@ def exercise(*, executable: Path | None, timeout: float, screenshot: Path | None
                             screenshot.with_stem(screenshot.stem+'-versions'))
                     dialog = app.version_dialog
                     assert app.show_versions() is dialog, 'Duplicate version dialog'
-                    links = [PROJECT_URL, *(entry['repository'].removesuffix('.git') for entry in versions().values())]
+                    pins = versions()
+                    links = [PROJECT_URL, *(entry['repository'].removesuffix('.git') for entry in pins.values())]
                     assert [link.cget('text') for link in app.version_links] == links
+                    displayed = [link.master.winfo_children()[0].cget('text').rsplit('  v', 1)[1]
+                                 for link in app.version_links]
+                    component_versions = {key: entry['version'] for key, entry in pins.items()}
+                    assert displayed == [__version__, *component_versions.values()], displayed
                     for link in app.version_links:
                         link.event_generate('<Button-1>')
                         root.update()
                     assert [call.args[0] for call in browser.call_args_list] == links
                     app.close_versions()
-                report['version_dialog'] = {'version': __version__, 'links': links, 'single_instance': True}
+                report['version_dialog'] = {'version': __version__, 'links': links,
+                                            'components': component_versions, 'single_instance': True}
                 # Use the host's actual capture methods with synthetic Tk events;
                 # no native keyboard/game input is sent, and smoke listeners are inert.
                 initial = dict(app.settings)

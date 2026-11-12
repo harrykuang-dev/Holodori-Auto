@@ -11,7 +11,7 @@
 | 줄넘기 | [Hololive-Dreams-Jump-Rope-Auto](https://github.com/harrykuang-dev/Hololive-Dreams-Jump-Rope-Auto) |
 | 요리 | [Hololive-Dreams-Collect-Cooking-Auto](https://github.com/harrykuang-dev/Hololive-Dreams-Collect-Cooking-Auto) |
 
-**1.1.4**에는 하이&로 **1.1.2**, 낚시 **1.1.2**, 줄넘기 **1.3.3**, 요리 **1.1.1**이 포함됩니다. 왼쪽 아래 버전을 클릭하면 각 프로그램의 버전과 저장소 링크를 볼 수 있습니다. 처음 열 때는 선택한 단독 프로그램의 기본 창 크기를 화면 DPI에 맞춰 사용합니다. 크기를 조절하거나 최대화한 후 기능을 전환해도 현재 창 크기와 상태가 유지됩니다.
+**1.1.4**에는 하이&로 **1.1.3**, 낚시 **1.1.2**, 줄넘기 **1.3.3**, 요리 **1.1.1**이 포함됩니다. 왼쪽 아래 버전을 클릭하면 각 프로그램의 버전과 저장소 링크를 볼 수 있습니다. 처음 열 때는 선택한 단독 프로그램의 기본 창 크기를 화면 DPI에 맞춰 사용합니다. 크기를 조절하거나 최대화한 후 기능을 전환해도 현재 창 크기와 상태가 유지됩니다.
 
 ## 다운로드
 

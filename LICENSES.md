@@ -4,7 +4,7 @@ This distribution contains components under different licenses. Including them i
 
 | Component | Included version | License and notices |
 | --- | --- | --- |
-| High & Low | 1.1.2 | Retain `upstream/high_low/licenses/poker-core-MIT.txt` (Totarou Oriki) and `jump-rope-MIT.txt` (harrykuang-dev). These notices cover the referenced components; the pinned repository does not declare a separate project-wide license. |
+| High & Low | 1.1.3 | Retain `upstream/high_low/licenses/poker-core-MIT.txt` (Totarou Oriki) and `jump-rope-MIT.txt` (harrykuang-dev). These notices cover the referenced components; the pinned repository does not declare a separate project-wide license. |
 | Fishing | 1.1.2 | MIT, copyright 2026 harrykuang-dev: `upstream/fishing/LICENSE`. Artwork is excluded as described in `assets/NOTICE.md`. |
 | Jump Rope and YOLO-derived weights | 1.3.3 | GNU Affero General Public License, version 3 only (`AGPL-3.0-only`): `upstream/jump_rope/LICENSE`, `NOTICE.md`, and `models/AGPL-3.0.txt`. The model derives from Ultralytics YOLO26. The historical `archive/v1.2.1` source retains its MIT License. |
 | Cooking | 1.1.1 | Retain `upstream/cooking/third-party/README.md`, the MIT notice for the copied Fishing shortcut components, and inference dependency notices. These notices do not declare a project-wide MIT license for Cooking. |

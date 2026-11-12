@@ -11,7 +11,7 @@ Program Windows yang menggabungkan **High & Low**, **Memancing**, **Lompat Tali*
 | Lompat Tali | [Hololive-Dreams-Jump-Rope-Auto](https://github.com/harrykuang-dev/Hololive-Dreams-Jump-Rope-Auto) |
 | Memasak | [Hololive-Dreams-Collect-Cooking-Auto](https://github.com/harrykuang-dev/Hololive-Dreams-Collect-Cooking-Auto) |
 
-**1.1.4** mencakup High & Low **1.1.2**, Memancing **1.1.2**, Lompat Tali **1.3.3**, dan Memasak **1.1.1**. Klik versi di sudut kiri bawah untuk melihat versi dan tautan repositori setiap program. Saat pertama dibuka, jendela memakai ukuran bawaan program mandiri yang dipilih, disesuaikan dengan DPI layar. Setelah ukuran diubah atau jendela dimaksimalkan, pergantian mode mempertahankan ukuran dan keadaan jendela saat ini.
+**1.1.4** mencakup High & Low **1.1.3**, Memancing **1.1.2**, Lompat Tali **1.3.3**, dan Memasak **1.1.1**. Klik versi di sudut kiri bawah untuk melihat versi dan tautan repositori setiap program. Saat pertama dibuka, jendela memakai ukuran bawaan program mandiri yang dipilih, disesuaikan dengan DPI layar. Setelah ukuran diubah atau jendela dimaksimalkan, pergantian mode mempertahankan ukuran dan keadaan jendela saat ini.
 
 ## Unduh
 

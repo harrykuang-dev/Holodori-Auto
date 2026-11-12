@@ -11,7 +11,7 @@
 | 跳繩 | [Hololive-Dreams-Jump-Rope-Auto](https://github.com/harrykuang-dev/Hololive-Dreams-Jump-Rope-Auto) |
 | 料理 | [Hololive-Dreams-Collect-Cooking-Auto](https://github.com/harrykuang-dev/Hololive-Dreams-Collect-Cooking-Auto) |
 
-**1.1.4** 包含比大小 **1.1.2**、釣魚 **1.1.2**、跳繩 **1.3.3** 與料理 **1.1.1**。點擊左下角版本號可查看各獨立程式的版本與倉庫連結。首次開啟時沿用所選獨立版的預設視窗大小，並依螢幕 DPI 縮放。手動調整或最大化後，切換模式會保留目前的視窗大小與狀態。
+**1.1.4** 包含比大小 **1.1.3**、釣魚 **1.1.2**、跳繩 **1.3.3** 與料理 **1.1.1**。點擊左下角版本號可查看各獨立程式的版本與倉庫連結。首次開啟時沿用所選獨立版的預設視窗大小，並依螢幕 DPI 縮放。手動調整或最大化後，切換模式會保留目前的視窗大小與狀態。
 
 ## 下載
 

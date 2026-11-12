@@ -11,7 +11,7 @@ A Windows program that brings **High & Low**, **Fishing**, **Jump Rope**, and **
 | Jump Rope | [Hololive-Dreams-Jump-Rope-Auto](https://github.com/harrykuang-dev/Hololive-Dreams-Jump-Rope-Auto) |
 | Cooking | [Hololive-Dreams-Collect-Cooking-Auto](https://github.com/harrykuang-dev/Hololive-Dreams-Collect-Cooking-Auto) |
 
-Version **1.1.4** includes High & Low **1.1.2**, Fishing **1.1.2**, Jump Rope **1.3.3** and Cooking **1.1.1**. Click the version in the lower-left corner to see each program’s version and repository link. The initial window uses the selected standalone program’s default size, scaled for the display DPI. After resizing or maximizing, switching modes preserves the current window size and state.
+Version **1.1.4** includes High & Low **1.1.3**, Fishing **1.1.2**, Jump Rope **1.3.3** and Cooking **1.1.1**. Click the version in the lower-left corner to see each program’s version and repository link. The initial window uses the selected standalone program’s default size, scaled for the display DPI. After resizing or maximizing, switching modes preserves the current window size and state.
 
 ## Download
 
