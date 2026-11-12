@@ -619,6 +619,10 @@ def embedded_main():
         window_defaults = capture_window_size(root)
         start_configured = defer_hotkey_start(upstream) if spec.id == 'fishing' else None
         if spec.id == 'high_low':
+            import win32gui
+            from holodori.high_low_window import install_window_guard
+
+            install_window_guard(upstream.auto_bot, win32gui)
             upstream.prepare_user_data(upstream.auto_bot.APP_DIR)
         constructor = getattr(upstream, spec.app_class)
         app = (constructor(root, shortcuts=dict(start_key=args.start_key, stop_key=args.stop_key),

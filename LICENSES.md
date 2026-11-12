@@ -13,10 +13,10 @@ The original Holodori-Auto integration code has no separate project-wide license
 
 ## Obtain the source
 
-The release includes `Holodori-Auto-v1.1.3-source.zip`, containing the integration source and all four pinned Git submodule source trees, including Jump Rope's model checkpoint, export/training scripts and notices. GitHub's automatically generated source archives do not include submodule contents; use the attached complete source archive or clone recursively:
+The release includes `Holodori-Auto-v1.1.4-source.zip`, containing the integration source and all four pinned Git submodule source trees, including Jump Rope's model checkpoint, export/training scripts and notices. GitHub's automatically generated source archives do not include submodule contents; use the attached complete source archive or clone recursively:
 
 ```sh
-git clone --recurse-submodules --branch v1.1.3 https://github.com/harrykuang-dev/Holodori-Auto.git
+git clone --recurse-submodules --branch v1.1.4 https://github.com/harrykuang-dev/Holodori-Auto.git
 ```
 
 `upstream-lock.json` identifies the exact source commit and repository for each component. The cooking ONNX model archive is available from the pinned Cooking release and is installed and verified by `tools/fetch_models.py`. Build instructions are in the README and `docs/ARCHITECTURE.md`.
@@ -33,6 +33,6 @@ Game names, characters, screenshots and artwork remain the property of their res
 
 本倉庫尚未為 Holodori-Auto 原創整合碼另行宣告整體授權；本索引不重新授權整合碼、上游程式或第三方素材。
 
-Release 附帶的 `Holodori-Auto-v1.1.3-source.zip` 包含整合碼與四個鎖定版本的完整 Git 子模組來源，包括跳繩模型檢查點、匯出及訓練工具。亦可使用上方遞迴複製命令取得；GitHub 自動產生的原始碼壓縮包不含子模組內容。各功能來源與提交記錄於 `upstream-lock.json`，料理 ONNX 模型由對應上游 Release 提供。
+Release 附帶的 `Holodori-Auto-v1.1.4-source.zip` 包含整合碼與四個鎖定版本的完整 Git 子模組來源，包括跳繩模型檢查點、匯出及訓練工具。亦可使用上方遞迴複製命令取得；GitHub 自動產生的原始碼壓縮包不含子模組內容。各功能來源與提交記錄於 `upstream-lock.json`，料理 ONNX 模型由對應上游 Release 提供。
 
 NVIDIA 執行庫及其他第三方依賴保留各自條款；遊戲美術與截圖的權利歸各權利人。標註資料的授權不代表取得底層遊戲圖像的授權。
