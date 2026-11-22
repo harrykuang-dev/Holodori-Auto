@@ -85,7 +85,8 @@ def external_imports(sources: list[tuple[Path, Path]]) -> list[str]:
     local_names = {source.stem for source in python_files}
     local_names.update(source.parent.name for source in python_files if source.name == "__init__.py")
     imports = {
-        "PIL.ImageTk", "tkinter.font", "tkinter.ttk", "tkinter.messagebox",
+        "PIL.ImageDraw", "PIL.ImageFont", "PIL.ImageTk",
+        "tkinter.font", "tkinter.ttk", "tkinter.messagebox",
         "onnxruntime", "llvmlite.binding", "tensorrt", "tensorrt_bindings", "tensorrt_libs",
         "dxcam", "moderngl",
     }
