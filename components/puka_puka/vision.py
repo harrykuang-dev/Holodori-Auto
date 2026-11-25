@@ -89,22 +89,33 @@ def bgr(area):
     return np.moveaxis(area.astype(np.int16), -1, 0)
 
 
+def tile_markers(raster):
+    observed = []
+    for x, y in EDGES:
+        blue, green, red = bgr(raster[y-4:y+5, x-4:x+5])
+        fractions = (
+            ((blue > 170) & (green > 120) & (green < 185) & (red < 80)).mean(),
+            ((red > 200) & (green > 65) & (green < 153) & (blue < 90)).mean(),
+            ((blue > 164) & (red > 147) & (abs(blue - red) < 45) & (abs(green - red) < 35)).mean(),
+        )
+        winner = int(np.argmax(fractions))
+        observed.append((BLUE, ORANGE, 0)[winner] if fractions[winner] > .48 else None)
+    return observed
+
+
 def marker_observations(frame):
-    result = []
-    for index in range(12):
-        raster = tile(frame, index)
-        observed = []
-        for x, y in EDGES:
-            blue, green, red = bgr(raster[y-4:y+5, x-4:x+5])
-            fractions = (
-                ((blue > 170) & (green > 85) & (green < 185) & (red < 80)).mean(),
-                ((red > 200) & (green > 65) & (green < 153) & (blue < 90)).mean(),
-                ((blue > 164) & (red > 147) & (abs(blue - red) < 45) & (abs(green - red) < 35)).mean(),
-            )
-            winner = int(np.argmax(fractions))
-            observed.append((BLUE, ORANGE, 0)[winner] if fractions[winner] > .48 else None)
-        result.append(observed)
-    return result
+    return [tile_markers(tile(frame, index)) for index in range(12)]
+
+
+def visible_white_edge(raster, observed):
+    for marks, left, right in (((0, 3, 5), 14, 35), ((2, 4, 7), 65, 86)):
+        if all(observed[index] == 0 for index in marks):
+            blue, green, red = bgr(raster[14:83, left:right])
+            tile_white = ((blue > 225) & (green > 221) & (red > 210)
+                          & (blue - red > 5) & (blue - red < 36) & (green - red > 3))
+            if tile_white.mean() > .8:
+                return True
+    return False
 
 
 def pattern(piece):
@@ -141,13 +152,19 @@ def hat_scores(frame, index):
     return scores
 
 
-def classify(observed, hats):
+def classify(observed, hats, raster):
     color_counts = Counter(mark for mark in observed if mark)
     known = sum(mark is not None for mark in observed)
-    if not color_counts and (known >= 5 or (known == 4 and max(hats.values()) < .23)):
-        if known < 7 and max(hats.values()) > .37:
-            raise VisionError("看到动物帽，阵营标记被挡住")
-        return 0
+    if not color_counts:
+        hat = max(hats.values())
+        if known >= 5 or (known == 4 and hat < .23):
+            if known < 7 and hat > .37:
+                raise VisionError("看到动物帽，阵营标记被挡住")
+            return 0
+        # A foreground hat can cover most of the next tile's surface.
+        if known == 3 and hat < .14 and visible_white_edge(raster, observed):
+            return 0
+        raise VisionError(f"浮台标记不明确 {observed}")
     hat_matches = sorted(((confidence, piece) for piece, confidence in hats.items()
                           if color_counts[BLUE if piece > 0 else ORANGE]), reverse=True)
     if hat_matches:
@@ -167,7 +184,6 @@ def classify(observed, hats):
         scores.append((error + penalty - min(2.1, max(0., hat-.14)*5), piece, error, hat))
     scores.sort()
     score, chosen, error, hat = scores[0]
-    known = sum(mark is not None for mark in observed)
     if known < (4 if hat > .18 else 5) or error > (3 if hat > .45 else 2) or scores[1][0] - score < .35:
         raise VisionError(f"浮台标记不明确 {observed}，候选 {scores[:3]}")
     return chosen
@@ -175,9 +191,10 @@ def classify(observed, hats):
 
 def read_board(frame):
     pieces = []
-    for square_index, marks in enumerate(marker_observations(frame)):
+    for square_index in range(12):
+        raster = tile(frame, square_index)
         try:
-            pieces.append(classify(marks, hat_scores(frame, square_index)))
+            pieces.append(classify(tile_markers(raster), hat_scores(frame, square_index), raster))
         except VisionError as e:
             raise VisionError(f"{square(square_index)} {e}") from e
     if Counter(pieces)[KING] != 1 or Counter(pieces)[-KING] != 1:
