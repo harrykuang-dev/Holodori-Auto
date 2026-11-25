@@ -1,8 +1,8 @@
 # Development guide / 開發說明
 
-> Source reference / 來源參考 [upstream/fishing/docs/DEVELOPMENT.md](../../upstream/fishing/docs/DEVELOPMENT.md). Paths and standalone commands below refer to that source tree. Holodori-Auto builds and runs from the repository root. See [program architecture](../ARCHITECTURE.md).
+> Source reference / 來源參考 [upstream/fishing/docs/DEVELOPMENT.md](https://github.com/harrykuang-dev/Hololive-Dreams-Fishing-Auto/blob/dbc1aee9227d5d7bfecfa542cf424ffaa4a0a2ab/docs/DEVELOPMENT.md). Paths and standalone commands below refer to that source tree. Holodori-Auto builds and runs from the repository root. See [program architecture](../ARCHITECTURE.md).
 
-[English](../../upstream/fishing/README.md) · [繁體中文](../../upstream/fishing/README.zh-TW.md) · [日本語](../../upstream/fishing/README.ja.md) · [한국어](../../upstream/fishing/README.ko.md) · [Indonesian](../../upstream/fishing/README.id.md) · [简体中文](../../upstream/fishing/README.zh-CN.md)
+[English](https://github.com/harrykuang-dev/Hololive-Dreams-Fishing-Auto/blob/dbc1aee9227d5d7bfecfa542cf424ffaa4a0a2ab/README.md) · [繁體中文](https://github.com/harrykuang-dev/Hololive-Dreams-Fishing-Auto/blob/dbc1aee9227d5d7bfecfa542cf424ffaa4a0a2ab/README.zh-TW.md) · [日本語](https://github.com/harrykuang-dev/Hololive-Dreams-Fishing-Auto/blob/dbc1aee9227d5d7bfecfa542cf424ffaa4a0a2ab/README.ja.md) · [한국어](https://github.com/harrykuang-dev/Hololive-Dreams-Fishing-Auto/blob/dbc1aee9227d5d7bfecfa542cf424ffaa4a0a2ab/README.ko.md) · [Indonesian](https://github.com/harrykuang-dev/Hololive-Dreams-Fishing-Auto/blob/dbc1aee9227d5d7bfecfa542cf424ffaa4a0a2ab/README.id.md) · [简体中文](https://github.com/harrykuang-dev/Hololive-Dreams-Fishing-Auto/blob/dbc1aee9227d5d7bfecfa542cf424ffaa4a0a2ab/README.zh-CN.md)
 
 ## Environment / 環境
 
@@ -43,8 +43,8 @@ python tools/verify_icon.py dist/Hololive-Dreams-Fishing-Auto-v1.1.2.exe
 ## Artwork / 圖像素材
 
 The EXE and Tk windows use `assets/fishing-hook.ico`. The heading uses
-`assets/snowsea-angel-thumb.png`. See [ICON.md](../../upstream/fishing/assets/ICON.md) and
-[NOTICE.md](../../upstream/fishing/assets/NOTICE.md) for asset details and game-artwork rights.
+`assets/snowsea-angel-thumb.png`. See [ICON.md](https://github.com/harrykuang-dev/Hololive-Dreams-Fishing-Auto/blob/dbc1aee9227d5d7bfecfa542cf424ffaa4a0a2ab/assets/ICON.md) and
+[NOTICE.md](https://github.com/harrykuang-dev/Hololive-Dreams-Fishing-Auto/blob/dbc1aee9227d5d7bfecfa542cf424ffaa4a0a2ab/assets/NOTICE.md) for asset details and game-artwork rights.
 
 ## Offline diagnostics / 離線診斷
 

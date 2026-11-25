@@ -1,6 +1,6 @@
 # 開發說明
 
-> Source reference / 來源參考 [upstream/jump_rope/docs/DEVELOPMENT.md](../../upstream/jump_rope/docs/DEVELOPMENT.md). Paths and standalone commands below refer to that source tree. Holodori-Auto builds and runs from the repository root. See [program architecture](../ARCHITECTURE.md).
+> Source reference / 來源參考 [upstream/jump_rope/docs/DEVELOPMENT.md](https://github.com/harrykuang-dev/Hololive-Dreams-Jump-Rope-Auto/blob/5af7b2ffea905776902b295642dd3a7cc020d147/docs/DEVELOPMENT.md). Paths and standalone commands below refer to that source tree. Holodori-Auto builds and runs from the repository root. See [program architecture](../ARCHITECTURE.md).
 
 目前版本為 1.3.3。程式、控制器及 YOLO 衍生權重採用 AGPL-3.0；舊版完整來源及 MIT 授權位於 `archive/v1.2.1/`。`archive/snapshot.json` 記錄原提交與檔案 SHA-256，建置排除存檔。人工標註與訓練工具分別在 `annotations/` 和 `training/`，兩者不進入執行包。
 

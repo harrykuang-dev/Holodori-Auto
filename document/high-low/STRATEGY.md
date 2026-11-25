@@ -1,6 +1,6 @@
 # Aggressive strategy
 
-> Source reference / 來源參考 [upstream/high_low/THREE_STAGE.md](../../upstream/high_low/THREE_STAGE.md). Paths and standalone commands below refer to that source tree. Holodori-Auto builds and runs from the repository root. See [program architecture](../ARCHITECTURE.md).
+> Source reference / 來源參考 [upstream/high_low/THREE_STAGE.md](https://github.com/harrykuang-dev/Hololive-Dreams-High-low-Auto-Personal/blob/9253c94c3945ad11125ab4b0ff9efc60e8308bea/THREE_STAGE.md). Paths and standalone commands below refer to that source tree. Holodori-Auto builds and runs from the repository root. See [program architecture](../ARCHITECTURE.md).
 
 [English](#en) · [繁體中文](#zh-tw) · [日本語](#ja) · [한국어](#ko) · [Indonesian](#id) · [简体中文](#zh-cn)
 

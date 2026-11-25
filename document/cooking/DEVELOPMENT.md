@@ -1,6 +1,6 @@
 # 開發說明
 
-> Source reference / 來源參考 [upstream/cooking/docs/DEVELOPMENT.md](../../upstream/cooking/docs/DEVELOPMENT.md). Paths and standalone commands below refer to that source tree. Holodori-Auto builds and runs from the repository root. See [program architecture](../ARCHITECTURE.md).
+> Source reference / 來源參考 [upstream/cooking/docs/DEVELOPMENT.md](https://github.com/harrykuang-dev/Hololive-Dreams-Collect-Cooking-Auto/blob/90c09a242fe335284588d895482a25efe17c3ba6/docs/DEVELOPMENT.md). Paths and standalone commands below refer to that source tree. Holodori-Auto builds and runs from the repository root. See [program architecture](../ARCHITECTURE.md).
 
 玩家端的單一完整版包含TensorRT、ONNX Runtime DirectML與CPU備援，不依賴PyTorch。模型格式、FP32精度、快取與自動切換機制見 [共用模型推論版本](INFERENCE.md)。
 

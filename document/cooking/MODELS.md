@@ -1,6 +1,6 @@
 # 辨識模型與開發者模式
 
-> Source reference / 來源參考 [upstream/cooking/docs/model-options.md](../../upstream/cooking/docs/model-options.md). Paths and standalone commands below refer to that source tree. Holodori-Auto builds and runs from the repository root. See [program architecture](../ARCHITECTURE.md).
+> Source reference / 來源參考 [upstream/cooking/docs/model-options.md](https://github.com/harrykuang-dev/Hololive-Dreams-Collect-Cooking-Auto/blob/90c09a242fe335284588d895482a25efe17c3ba6/docs/model-options.md). Paths and standalone commands below refer to that source tree. Holodori-Auto builds and runs from the repository root. See [program architecture](../ARCHITECTURE.md).
 
 介面提供「標準」（ResNet18）與「進階」（ResNet101），預設標準。選擇會保存，下次開啟沿用；執行期間不能切換，停止後可重新選擇。
 
@@ -24,7 +24,7 @@ ResNet18運算需求較低，ResNet101模型較大。介面採用單選鈕，旁
 
 最短抖盤間隔為兩次實際按下至少 5 秒，仍需確認最新畫面的按鈕狀態可用。低紋理周邊運動保護採 48 原生像素；此範圍與標準座標的食物露出半徑不同。
 
-權重與程式指紋見 [models-manifest.json](../../upstream/cooking/models-manifest.json)和 [packaged-runtime.json](../../upstream/cooking/docs/packaged-runtime.json)。GUI提供繁體中文、簡體中文、英文、日文、韓文及印尼文。遊戲名稱來源見 [遊戲用詞](../../upstream/cooking/docs/GAME_TERMS.md)。
+權重與程式指紋見 [models-manifest.json](https://github.com/harrykuang-dev/Hololive-Dreams-Collect-Cooking-Auto/blob/90c09a242fe335284588d895482a25efe17c3ba6/models-manifest.json)和 [packaged-runtime.json](https://github.com/harrykuang-dev/Hololive-Dreams-Collect-Cooking-Auto/blob/90c09a242fe335284588d895482a25efe17c3ba6/docs/packaged-runtime.json)。GUI提供繁體中文、簡體中文、英文、日文、韓文及印尼文。遊戲名稱來源見 [遊戲用詞](https://github.com/harrykuang-dev/Hololive-Dreams-Collect-Cooking-Auto/blob/90c09a242fe335284588d895482a25efe17c3ba6/docs/GAME_TERMS.md)。
 
 封裝後可透過以下命令只載入模型核對，不建立桌面擷取、不輸入遊戲：
 
