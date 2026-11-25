@@ -91,15 +91,24 @@ def bgr(area):
 
 def tile_markers(raster):
     observed = []
+    weak_orange = []
     for x, y in EDGES:
         blue, green, red = bgr(raster[y-4:y+5, x-4:x+5])
+        orange = (red > 200) & (green > 65) & (green < 153) & (blue < 90)
         fractions = (
             ((blue > 170) & (green > 120) & (green < 185) & (red < 80)).mean(),
-            ((red > 200) & (green > 65) & (green < 153) & (blue < 90)).mean(),
+            orange.mean(),
             ((blue > 164) & (red > 147) & (abs(blue - red) < 45) & (abs(green - red) < 35)).mean(),
         )
         winner = int(np.argmax(fractions))
-        observed.append((BLUE, ORANGE, 0)[winner] if fractions[winner] > .48 else None)
+        marker = (BLUE, ORANGE, 0)[winner] if fractions[winner] > .48 else None
+        if marker == ORANGE and (orange & (green < 125)).mean() <= .48:
+            weak_orange.append(len(observed))
+        observed.append(marker)
+    # A foreground hammer can look orange on a tile that has blue ink.
+    if BLUE in observed:
+        for index in weak_orange:
+            observed[index] = None
     return observed
 
 
