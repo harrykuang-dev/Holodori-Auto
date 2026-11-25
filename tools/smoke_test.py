@@ -32,6 +32,7 @@ FIELDS = {
     "cooking": {
         "model": "resnet101", "games": "3", "developer_mode": True,
     },
+    "puka_puka": {"rounds": "7"},
 }
 SHARED_SETTINGS = {"language": "English", "start_key": "Alt+F7", "stop_key": "Ctrl+Alt+F10"}
 
@@ -57,7 +58,6 @@ def exercise(*, executable: Path | None, timeout: float, screenshot: Path | None
     sys.path.insert(0, str(ROOT))
     from holodori.app import HolodoriApp, PROJECT_URL
     from holodori import __version__
-    from holodori.modules import versions
     from holodori.runtime import LANGUAGES, dpi_awareness
 
     report = {"mode": "packaged" if executable else "source", "modules": [], "errors": []}
@@ -190,32 +190,8 @@ def exercise(*, executable: Path | None, timeout: float, screenshot: Path | None
                 with patch('holodori.app.webbrowser.open', return_value=True) as browser:
                     app.version_label.event_generate('<Button-1>')
                     root.update()
-                    assert app.version_dialog.winfo_viewable()
-                    if screenshot:
-                        from PIL import ImageGrab
-                        screenshot.parent.mkdir(parents=True, exist_ok=True)
-                        settled = time.monotonic()+0.7
-                        pump_until(lambda: time.monotonic() >= settled, 'version dialog painting')
-                        left, top = app.version_dialog.winfo_rootx(), app.version_dialog.winfo_rooty()
-                        ImageGrab.grab(bbox=(left, top, left+app.version_dialog.winfo_width(),
-                                            top+app.version_dialog.winfo_height())).save(
-                            screenshot.with_stem(screenshot.stem+'-versions'))
-                    dialog = app.version_dialog
-                    assert app.show_versions() is dialog, 'Duplicate version dialog'
-                    pins = versions()
-                    links = [PROJECT_URL, *(entry['repository'].removesuffix('.git') for entry in pins.values())]
-                    assert [link.cget('text') for link in app.version_links] == links
-                    displayed = [link.master.winfo_children()[0].cget('text').rsplit('  v', 1)[1]
-                                 for link in app.version_links]
-                    component_versions = {key: entry['version'] for key, entry in pins.items()}
-                    assert displayed == [__version__, *component_versions.values()], displayed
-                    for link in app.version_links:
-                        link.event_generate('<Button-1>')
-                        root.update()
-                    assert [call.args[0] for call in browser.call_args_list] == links
-                    app.close_versions()
-                report['version_dialog'] = {'version': __version__, 'links': links,
-                                            'components': component_versions, 'single_instance': True}
+                    browser.assert_called_once_with(PROJECT_URL)
+                report['version_link'] = {'version': __version__, 'url': PROJECT_URL}
                 # Use the host's actual capture methods with synthetic Tk events;
                 # no native keyboard/game input is sent, and smoke listeners are inert.
                 initial = dict(app.settings)
@@ -279,12 +255,6 @@ def exercise(*, executable: Path | None, timeout: float, screenshot: Path | None
                         app.change_language()
                         assert_shared(module, dict(SHARED_SETTINGS, language=language))
                         assert_layout(module)
-                        if module == 'high_low':
-                            dialog = app.show_versions()
-                            root.update()
-                            assert dialog.winfo_viewable()
-                            assert len(app.version_links) == 5
-                            app.close_versions()
                     app.language.set(SHARED_SETTINGS['language'])
                     app.change_language()
                     assert_shared(module)

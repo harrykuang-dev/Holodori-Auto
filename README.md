@@ -2,7 +2,7 @@
 
 [English](README.md) · [繁體中文](README.zh-TW.md) · [日本語](README.ja.md) · [한국어](README.ko.md) · [Indonesian](README.id.md) · [简体中文](README.zh-CN.md)
 
-A Windows program that brings **High & Low**, **Fishing**, **Jump Rope**, and **Cooking** for *hololive Dreams* into one window. The four modules share language and Start/Stop shortcuts while keeping their original game logic, controls, statistics, and diagnostics. Navigation and shared settings follow the same Fluent visual style and use each module's original artwork and accent color.
+Holodori-Auto is a Windows program that automates **High & Low**, **Fishing**, **Jump Rope**, **Cooking**, and **Puka Puka Fight** in *hololive Dreams*. Select a mode in the navigation to use its controls and statistics. All modes share the same language setting and Start/Stop shortcuts.
 
 | Module | Original program |
 | --- | --- |
@@ -10,8 +10,6 @@ A Windows program that brings **High & Low**, **Fishing**, **Jump Rope**, and **
 | Fishing | [Hololive-Dreams-Fishing-Auto](https://github.com/harrykuang-dev/Hololive-Dreams-Fishing-Auto) |
 | Jump Rope | [Hololive-Dreams-Jump-Rope-Auto](https://github.com/harrykuang-dev/Hololive-Dreams-Jump-Rope-Auto) |
 | Cooking | [Hololive-Dreams-Collect-Cooking-Auto](https://github.com/harrykuang-dev/Hololive-Dreams-Collect-Cooking-Auto) |
-
-Version **1.1.5** includes High & Low **1.1.4**, Fishing **1.1.2**, Jump Rope **1.3.3** and Cooking **1.1.2**. Click the version in the lower-left corner to see each program’s version and repository link. The initial window uses the selected standalone program’s default size, scaled for the display DPI. After resizing or maximizing, switching modes preserves the current window size and state.
 
 ## Download
 
@@ -33,6 +31,14 @@ Only the selected module runs. The common language selector and shortcut fields 
 Shared preferences are saved in `%LOCALAPPDATA%\HolodoriAuto\settings.json`. The first run uses existing High & Low language and shortcut preferences when available; otherwise the defaults are Traditional Chinese, **F8** to start, and **INSERT** to stop. Original statistics, gameplay records, and module-specific options keep their original data locations.
 
 Windows 10/11 x64 and the Windows game client are required. Keep the game visible and follow the selected module's requirements for resolution, capture, and foreground operation. The original READMEs linked above describe its controls and behavior.
+
+The window opens at the selected mode’s default size, scaled for your display. Switching modes preserves any resizing or maximized state. Click the version in the lower-left corner to open the Holodori-Auto repository.
+
+### Puka Puka Fight
+
+Enter the Traditional Chinese solo screen and set **Match limit** to 1–9999. Click Start to bring the game to the foreground and begin, or press the shared Start shortcut while the game is in the foreground. The limit counts completed wins across both modes. The program follows the available Normal stages and continues in Challenge after the game unlocks it at Normal 30.
+
+The module reads animal hats, verifies them against tile markings, and checks the game’s highlighted destination before clicking. It stops when the game loses focus, moves, resizes, or leaves the supported 16:9 layout. On standard eight-piece positions where local search is insufficient, it can query the public [Animal Shogi tablebase](https://dobutsu.brianhliou.com/) with an abstract board position. The query includes the pieces, reserves and side to move.
 
 ## Run from source
 
@@ -67,7 +73,7 @@ Keep the generated portable folder together when distributing or running the pro
 
 ## Keep modules current
 
-The original repositories remain independent Git submodules. `upstream-lock.json` records the exact commit and version included for each one. Updating one module does not require copying or merging its game algorithms into Holodori-Auto.
+The four original repositories remain independent Git submodules. Puka Puka Fight ships from `components/puka_puka`. `upstream-lock.json` records the exact commit and version included for each one. Updating one module does not require copying or merging its game algorithms into Holodori-Auto.
 
 ```powershell
 python tools/sync_upstreams.py --check

@@ -2,7 +2,7 @@
 
 [English](README.md) · [繁體中文](README.zh-TW.md) · [日本語](README.ja.md) · [한국어](README.ko.md) · [Indonesian](README.id.md) · [简体中文](README.zh-CN.md)
 
-*hololive Dreams* の**ハイ＆ロー**、**釣り**、**縄跳び**、**料理**を一つのウィンドウにまとめた Windows 用プログラムです。言語設定と開始・停止キーを共通化し、各機能のゲームロジック、操作画面、集計、診断機能を維持しています。ナビゲーションと共通設定には同じ Fluent スタイルを使用し、各機能の既存の画像とテーマカラーを引き継いでいます。
+Holodori-Auto は、*hololive Dreams* のミニゲーム **ハイ＆ロー**、**釣り**、**縄跳び**、**料理**、**ぷかぷかファイト**を自動化する Windows 用プログラムです。ナビゲーションでモードを選ぶと、そのモードの操作と集計機能を利用できます。言語設定と開始・停止のショートカットは全モードで共通です。
 
 | 機能 | 元のプログラム |
 | --- | --- |
@@ -10,8 +10,6 @@
 | 釣り | [Hololive-Dreams-Fishing-Auto](https://github.com/harrykuang-dev/Hololive-Dreams-Fishing-Auto) |
 | 縄跳び | [Hololive-Dreams-Jump-Rope-Auto](https://github.com/harrykuang-dev/Hololive-Dreams-Jump-Rope-Auto) |
 | 料理 | [Hololive-Dreams-Collect-Cooking-Auto](https://github.com/harrykuang-dev/Hololive-Dreams-Collect-Cooking-Auto) |
-
-**1.1.5** にはハイ＆ロー **1.1.4**、釣り **1.1.2**、縄跳び **1.3.3**、料理 **1.1.2** が含まれます。左下のバージョンをクリックすると、各プログラムのバージョンとリポジトリへのリンクを確認できます。初回起動時は選択した単体版の初期ウィンドウサイズを画面の DPI に合わせて使用します。サイズ変更や最大化の後に機能を切り替えても、現在のウィンドウサイズと状態を維持します。
 
 ## ダウンロード
 
@@ -33,6 +31,8 @@
 共通設定は `%LOCALAPPDATA%\HolodoriAuto\settings.json` に保存されます。初回起動時は既存の High & Low の言語とキー設定を優先して使用します。既存の設定がない場合は、繁体字中国語、開始 **F8**、停止 **INSERT** が初期値です。集計、ゲーム記録、各機能固有の設定には、元のプログラムの保存先を引き続き使用します。
 
 Windows 10/11 x64 と Windows 版ゲームが必要です。実行中はゲーム画面を見える状態に保ち、選択した機能の解像度、画面キャプチャー、前面表示に関する要件に従ってください。各機能の詳しい操作と動作は、上記の元リポジトリの README を参照してください。
+
+起動時のウィンドウサイズは、選択したモードの初期サイズを画面の DPI に合わせて調整します。ウィンドウのサイズを変更したり最大化したりした後も、モードを切り替えると現在の状態が維持されます。左下のバージョン表示をクリックすると Holodori-Auto のリポジトリが開きます。
 
 ## ソースから実行
 

@@ -208,6 +208,8 @@ def suspend_shortcuts(app, module_id, target='start'):
             app._hotkey_generation += 1
         app._capturing = True
         app.hotkey.configure(enabled=False)
+    elif module_id == 'puka_puka':
+        app.begin_capture()
     else:
         app.capturing = app.start_key if target == 'start' else app.stop_key
         app.configure_hotkeys()
@@ -259,7 +261,7 @@ def change_language(app, module_id, language):
         raise ValueError(f'Missing language variable for {module_id}')
     variable.set(language)
     handler = {'high_low': 'change_language', 'fishing': '_apply_language',
-               'jump_rope': 'apply_language', 'cooking': 'translate'}[module_id]
+               'jump_rope': 'apply_language', 'cooking': 'translate', 'puka_puka': 'translate'}[module_id]
     getattr(app, handler)()
     hide_shared_controls(app)
 
@@ -310,7 +312,8 @@ def capture_window_size(root):
 def activate_source(module_id):
     module = BY_ID[module_id]
     if not (module.path / (module.entry + '.py')).is_file():
-        raise FileNotFoundError(f'Missing upstream/{module_id}. Run git submodule update --init --recursive.')
+        hint = '' if module.bundled else ' Run git submodule update --init --recursive.'
+        raise FileNotFoundError(f'Missing component source: {module.path}.{hint}')
     os.chdir(module.path)
     sys.path.insert(0, str(module.path))
     return module
@@ -392,7 +395,7 @@ def snapshot(app, spec):
         saved['_summary'] = (dict(done=app.session.completed_rounds,
             target=app.session.config.rounds, inputs=app.session.inputs)
             if app.session else getattr(app, '_holodori_summary', None))
-    elif spec.id == 'cooking':
+    elif spec.id in ('cooking', 'puka_puka'):
         saved['_completed'] = app.completed
     return saved
 
@@ -424,6 +427,9 @@ def restore(app, spec, saved):
         app.completed = saved.get('_completed', 0)
         app.translate()
         app.set_controls()
+    elif spec.id == 'puka_puka':
+        app.completed = saved.get('_completed', 0)
+        app.translate()
     elif spec.id == 'high_low':
         keys = saved.get('_keys', {})
         app.start_key = keys.get('start', app.start_key)
@@ -565,7 +571,8 @@ class EmbeddedSession:
             elif action == 'dialog' and self.smoke:
                 # Test original help dialogs, without starting any automation.
                 method = {'high_low': 'show_strategy_help', 'fishing': 'show_developer_help',
-                          'jump_rope': 'show_help', 'cooking': 'show_model_help'}[self.spec.id]
+                          'jump_rope': 'show_help', 'cooking': 'show_model_help',
+                          'puka_puka': 'show_help'}[self.spec.id]
                 getattr(self.app, method)()
                 self.root.after(150, self.close_dialogs)
         if not self.closing:
@@ -621,9 +628,13 @@ def embedded_main():
         if spec.id == 'high_low':
             upstream.prepare_user_data(upstream.auto_bot.APP_DIR)
         constructor = getattr(upstream, spec.app_class)
-        app = (constructor(root, shortcuts=dict(start_key=args.start_key, stop_key=args.stop_key),
-                           persist_shortcuts=False)
-               if spec.id == 'fishing' else constructor(root))
+        if spec.id == 'fishing':
+            app = constructor(root, shortcuts=dict(start_key=args.start_key, stop_key=args.stop_key),
+                              persist_shortcuts=False)
+        elif spec.id == 'puka_puka':
+            app = constructor(root, smoke=args.smoke)
+        else:
+            app = constructor(root)
         app._holodori_window_defaults = window_defaults
         saved = read_json(args.channel / 'restore.json', {})
         if saved:

@@ -30,7 +30,7 @@ def verify(executable: Path) -> dict:
     sources = runtime_sources()
     for source, relative in sources:
         if sha256(source) != sha256(internal/relative):
-            raise ValueError('Bundled upstream differs: '+str(relative))
+            raise ValueError('Bundled runtime file differs: '+str(relative))
     if (ROOT/'upstream-lock.json').read_bytes() != (internal/'upstream-lock.json').read_bytes():
         raise ValueError('Bundled source pins differ')
     shared = {}
@@ -49,7 +49,9 @@ def verify(executable: Path) -> dict:
     for pattern in ('tensorrt_cu12_libs-*.dist-info/LICENSE.txt', 'nvidia_cuda_runtime_cu12-*.dist-info/licenses/*'):
         if not list(internal.glob(pattern)):
             raise ValueError('Missing dependency license: '+pattern)
-    return dict(passed=True, host_modules=verified, unchanged_upstream_files=len(sources),
+    return dict(passed=True, host_modules=verified,
+                unchanged_upstream_files=sum(path.parts[0] == 'upstream' for _, path in sources),
+                bundled_runtime_files=sum(path.parts[0] == 'components' for _, path in sources),
                 shared_libraries=shared, executable_sha256=sha256(executable), game_inputs_sent=0)
 
 

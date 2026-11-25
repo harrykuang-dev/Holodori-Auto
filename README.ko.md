@@ -2,7 +2,7 @@
 
 [English](README.md) · [繁體中文](README.zh-TW.md) · [日本語](README.ja.md) · [한국어](README.ko.md) · [Indonesian](README.id.md) · [简体中文](README.zh-CN.md)
 
-*hololive Dreams*의 **하이&로**, **낚시**, **줄넘기**, **요리**를 하나의 창에서 실행하는 Windows 프로그램입니다. 네 기능은 언어와 시작·중지 단축키를 공유하며, 각 기능의 기존 게임 로직, 조작 화면, 통계, 진단 기능을 유지합니다. 탐색 영역과 공통 설정에는 같은 Fluent 스타일을 사용하고, 각 기능의 기존 이미지와 테마 색상을 적용합니다.
+Holodori-Auto는 *hololive Dreams*의 **하이&로**, **낚시**, **줄넘기**, **요리**, **둥실둥실 파이트** 미니게임을 자동화하는 Windows 프로그램입니다. 탐색 영역에서 모드를 선택하면 해당 모드의 조작과 통계 기능을 사용할 수 있습니다. 언어 설정과 시작·중지 단축키는 모든 모드에 공통으로 적용됩니다.
 
 | 기능 | 원본 프로그램 |
 | --- | --- |
@@ -10,8 +10,6 @@
 | 낚시 | [Hololive-Dreams-Fishing-Auto](https://github.com/harrykuang-dev/Hololive-Dreams-Fishing-Auto) |
 | 줄넘기 | [Hololive-Dreams-Jump-Rope-Auto](https://github.com/harrykuang-dev/Hololive-Dreams-Jump-Rope-Auto) |
 | 요리 | [Hololive-Dreams-Collect-Cooking-Auto](https://github.com/harrykuang-dev/Hololive-Dreams-Collect-Cooking-Auto) |
-
-**1.1.5**에는 하이&로 **1.1.4**, 낚시 **1.1.2**, 줄넘기 **1.3.3**, 요리 **1.1.2**이 포함됩니다. 왼쪽 아래 버전을 클릭하면 각 프로그램의 버전과 저장소 링크를 볼 수 있습니다. 처음 열 때는 선택한 단독 프로그램의 기본 창 크기를 화면 DPI에 맞춰 사용합니다. 크기를 조절하거나 최대화한 후 기능을 전환해도 현재 창 크기와 상태가 유지됩니다.
 
 ## 다운로드
 
@@ -33,6 +31,8 @@
 공통 설정은 `%LOCALAPPDATA%\HolodoriAuto\settings.json`에 저장됩니다. 처음 실행할 때 기존 High & Low의 언어와 단축키 설정이 있으면 우선 적용합니다. 기존 설정이 없으면 번체 중국어, 시작 **F8**, 중지 **INSERT**가 기본값입니다. 통계, 게임 기록, 기능별 옵션은 원본 프로그램의 데이터 위치를 계속 사용합니다.
 
 Windows 10/11 x64와 Windows용 게임 클라이언트가 필요합니다. 실행 중에는 게임 화면이 보이도록 유지하고, 선택한 기능의 해상도, 화면 캡처, 전경 실행 요구 사항을 따르세요. 각 기능의 자세한 조작과 동작은 위에 연결된 원본 저장소의 README를 참조하세요.
+
+실행 시 선택한 모드의 기본 창 크기가 화면 DPI에 맞게 조정됩니다. 창 크기를 변경하거나 최대화한 뒤 모드를 전환해도 현재 창 상태가 유지됩니다. 왼쪽 아래 버전 표시를 클릭하면 Holodori-Auto 저장소가 열립니다.
 
 ## 소스에서 실행
 

@@ -15,9 +15,11 @@ upstream/
   fishing/     Hololive-Dreams-Fishing-Auto
   jump_rope/   Hololive-Dreams-Jump-Rope-Auto
   cooking/     Hololive-Dreams-Collect-Cooking-Auto
+components/
+  puka_puka/   Puka Puka Fight
 ```
 
-Each project remains an unmodified Git submodule. The adapter contract records its entry module, application class, original artwork, accent color, and settings exposed to the host. The adapter hides each page's duplicate language and shortcut rows and passes common preferences through the original controls; it does not patch game algorithms. Module execution uses a separate process and its original resource directory, preventing collisions between names such as `gui`, `vision`, and `app_locale`. The host embeds the original Tk window as a Windows child window.
+The four original projects remain unmodified Git submodules. Puka Puka Fight is a bundled component with the same child process lifecycle. The adapter contract records the entry module, application class, artwork, accent color, and settings exposed to the host. The adapter passes common preferences through the component controls and hides duplicate rows. Module execution uses a separate process and resource directory, preventing collisions between names such as `gui`, `vision`, and `app_locale`. The host embeds each Tk window as a Windows child window.
 
 Switching closes the active module through its original close handler. The host waits for its process and workers to exit before opening the next module. An unresponsive module remains visible as a closing state; it must not silently allow another automation process to start. Each new module receives the current shared language and shortcuts. Original statistics, gameplay records, and module-specific data stay in their original locations.
 
@@ -77,7 +79,7 @@ Version 1.1.2 uses a single shared TensorRT 10.13.3.9 package, CUDA runtime 12.9
 
 `ddddocr` declares the CPU `onnxruntime` distribution as a dependency. After dependency installation, reinstall `onnxruntime-directml==1.24.4` with `--force-reinstall --no-deps` to select the shared DirectML implementation. The builder refuses an environment without `DmlExecutionProvider`.
 
-During embedded construction, the adapter records the original DPI-scaled window size and minimum size, then the host applies them once when that module becomes ready. It does not hard-code a second size table or reset a user's resize on each status update. The version footer opens a Fluent card dialog populated from `upstream-lock.json`, with the host and four original repository links.
+During embedded construction, the adapter records the original DPI-scaled window size and minimum size, then the host applies them once when that module becomes ready. It does not hard-code a second size table or reset a user's resize on each status update. The version number in the footer opens the Holodori-Auto repository.
 
 The host remains withdrawn until the initial module's size is applied, so no temporary large window is shown. The adapter normalizes outer page padding, compensates for a visible page scrollbar, and reports the actual card gap. The host uses that gap below the shared settings card to keep the page aligned across languages and resizing.
 
@@ -85,7 +87,7 @@ Use `python main.py --check-jump-model-only --backend gpu --report work/jump-gpu
 
 ## 繁體中文
 
-Holodori-Auto 負責共用導覽、語言及開始／停止快捷鍵、程序管理、Windows 視窗嵌入、建置與上游同步；辨識、輸入、策略、模型選擇、計數、專屬選項與診斷由原始功能負責。四個功能均以未修改的 Git 子模組保留；整合適配層隱藏各頁面重複的語言與快捷鍵列，透過原始控制介面套用共用設定，不修改遊戲演算法。
+Holodori-Auto 負責共用導覽、語言及開始／停止快捷鍵、程序管理、Windows 視窗嵌入、建置與上游同步。原有四個功能以未修改的 Git 子模組保留，內建漂漂大亂鬥同樣使用獨立功能程序。整合層隱藏重複的設定列，透過各功能的控制介面套用共用設定。
 
 同一時間只啟動一個功能程序，並將原本的 Tk 介面嵌入主視窗。切換時呼叫目前功能的原始關閉流程，等候程序與工作結束後才啟動下一個功能。共用語言及快捷鍵會沿用至下一個功能；原有統計、遊戲紀錄及專屬資料繼續使用原本位置。
 

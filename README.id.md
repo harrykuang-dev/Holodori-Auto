@@ -2,7 +2,7 @@
 
 [English](README.md) · [繁體中文](README.zh-TW.md) · [日本語](README.ja.md) · [한국어](README.ko.md) · [Indonesian](README.id.md) · [简体中文](README.zh-CN.md)
 
-Program Windows yang menggabungkan **High & Low**, **Memancing**, **Lompat Tali**, dan **Memasak** dari *hololive Dreams* dalam satu jendela. Keempat fitur berbagi pengaturan bahasa serta pintasan mulai dan berhenti, dengan tetap mempertahankan logika permainan, kontrol, statistik, dan diagnostik masing-masing. Navigasi dan pengaturan bersama memakai gaya Fluent yang sama serta menggunakan gambar dan warna tema asli setiap fitur.
+Holodori-Auto adalah program Windows untuk mengotomatiskan minigame **High & Low**, **Memancing**, **Lompat Tali**, **Memasak**, dan **Puka Puka Fight** di *hololive Dreams*. Pilih mode di menu navigasi untuk menggunakan kontrol dan melihat statistiknya. Pengaturan bahasa serta pintasan mulai dan berhenti berlaku untuk semua mode.
 
 | Fitur | Program asal |
 | --- | --- |
@@ -10,8 +10,6 @@ Program Windows yang menggabungkan **High & Low**, **Memancing**, **Lompat Tali*
 | Memancing | [Hololive-Dreams-Fishing-Auto](https://github.com/harrykuang-dev/Hololive-Dreams-Fishing-Auto) |
 | Lompat Tali | [Hololive-Dreams-Jump-Rope-Auto](https://github.com/harrykuang-dev/Hololive-Dreams-Jump-Rope-Auto) |
 | Memasak | [Hololive-Dreams-Collect-Cooking-Auto](https://github.com/harrykuang-dev/Hololive-Dreams-Collect-Cooking-Auto) |
-
-**1.1.5** mencakup High & Low **1.1.4**, Memancing **1.1.2**, Lompat Tali **1.3.3**, dan Memasak **1.1.2**. Klik versi di sudut kiri bawah untuk melihat versi dan tautan repositori setiap program. Saat pertama dibuka, jendela memakai ukuran bawaan program mandiri yang dipilih, disesuaikan dengan DPI layar. Setelah ukuran diubah atau jendela dimaksimalkan, pergantian mode mempertahankan ukuran dan keadaan jendela saat ini.
 
 ## Unduh
 
@@ -33,6 +31,8 @@ Hanya fitur yang dipilih yang berjalan. Pilihan bahasa dan pintasan bersama berl
 Preferensi bersama disimpan di `%LOCALAPPDATA%\HolodoriAuto\settings.json`. Saat pertama kali dijalankan, program mengutamakan pengaturan bahasa dan pintasan High & Low yang sudah ada. Jika belum ada pengaturan, nilai bawaannya adalah bahasa Tionghoa Tradisional, **F8** untuk mulai, dan **INSERT** untuk berhenti. Statistik, catatan permainan, dan opsi khusus setiap fitur tetap menggunakan lokasi data program asal.
 
 Memerlukan Windows 10/11 x64 dan klien game versi Windows. Biarkan game terlihat selama proses berjalan dan ikuti persyaratan resolusi, penangkapan layar, serta jendela aktif dari fitur yang dipilih. Petunjuk lengkap mengenai kontrol dan perilaku setiap fitur tersedia dalam README repositori asal yang ditautkan di atas.
+
+Saat dibuka, ukuran awal jendela mengikuti ukuran bawaan mode yang dipilih dan disesuaikan dengan DPI layar. Setelah jendela diubah ukurannya atau dimaksimalkan, perpindahan mode mempertahankan keadaan jendela saat ini. Klik nomor versi di sudut kiri bawah untuk membuka repositori Holodori-Auto.
 
 ## Menjalankan dari kode sumber
 

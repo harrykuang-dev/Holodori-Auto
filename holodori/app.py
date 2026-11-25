@@ -1,4 +1,4 @@
-"""Fluent-style host for four original Tk interfaces."""
+"""Fluent-style host for the isolated Tk interfaces."""
 from __future__ import annotations
 
 import os
@@ -14,7 +14,7 @@ from tkinter import ttk, messagebox
 from PIL import Image, ImageTk
 from holodori import __version__
 from holodori.channel import read_json, write_json
-from holodori.modules import MODULES, BY_ID, ROOT, versions
+from holodori.modules import MODULES, BY_ID, ROOT
 from holodori.runtime import dpi_awareness
 from holodori.settings import load_settings, save_settings, captured_hotkey, hotkeys_conflict
 
@@ -22,7 +22,7 @@ BG, TEXT, MUTED = '#F5F5F5', '#242424', '#616161'
 PROJECT_URL = 'https://github.com/harrykuang-dev/Holodori-Auto'
 SELECTED_BACKGROUNDS = {
     'high_low': '#EDE5F6', 'fishing': '#E5F2FC',
-    'jump_rope': '#FFF7D1', 'cooking': '#FDE9EA',
+    'jump_rope': '#FFF7D1', 'cooking': '#FDE9EA', 'puka_puka': '#DDF1F1',
 }
 LABELS = {
     '繁體中文': ('比大小', '釣魚', '跳繩', '料理', '載入中…', '請先停止目前功能，再切換。', '正在停止，請稍候…', '重新載入', '載入失敗'),
@@ -40,11 +40,14 @@ SETTING_LABELS = {
     'Indonesian': ('Bahasa / Language', 'Pintasan mulai', 'Pintasan berhenti', 'Tekan pintasan…', 'Pintasan mulai dan berhenti tidak boleh tumpang tindih.'),
     '简体中文': ('语言 / Language', '开始快捷键', '停止快捷键', '请按下快捷键…', '开始与停止快捷键不能相同或互相包含。'),
 }
-ABOUT_LABELS = {
-    '繁體中文': ('版本資訊', '關閉'), 'English': ('Version information', 'Close'),
-    '日本語': ('バージョン情報', '閉じる'), '한국어': ('버전 정보', '닫기'),
-    'Indonesian': ('Informasi versi', 'Tutup'), '简体中文': ('版本信息', '关闭'),
+PUKA_LABELS = {
+    '繁體中文': '漂漂大亂鬥', 'English': 'Puka Puka Fight', '日本語': 'ぷかぷかファイト',
+    '한국어': '둥실둥실 파이트', 'Indonesian': 'Puka Puka Fight', '简体中文': '浮排大战',
 }
+
+
+def tab_label(language, module, index):
+    return PUKA_LABELS[language] if module.id == 'puka_puka' else LABELS[language][index]
 
 
 def family_theme(root, px):
@@ -87,7 +90,6 @@ class HolodoriApp:
         self.last_status = {}
         self.last_error = None
         self.icons = []
-        self.version_dialog = None
         self._size_applied = False
         # Each module and its nested workers share one job. A replacement
         # module waits until the previous job has no live processes.
@@ -154,7 +156,7 @@ class HolodoriApp:
                                font=('Segoe UI', 10), cursor='hand2',
                                padx=self.px(4), pady=self.px(9), takefocus=True,
                                command=lambda mid=module.id: self.select(mid))
-            button.grid(row=0, column=index, sticky='ew', padx=self.px(3))
+            button.grid(row=0, column=index, sticky='nsew', padx=self.px(3))
             icon_path = module.path / module.icon
             if icon_path.is_file():
                 with Image.open(icon_path) as source:
@@ -164,6 +166,8 @@ class HolodoriApp:
                 self.icons.append(icon)
                 button.configure(image=icon, compound='top')
             self.buttons[module.id] = button
+        self.navigation.bind('<Configure>', lambda event: self.buttons['puka_puka'].configure(
+            wraplength=max(1, event.width // len(MODULES) - self.px(14))))
         self.navigation.pack_configure(before=self.shared_card, pady=(self.px(12),self.px(8)))
         self.intro = tk.Frame(root, bg=BG)
         self.intro.pack(before=self.shared_card, fill='x', padx=self.px(20), pady=(0,self.px(12)))
@@ -190,9 +194,9 @@ class HolodoriApp:
                                       font=('Segoe UI',9), cursor='hand2')
         self.version_label.pack(side='left')
         self.version_label.configure(takefocus=True)
-        self.version_label.bind('<Button-1>', self.show_versions)
-        self.version_label.bind('<Return>', self.show_versions)
-        self.version_label.bind('<space>', self.show_versions)
+        self.version_label.bind('<Button-1>', self.open_project)
+        self.version_label.bind('<Return>', self.open_project)
+        self.version_label.bind('<space>', self.open_project)
         self.note = tk.Label(self.footer, bg=BG, fg=MUTED, font=('Segoe UI', 9), anchor='e')
         self.note.pack(side='right', fill='x', expand=True)
         self.translate()
@@ -205,68 +209,10 @@ class HolodoriApp:
         root.after(50, lambda: self.select(initial))
         root.after(100, self.poll)
 
-    def show_versions(self, _event=None):
-        if self.closing:
-            return
-        if self.version_dialog is not None and self.version_dialog.winfo_exists():
-            self.version_dialog.lift()
-            return self.version_dialog
-        self.end_capture()
-        title, close_text = ABOUT_LABELS[self.language.get()]
-        dialog = self.version_dialog = tk.Toplevel(self.root)
-        dialog.withdraw()
-        dialog.title(title)
-        dialog.transient(self.root)
-        dialog.resizable(False, False)
-        dialog.configure(bg=BG)
-        panel = ttk.Frame(dialog, padding=self.px(20))
-        panel.pack(fill='both', expand=True)
-        wrap = min(self.px(480), self.root.winfo_screenwidth()-self.px(100))
-        records = versions()
-        self.version_links = []
-        for name, version, url in [
-            ('Holodori-Auto', __version__, PROJECT_URL),
-            *((LABELS[self.language.get()][i], records[module.id]['version'],
-               records[module.id]['repository'].removesuffix('.git'))
-              for i, module in enumerate(MODULES)),
-        ]:
-            card = ttk.Frame(panel, style='Card.TFrame', padding=self.px(12))
-            card.pack(fill='x', pady=(0, self.px(8)))
-            ttk.Label(card, text=f'{name}  v{version}', style='Card.TLabel',
-                      font=('Segoe UI',11,'bold')).pack(anchor='w')
-            link = ttk.Label(card, text=url, style='Card.TLabel', foreground='#0067C0',
-                             font=('Segoe UI',9,'underline'), cursor='hand2',
-                             takefocus=True, wraplength=wrap, justify='left')
-            link.pack(anchor='w', pady=(self.px(4),0))
-            for event in ('<Button-1>', '<Return>', '<space>'):
-                link.bind(event, lambda _event, address=url: webbrowser.open(address))
-            self.version_links.append(link)
-        close = ttk.Button(panel, text=close_text, style='Primary.TButton', command=self.close_versions)
-        close.pack(anchor='e', pady=(self.px(4),0))
-        dialog.protocol('WM_DELETE_WINDOW', self.close_versions)
-        dialog.bind('<Escape>', self.close_versions)
-        dialog.update_idletasks()
-        width, height = dialog.winfo_reqwidth(), dialog.winfo_reqheight()
-        x = self.root.winfo_rootx()+(self.root.winfo_width()-width)//2
-        y = self.root.winfo_rooty()+(self.root.winfo_height()-height)//2
-        # Keep the complete dialog on the host monitor's work area.
-        try:
-            import win32api
-            import win32gui
-            window = win32gui.GetAncestor(self.root.winfo_id(), 2)
-            left, top, right, bottom = win32api.GetMonitorInfo(win32api.MonitorFromWindow(window, 2))['Work']
-        except Exception:
-            left, top, right, bottom = 0, 0, self.root.winfo_screenwidth(), self.root.winfo_screenheight()
-        x, y = max(left, min(x, right-width)), max(top, min(y, bottom-height))
-        dialog.geometry(f'{width}x{height}{x:+}{y:+}')
-        dialog.deiconify()
-        close.focus_set()
-        return dialog
-
-    def close_versions(self, _event=None):
-        if self.version_dialog is not None:
-            self.version_dialog.destroy()
-            self.version_dialog = None
+    def open_project(self, _event=None):
+        if not self.closing:
+            self.end_capture()
+            webbrowser.open(PROJECT_URL)
 
     def apply_window_defaults(self, status):
         # Initialize the host once; replacing a child must not overwrite the
@@ -287,7 +233,7 @@ class HolodoriApp:
     def translate(self):
         labels = LABELS[self.language.get()]
         for index, module in enumerate(MODULES):
-            self.buttons[module.id].configure(text=labels[index])
+            self.buttons[module.id].configure(text=tab_label(self.language.get(), module, index))
         self.reload.configure(text=labels[7])
         if hasattr(self,'setting_labels'):
             for label, text in zip(self.setting_labels, SETTING_LABELS[self.language.get()]):

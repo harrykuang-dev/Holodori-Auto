@@ -1,4 +1,4 @@
-"""Build a portable Windows folder containing all four original runtimes.
+"""Build a portable Windows folder containing the five game runtimes.
 
 Run from an environment containing requirements.txt and requirements-build.txt.
 The upstream source files are copied as data, rather than merged into one Python
@@ -67,15 +67,17 @@ def runtime_file(relative: Path) -> bool:
 
 def runtime_sources() -> list[tuple[Path, Path]]:
     sources = []
-    for component in COMPONENTS:
-        directory = ROOT / "upstream" / component
-        entry = "gui.py" if component in {"fishing", "cooking"} else "main_ui.py"
+    directories = [(Path('upstream') / name, 'gui.py' if name in ('fishing', 'cooking') else 'main_ui.py')
+                   for name in COMPONENTS]
+    directories.append((Path('components/puka_puka'), 'puka_ui.py'))
+    for prefix, entry in directories:
+        directory = ROOT / prefix
         if not (directory / entry).is_file():
-            raise ValueError(f"Missing upstream source: {directory}. Run tools/sync_upstreams.py first.")
+            raise ValueError(f"Missing runtime source: {directory} / {entry}")
         for source in sorted(directory.rglob("*")):
             relative = source.relative_to(directory)
             if source.is_file() and not source.is_symlink() and runtime_file(relative):
-                sources.append((source, Path("upstream") / component / relative))
+                sources.append((source, prefix / relative))
     return sources
 
 
@@ -278,12 +280,13 @@ def build(output: Path, *, spec_only: bool, create_zip: bool) -> None:
         for original, relative in sources:
             copied = runtime / relative
             if not copied.is_file() or sha256(original) != sha256(copied):
-                raise ValueError(f"Bundled upstream file differs: {relative}")
+                raise ValueError(f"Bundled runtime file differs: {relative}")
         info = {
             "built_at_utc": datetime.now(timezone.utc).isoformat(),
             "python": sys.version,
             "packages": package_versions(),
-            "upstream_runtime_files": len(sources),
+            "upstream_runtime_files": sum(relative.parts[0] == 'upstream' for _, relative in sources),
+            "bundled_runtime_files": sum(relative.parts[0] == 'components' for _, relative in sources),
             "upstream_sources_verified": True,
         }
         (bundle / "build-info.json").write_text(json.dumps(info, indent=2) + "\n", encoding="utf-8")

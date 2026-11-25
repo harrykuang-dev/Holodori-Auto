@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-import json
 from pathlib import Path
 import sys
 
@@ -17,10 +16,11 @@ class Module:
     accent: str
     icon: str
     fields: tuple[str, ...]
+    bundled: bool = False
 
     @property
     def path(self):
-        return ROOT / 'upstream' / self.id
+        return ROOT / ('components' if self.bundled else 'upstream') / self.id
 
 
 MODULES = (
@@ -35,12 +35,6 @@ MODULES = (
     Module('cooking', 'gui', 'CookingApp', '#F15B60', 'assets/cooking-icon.png',
            ('language', 'model', 'games', 'developer_mode', 'start_key', 'stop_key',
             'start_display', 'stop_display')),
+    Module('puka_puka', 'puka_ui', 'PukaPukaApp', '#117D85', 'tiles.png', ('rounds',), bundled=True),
 )
 BY_ID = {module.id: module for module in MODULES}
-
-
-def versions():
-    try:
-        return json.loads((ROOT / 'upstream-lock.json').read_text(encoding='utf-8'))['modules']
-    except (OSError, ValueError, KeyError):
-        return {}

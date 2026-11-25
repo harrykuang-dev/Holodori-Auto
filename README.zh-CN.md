@@ -2,7 +2,7 @@
 
 [English](README.md) · [繁體中文](README.zh-TW.md) · [日本語](README.ja.md) · [한국어](README.ko.md) · [Indonesian](README.id.md) · [简体中文](README.zh-CN.md)
 
-将 *hololive Dreams* 的**猜高低（High & Low）**、**钓鱼**、**跳绳**与**料理**整合到同一个窗口的 Windows 程序。四个功能共用语言与开始／停止快捷键，并保留原有的游戏逻辑、操作界面、统计与诊断功能。导航及共用设置沿用相同的 Fluent 美术风格，并使用各功能原有的图标与主题色。
+Holodori-Auto 是一款 Windows 自动化程序，支持 *hololive Dreams* 的**猜高低（High & Low）**、**钓鱼**、**跳绳**、**料理**和**浮排大战**。在导航栏选择模式，即可使用该模式的操作与统计功能。各模式共用语言设置及开始／停止快捷键。
 
 | 功能 | 原始程序 |
 | --- | --- |
@@ -10,8 +10,6 @@
 | 钓鱼 | [Hololive-Dreams-Fishing-Auto](https://github.com/harrykuang-dev/Hololive-Dreams-Fishing-Auto) |
 | 跳绳 | [Hololive-Dreams-Jump-Rope-Auto](https://github.com/harrykuang-dev/Hololive-Dreams-Jump-Rope-Auto) |
 | 料理 | [Hololive-Dreams-Collect-Cooking-Auto](https://github.com/harrykuang-dev/Hololive-Dreams-Collect-Cooking-Auto) |
-
-**1.1.5** 包含猜高低 **1.1.4**、钓鱼 **1.1.2**、跳绳 **1.3.3** 与料理 **1.1.2**。点击左下角版本号可查看各独立程序的版本与仓库链接。首次打开时沿用所选独立版的默认窗口大小，并按屏幕 DPI 缩放。手动调整或最大化后，切换模式会保留当前窗口大小与状态。
 
 ## 下载
 
@@ -33,6 +31,14 @@
 共用偏好设置保存在 `%LOCALAPPDATA%\HolodoriAuto\settings.json`。首次启动时，优先沿用已有 High & Low 的语言及快捷键；若没有已有设置，默认使用繁体中文、**F8** 开始、**INSERT** 停止。原有统计、游戏记录及各功能专属选项继续使用原程序的数据位置。
 
 需要 Windows 10/11 x64 与 Windows 版游戏。运行期间保持游戏可见，并遵循所选功能对分辨率、画面捕获与前台操作的要求。各功能的完整操作与行为说明见上方原始仓库的 README。
+
+程序启动时会根据所选模式的默认窗口大小和屏幕 DPI 调整显示。手动调整大小或最大化后，切换模式会保留当前窗口状态。点击左下角版本号会打开 Holodori-Auto 仓库。
+
+### 浮排大战
+
+打开繁体中文单人页，把**局数上限**设为 1～9999。点击「开始」会切换到游戏并开始游玩。游戏已在前台时也可按共用开始快捷键。Normal 先推进到第 30 关，游戏解锁 Challenge 后继续。两种模式共用局数上限，每局获胜并结算后计数。
+
+程式会按动物帽识别棋子，用浮台标记核对阵营，并确认合法落点后点击。窗口失焦、位置或尺寸变化时停止。标准八子盘面若无法本地求解，可使用公开的[动物将棋棋谱库](https://dobutsu.brianhliou.com/)，查询内容是抽象棋盘、候补和行棋方。
 
 ## 从源代码运行
 
