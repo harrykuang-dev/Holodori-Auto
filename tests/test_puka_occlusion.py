@@ -1,0 +1,65 @@
+"""Verify that occluded rafts yield a move only with enough visible evidence."""
+
+from importlib import import_module
+from pathlib import Path
+import sys
+import unittest
+from unittest.mock import patch
+
+import numpy as np
+
+
+COMPONENT = Path(__file__).resolve().parents[1] / 'components' / 'puka_puka'
+with patch.object(sys, 'path', [str(COMPONENT), *sys.path]):
+    solver = import_module('solver')
+    vision = import_module('vision')
+
+
+class OccludedRaftTests(unittest.TestCase):
+    def setUp(self):
+        self.frame = np.zeros((1, 1, 3), dtype=np.uint8)
+        self.raster = np.zeros((100, 100, 3), dtype=np.uint8)
+        self.turtle = -solver.TURTLE
+        self.hats = {self.turtle: .90, -self.turtle: .37}
+        self.before = solver.Position((0, 0, 2, 5, 3, 0, -4, 0, 1, 2, -1, -3), turn=solver.ORANGE)
+        self.expected = self.before.next(solver.Move(6, 5))
+        self.alternative = self.before.next(solver.Move(11, 7))
+
+    def test_hidden_marker_uses_only_a_strong_noncontradictory_hat(self):
+        exposed = [None] * 7 + [0]
+        self.assertEqual(vision.classify(exposed, self.hats, self.raster), self.turtle)
+        for other in (.65, .90):
+            with self.assertRaises(vision.VisionError):
+                vision.classify(exposed, {self.turtle: .90, -self.turtle: other}, self.raster)
+        with self.assertRaises(vision.VisionError):
+            vision.classify([None] * 8, self.hats, self.raster)
+
+        exposed[3] = 0  # The orange turtle needs a painted left edge here.
+        with self.assertRaises(vision.VisionError):
+            vision.classify(exposed, self.hats, self.raster)
+
+    def test_legal_reply_can_recover_when_its_target_and_other_tiles_are_hidden(self):
+        marks = [list(vision.pattern(piece)) for piece in self.expected.board]
+        marks[5] = [None] * 7 + [0]
+        marks[7] = [None] * 5 + [0, 0, 0]  # Only the unused alternative changes D2.
+        candidates = [self.expected, self.alternative]
+        with patch.object(vision, 'read_board', side_effect=vision.VisionError), \
+             patch.object(vision, 'marker_observations', return_value=marks), \
+             patch.object(vision, 'tile', return_value=self.raster), \
+             patch.object(vision, 'hat_scores', return_value=self.hats) as score:
+            self.assertEqual(vision.match_position(self.frame, candidates, previous=self.before.board),
+                             self.expected)
+            score.return_value = {self.turtle: .53, -self.turtle: .48}
+            with self.assertRaises(vision.VisionError):
+                vision.match_position(self.frame, candidates, previous=self.before.board)
+            score.return_value = self.hats
+            marks[5] = [solver.BLUE, solver.BLUE, 0, None, 0, None, None, 0]
+            with self.assertRaisesRegex(vision.VisionError, 'B2'):
+                vision.match_position(self.frame, candidates, previous=self.before.board)
+
+    def test_complete_read_does_not_fall_back_after_a_contradiction(self):
+        with patch.object(vision, 'read_board', return_value=self.alternative.board), \
+             patch.object(vision, 'marker_observations') as observations:
+            with self.assertRaises(vision.VisionError):
+                vision.match_position(self.frame, [self.expected], previous=self.before.board)
+            observations.assert_not_called()

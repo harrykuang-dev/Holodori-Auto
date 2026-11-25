@@ -151,3 +151,40 @@ class PukaRefillTests(unittest.TestCase):
         with self.assertRaisesRegex(pilot.StopPlay, '補充後仍然需要能量'):
             pilot.prepare(repeated, Mock(), auto_refill=True)
         self.assertEqual(repeated.click.call_args_list.count(call(*stages.CLICK['refill'])), 1)
+
+
+class PukaTrackingTests(unittest.TestCase):
+    def test_next_move_revalidates_with_the_confirmed_reply(self):
+        solver = import_module('solver')
+        prior = solver.from_table_code('S/R-g/-cl/--E/-GL/E')
+        deploy = solver.Move(-solver.WHALE, 2)
+        expected = prior.next(deploy).next(solver.Move(6, 5))
+        next_move = solver.Move(2, 5)
+        virtual_time = count(step=.2)
+        clock = SimpleNamespace(monotonic=lambda: next(virtual_time), sleep=lambda _: None)
+        game = SimpleNamespace(scene='initial')
+        game.capture = lambda: game.scene
+
+        class NextSelection(Exception):
+            pass
+
+        def click(*_):
+            if game.scene == 'reply':
+                raise NextSelection
+            game.scene = 'selection' if game.scene == 'initial' else 'reply'
+
+        def read_position(frame):
+            if frame == 'initial':
+                return prior
+            raise vision.VisionError('key raft obscured')
+
+        game.click = click
+        with (patch.object(pilot, 'time', clock),
+              patch.object(pilot, 'read_position', side_effect=read_position),
+              patch.object(pilot, 'next_player_position', return_value=expected),
+              patch.object(pilot, 'classify_screen', return_value='board'),
+              patch.object(pilot, 'selection_ready', side_effect=lambda frame, *_: frame == 'selection'),
+              patch.object(pilot, 'source_point', return_value=(10, 10)),
+              patch.object(pilot, 'choose', side_effect=[deploy, next_move])):
+            with self.assertRaises(NextSelection):
+                pilot.play_match(game, 'initial', prior, Mock())
