@@ -7,13 +7,14 @@ from tkinter import ttk
 import traceback
 
 from holodori.app import PUKA_LABELS, family_theme
+from holodori.modules import BY_ID
 from holodori.settings import parse_stop_hotkey
 from pilot import StopPlay, run
 from vision import VisionError
 from win_window import GameWindow, key
 
 
-ACCENT = '#6D43AA'
+ACCENT = BY_ID['puka_puka'].accent
 COPY = {
     '繁體中文': (
         '先進入{game}，再點擊「開始」',
@@ -104,6 +105,22 @@ def configure_card_checkbox(theme):
               foreground=[('disabled', '#A0A0A0')])
 
 
+def configure_start_button(theme):
+    style = theme.style
+    background = style.lookup('Primary.TButton', 'background')
+    [(_, layout)] = style.layout('Primary.TButton')
+
+    def tile(fill, border=None):
+        return theme.rounded(fill, border or fill, 6, background)
+
+    style.element_create('Puka.start', 'image', tile(ACCENT),
+                         ('disabled', tile('#F0F0F0', '#EEEEEE')),
+                         ('pressed', tile('#0C6168')), ('active', tile('#0E7077')),
+                         ('focus', tile(ACCENT, '#084A50')), border=theme.px(6),
+                         width=theme.px(17), height=theme.px(17), sticky='nswe')
+    style.layout('Puka.Primary.TButton', [('Puka.start', layout)])
+
+
 class PukaPukaApp:
     def __init__(self, root, *, smoke=False):
         self.root = root
@@ -137,7 +154,7 @@ class PukaPukaApp:
         self.main.grid(sticky='nsew')
         self.main.columnconfigure(0, weight=1)
         self.instructions = ttk.Label(root)
-        self.status = tk.Label(root, fg='#117D85')
+        self.status = tk.Label(root, fg=ACCENT)
 
         settings = ttk.Frame(self.main, style='Card.TFrame', padding=self.px(16))
         settings.grid(row=1, column=0, sticky='ew', pady=(0, self.px(12)))
@@ -178,7 +195,8 @@ class PukaPukaApp:
         controls = ttk.Frame(self.main)
         controls.grid(row=2, column=0, sticky='ew')
         controls.columnconfigure((0, 1), weight=1, uniform='puka')
-        self.start_button = ttk.Button(controls, style='Primary.TButton', command=self.start,
+        configure_start_button(self.theme)
+        self.start_button = ttk.Button(controls, style='Puka.Primary.TButton', command=self.start,
                                        image=(self.theme.play_icons['normal'], 'disabled', self.theme.play_icons['disabled']),
                                        compound='left')
         self.start_button.grid(row=0, column=0, sticky='nsew', padx=(0, self.px(6)))

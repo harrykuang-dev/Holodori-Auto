@@ -58,6 +58,23 @@ def family_theme(root, px):
     return module.FluentTheme(root, px)
 
 
+def configure_shared_field_colors(theme):
+    style = theme.style
+    surface = style.lookup('Card.TFrame', 'background')
+    neutral = theme.rounded(surface, '#D1D1D1', 4, surface, (320, 48))
+    [(_, language_layout)] = style.layout('TCombobox')
+    for module in MODULES:
+        combo = f'{module.id}.combo'
+        focused = theme.rounded(surface, module.accent, 4, surface, (320, 48))
+        style.element_create(combo, 'image', neutral, ('focus', focused), border=theme.px(6),
+                             width=theme.px(13), height=theme.px(13), sticky='nswe')
+        style.layout(f'{module.id}.TCombobox', [(combo, language_layout)])
+
+        field = f'{module.id}.FocusField'
+        theme.surface(field, surface, module.accent, 4, surface)
+        style.layout(f'{field}.TFrame', [(f'{field}.border', {'sticky': 'nswe'})])
+
+
 def child_command(module_id, container, channel, *, smoke=False, executable=None, settings=None):
     command = [str(executable or sys.executable)]
     if executable is None and not getattr(sys, 'frozen', False):
@@ -114,6 +131,7 @@ class HolodoriApp:
         root.protocol('WM_DELETE_WINDOW', self.close)
         root.tk.call('tk', 'scaling', self.scale*96/72)
         self.theme = family_theme(root, self.px)
+        configure_shared_field_colors(self.theme)
         self.language = tk.StringVar(root, self.settings['language'])
         self.shared_card = ttk.Frame(root, style='Card.TFrame', padding=self.px(12))
         self.shared_card.pack(fill='x', padx=self.px(20), pady=(0,self.px(8)))
@@ -270,7 +288,7 @@ class HolodoriApp:
         self.request('capture', enabled=True, target=target)
         self.capture_request = self.sequence
         self.shortcut_displays[target].set('…')
-        self.shortcut_frames[target].configure(style='FocusField.TFrame')
+        self.shortcut_frames[target].configure(style=f'{self.active}.FocusField.TFrame')
         self.shortcut_entries[target].focus_set()
         return 'break'
 
@@ -395,6 +413,7 @@ class HolodoriApp:
         self.progress.configure(text=LABELS[self.language.get()][4])
         self.instructions.configure(text='')
         self.status.configure(text=LABELS[self.language.get()][4], fg=BY_ID[module_id].accent)
+        self.language_choice.configure(style=f'{module_id}.TCombobox')
         self.note.configure(text='')
         for module in MODULES:
             self.buttons[module.id].configure(
