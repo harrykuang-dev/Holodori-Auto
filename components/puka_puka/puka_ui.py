@@ -18,35 +18,42 @@ COPY = {
         '先進入{game}，再點擊「開始」',
         '局數上限', '本次完成', '開始', '停止', '等待開始', '正在切換到遊戲…',
         '遊玩中', '正在停止', '已停止', '已達局數上限', '請輸入 1 至 9999 局。',
-        '下一局', '落子 {moves}（{plies} 手）', '依照遊戲流程前進，兩種模式合計局數。', '關閉'),
+        '等待單人入口或關卡選單…', '等待棋盤…', '等待結算與領獎…',
+        '落子 {moves}（{plies} 手）', '依照遊戲流程前進，兩種模式合計局數。', '關閉'),
     'English': (
         'Open {game}, then click Start.',
         'Match limit', 'Completed this run', 'Start', 'Stop', 'Ready', 'Switching to the game…',
         'Playing', 'Stopping', 'Stopped', 'Match limit reached', 'Enter 1 to 9999 matches.',
-        'Next match', 'Move {moves} ({plies} plies)', 'The match limit applies across both modes.', 'Close'),
+        'Waiting for the solo lobby or stage menu…', 'Waiting for the board…', 'Waiting for results and rewards…',
+        'Move {moves} ({plies} plies)', 'The match limit applies across both modes.', 'Close'),
     '日本語': (
         '「{game}」を開いてから「開始」をクリックしてください。',
         '対局数の上限', '今回のクリア数', '開始', '停止', '待機中', 'ゲームに切り替え中…',
         '対局中', '停止中', '停止しました', '設定した対局数に到達', '1〜9999の対局数を入力してください。',
-        '次の対局', '着手 {moves}（{plies}手）', '対局数の上限は両モードの合計です。', '閉じる'),
+        'ソロ画面またはステージ選択を待機中…', '盤面を待機中…', '結果と報酬を待機中…',
+        '着手 {moves}（{plies}手）', '対局数の上限は両モードの合計です。', '閉じる'),
     '한국어': (
         '{game}에 입장한 뒤 ‘시작’을 클릭하세요.',
         '대국 수 제한', '이번 실행 완료', '시작', '중지', '준비', '게임으로 전환 중…',
         '진행 중', '중지 중', '중지됨', '대국 수 제한에 도달', '1~9999 사이의 대국 수를 입력하세요.',
-        '다음 대국', '착수 {moves} ({plies}수)', '두 모드의 대국 수를 합산합니다.', '닫기'),
+        '솔로 화면 또는 스테이지 선택 대기 중…', '게임판 대기 중…', '결과 및 보상 대기 중…',
+        '착수 {moves} ({plies}수)', '두 모드의 대국 수를 합산합니다.', '닫기'),
     'Indonesian': (
         'Buka {game}, lalu klik Mulai.',
         'Batas pertandingan', 'Selesai sesi ini', 'Mulai', 'Berhenti', 'Siap', 'Beralih ke game…',
         'Sedang bermain', 'Menghentikan', 'Berhenti', 'Batas pertandingan tercapai', 'Masukkan 1 hingga 9999 pertandingan.',
-        'Pertandingan berikutnya', 'Langkah {moves} ({plies} giliran)', 'Batas dihitung untuk kedua mode.', 'Tutup'),
+        'Menunggu lobi solo atau menu level…', 'Menunggu papan…', 'Menunggu hasil dan hadiah…',
+        'Langkah {moves} ({plies} giliran)', 'Batas dihitung untuk kedua mode.', 'Tutup'),
     '简体中文': (
         '先进入{game}，再点击「开始」',
         '局数上限', '本次完成', '开始', '停止', '等待开始', '正在切换到游戏…',
         '游玩中', '正在停止', '已停止', '已达局数上限', '请输入 1 至 9999 局。',
-        '下一局', '落子 {moves}（{plies} 手）', '按游戏进度推进，两种模式合计局数。', '关闭'),
+        '等待单人入口或关卡菜单…', '等待棋盘…', '等待结算和领奖…',
+        '落子 {moves}（{plies} 手）', '按游戏进度推进，两种模式合计局数。', '关闭'),
 }
 TEXT_FIELDS = ('instructions', 'limit', 'progress', 'start', 'stop', 'ready', 'starting',
-               'playing', 'stopping', 'stopped', 'finished', 'invalid', 'challenge', 'move', 'help', 'close')
+               'playing', 'stopping', 'stopped', 'finished', 'invalid',
+               'waiting_entry', 'waiting_board', 'waiting_result', 'move', 'help', 'close')
 
 
 def match_limit(value):
@@ -235,7 +242,7 @@ class PukaPukaApp:
                     self.state = event
                 elif event == 'completed':
                     self.completed = args[0]
-                elif event in ('move', 'challenge', 'error'):
+                elif event in ('move', 'waiting_entry', 'waiting_board', 'waiting_result', 'error'):
                     self.detail_event = (event, *args)
                     if event == 'error':
                         self.state = 'stopped'

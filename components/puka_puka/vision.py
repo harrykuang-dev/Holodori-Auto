@@ -253,40 +253,19 @@ def selected_piece(frame, piece):
     return tuple(marks) in valid
 
 
-def yellow(area):
-    blue, green, red = bgr(area)
-    return (red > 235) & (green > 224) & (blue < 185)
-
-
-def win_screen(frame):
-    return yellow(frame[385:489, 906:1252]).mean() > .18 or yellow(frame[685:789, 129:379]).mean() > .21
-
-
 def legend(frame):
-    blue, green, red = bgr(frame[102:320, 35:238])
-    neutral = (red > 175) & (abs(blue - red) < 35) & (abs(green - red) < 25)
-    return neutral.mean() > .81 and neutral[0:20].mean() > .86
-
-
-def our_turn(frame):
-    # Landmarks from the Traditional Chinese turn banner. No game images are bundled.
-    def light(x, y):
-        return frame[y-1:y+2, x-1:x+2].min(axis=2).max() > 213
-
-    return sum(light(x, y) for x, y in TURN_WHITE) >= len(TURN_WHITE)-3 and sum(
-        light(x, y) for x, y in TURN_DARK) <= 4
-
-
-TURN_WHITE = ((770, 41), (783, 46), (803, 43), (824, 40), (845, 44))
-TURN_DARK = ((763, 42), (861, 42))
+    return all(frame[112:319, left:right].min(axis=2).mean() > 190
+               for left, right in ((37, 52), (218, 234)))
 
 
 def is_ready(frame):
+    # The move diagram switches from blue to orange on the opponent's turn.
     b, g, r = bgr(frame[113:136, 193:216])
     blue_legend = ((b > 172) & (g > 85) & (g < 175) & (r < 68)).mean() > .23
-    b, g, r = bgr(frame[50:88, 1238:1440])
-    solo_undo = ((r > 164) & (g > 174) & (b > 179) & (abs(b-r) < 68)).mean() > .54
-    return our_turn(frame) and legend(frame) and blue_legend and solo_undo
+    b, g, r = bgr(frame[56:82, 1245:1275])
+    clock = ((b > 155) & (g > 100) & (g < 204) & (r < 100)).mean() > .38
+    solo_undo = clock and (frame[53:87, 1442:1469].min(axis=2) > 164).mean() > .65
+    return blue_legend and solo_undo and legend(frame)
 
 
 def hand_read(frame, side):
@@ -317,7 +296,7 @@ def hand_read(frame, side):
 
 def read_position(frame):
     if not is_ready(frame):
-        raise VisionError("画面未确认是繁中界面的我方回合")
+        raise VisionError("尚未確認藍方回合與單人棋盤。")
     board = read_board(frame)
     return Position(board, *(tuple(sorted(p for _, _, p in hand_read(frame, side)))
                              for side in (BLUE, ORANGE)))

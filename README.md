@@ -29,9 +29,9 @@ The window opens at the selected mode’s default size, scaled for your display.
 
 ### Puka Puka Fight
 
-Enter the Traditional Chinese solo screen and set **Match limit** to 1–9999. Click Start to bring the game to the foreground and begin, or press the shared Start shortcut while the game is in the foreground. The limit counts completed wins across both modes. The program follows the available Normal stages and continues in Challenge after the game unlocks it at Normal 30.
+Enter the solo screen and set **Match limit** to 1–9999. Click Start to bring the game to the foreground and begin, or press the shared Start shortcut while the game is in the foreground. The limit counts completed wins across both modes. The program follows the available Normal stages and continues in Challenge after the game unlocks it at Normal 30.
 
-The module reads animal hats, verifies them against tile markings, and checks the game’s highlighted destination before clicking. It stops when the game loses focus, moves, resizes, or leaves the supported 16:9 layout. On standard eight-piece positions where local search is insufficient, it can query the public [Animal Shogi tablebase](https://dobutsu.brianhliou.com/) with an abstract board position. The query includes the pieces, reserves and side to move.
+Screen detection uses controls, colors, and board markers. The module reads animal hats, verifies them against tile markings, and checks the game’s highlighted destination before clicking. It stops when the game loses focus, moves, resizes, or leaves the supported 16:9 layout. On standard eight-piece positions where local search is insufficient, it can query the public [Animal Shogi tablebase](https://dobutsu.brianhliou.com/) with an abstract board position. The query includes the pieces, reserves and side to move.
 
 ## Run from source
 
