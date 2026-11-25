@@ -4,7 +4,7 @@ from collections import Counter
 import time
 
 from solver import BLUE, ORANGE, NAMES, full_inventory, moves, recommend, solve, square, table_code, terminal
-from stages import CHALLENGES, CLICK, MENU_STATES, RESULT_STATES, classify_screen
+from stages import CHALLENGES, CLICK, MENU_STATES, REFILL_STATES, RESULT_STATES, classify_screen
 from vision import (VisionError, hand_read, highlighted, is_ready, match_position,
                     point, read_position, selected_piece, source_arrow)
 
@@ -93,12 +93,29 @@ def wait_menu(game, allowed, seconds=30, *, stable_for=0):
     return wait_for(game, read, seconds, stable_for=stable_for)[1]
 
 
-def prepare(game, notify):
+def prepare(game, notify, *, auto_refill=False):
     entries = {"hub", "level_next", *CHALLENGES}
     allowed = {"tutorial", "board", "team_auto", "team_start", *entries}
+    selected_stage = None
+    refilled = False
     notify("waiting_entry")
     while True:
-        state = wait_menu(game, allowed, 50)
+        state = wait_menu(game, allowed | REFILL_STATES, 50)
+        if state in REFILL_STATES:
+            if not auto_refill:
+                raise StopPlay('能量不足。可手動補充，或開啟「自動補充能量」後再開始。')
+            if refilled:
+                raise StopPlay('補充後仍然需要能量，已停止本次入場。')
+            try:
+                wait_menu(game, {"refill"}, 4, stable_for=.45)
+            except StopPlay as error:
+                raise StopPlay('無法確認一瓶道具的補充選項。') from error
+            notify("refilling")
+            game.click(*CLICK["refill"])
+            refilled = True
+            if selected_stage is not None:
+                allowed.add(selected_stage)
+            state = wait_menu(game, allowed, stable_for=.55)
         if state == "board":
             return wait_for(game, read_position, 8)
         game.click(*CLICK[state])
@@ -108,6 +125,7 @@ def prepare(game, notify):
         if state == 'team_start':
             allowed.discard('team_auto')
         if state in CHALLENGES:
+            selected_stage = state
             notify("waiting_board")
 
 
@@ -188,9 +206,9 @@ def play_match(game, frame, pos, notify):
     raise StopPlay("达到本次运行的回合上限")
 
 
-def run(game, rounds, notify):
+def run(game, rounds, notify, *, auto_refill=False):
     for number in range(1, rounds + 1):
-        frame, pos = prepare(game, notify)
+        frame, pos = prepare(game, notify, auto_refill=auto_refill)
         result, proven_win = play_match(game, frame, pos, notify)
         settle(game, result, proven_win, notify)
         notify("completed", number, rounds)

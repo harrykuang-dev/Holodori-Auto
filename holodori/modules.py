@@ -35,6 +35,6 @@ MODULES = (
     Module('cooking', 'gui', 'CookingApp', '#F15B60', 'assets/cooking-icon.png',
            ('language', 'model', 'games', 'developer_mode', 'start_key', 'stop_key',
             'start_display', 'stop_display')),
-    Module('puka_puka', 'puka_ui', 'PukaPukaApp', '#117D85', 'tiles.png', ('rounds',), bundled=True),
+    Module('puka_puka', 'puka_ui', 'PukaPukaApp', '#117D85', 'tiles.png', ('rounds', 'auto_refill'), bundled=True),
 )
 BY_ID = {module.id: module for module in MODULES}

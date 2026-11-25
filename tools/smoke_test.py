@@ -32,7 +32,7 @@ FIELDS = {
     "cooking": {
         "model": "resnet101", "games": "3", "developer_mode": True,
     },
-    "puka_puka": {"rounds": "7"},
+    "puka_puka": {"rounds": "7", "auto_refill": True},
 }
 SHARED_SETTINGS = {"language": "English", "start_key": "Alt+F7", "stop_key": "Ctrl+Alt+F10"}
 
@@ -259,6 +259,8 @@ def exercise(*, executable: Path | None, timeout: float, screenshot: Path | None
                     app.change_language()
                     assert_shared(module)
                     fields = FIELDS[module]
+                    if module == 'puka_puka':
+                        assert app.last_status['snapshot']['auto_refill'] is False
                     request("set_fields", fields=fields)
                     snapshot = app.last_status["snapshot"]
                     for key, expected in fields.items():

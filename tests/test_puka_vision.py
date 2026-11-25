@@ -1,10 +1,12 @@
 """Check screen and turn detection using graphics with no labels."""
 
 from importlib import import_module
+from itertools import count
 from pathlib import Path
 import sys
+from types import SimpleNamespace
 import unittest
-from unittest.mock import patch
+from unittest.mock import Mock, call, patch
 
 import cv2
 import numpy as np
@@ -12,6 +14,7 @@ import numpy as np
 
 COMPONENT = Path(__file__).resolve().parents[1] / 'components' / 'puka_puka'
 with patch.object(sys, 'path', [str(COMPONENT), *sys.path]):
+    pilot = import_module('pilot')
     stages = import_module('stages')
     vision = import_module('vision')
 
@@ -28,6 +31,24 @@ class PukaScreenTests(unittest.TestCase):
         self.assertEqual(stages.classify_screen(self.frame), 'hub')
         self.frame[755:775, 1365:1384] = 0
         self.assertIsNone(stages.classify_screen(self.frame))
+
+    def test_refill_requires_the_item_dialog_and_default_quantity(self):
+        self.frame[143:193, 931:1045] = 245
+        self.frame[700:757, 930:1085] = (250, 150, 40)
+        self.frame[304:389, 1337:1400] = (138, 200, 100)
+        self.frame[304:379, 1028:1119] = (240, 168, 50)
+        self.frame[575:598, 1100:1124] = 245
+        self.frame[816:856, 992:1170] = 245
+        self.frame[816:856, 1258:1475] = (240, 168, 50)
+        self.assertEqual(stages.classify_screen(self.frame), 'refill')
+
+        self.frame[575:598, 1100:1124] = (230, 224, 201)
+        self.assertEqual(stages.classify_screen(self.frame), 'refill_panel')
+        self.frame[575:598, 1100:1124] = 245
+        self.frame[816:856, 1258:1475] = 175
+        self.assertEqual(stages.classify_screen(self.frame), 'refill_panel')
+        self.frame[304:379, 1028:1119] = 245
+        self.assertNotIn(stages.classify_screen(self.frame), stages.REFILL_STATES)
 
     def test_board_uses_move_diagram_color(self):
         self.frame[112:319, 37:52] = 231
@@ -75,3 +96,42 @@ class PukaScreenTests(unittest.TestCase):
         self.assertEqual(stages.classify_screen(self.frame), 'reward')
         self.frame[328:380, 100:800] = 0
         self.assertIsNone(stages.classify_screen(self.frame))
+
+
+class PukaRefillTests(unittest.TestCase):
+    def setUp(self):
+        time_ticks = count(step=.2)
+        self.enterContext(patch.object(pilot, 'time', SimpleNamespace(monotonic=lambda: next(time_ticks),
+                                                                      sleep=lambda _: None)))
+        self.enterContext(patch.object(pilot, 'classify_screen', side_effect=lambda scene: scene))
+        self.enterContext(patch.object(pilot, 'read_position', return_value='ready position'))
+
+    def game(self, first_scene, *after_click):
+        scenes = iter(after_click)
+        game = SimpleNamespace(scene=first_scene)
+        game.capture = lambda: game.scene
+        game.click = Mock(side_effect=lambda *_: setattr(game, 'scene', next(scenes)))
+        return game
+
+    def test_refill_is_off_by_default(self):
+        game = self.game('refill')
+        with self.assertRaisesRegex(pilot.StopPlay, '能量不足'):
+            pilot.prepare(game, Mock())
+        game.click.assert_not_called()
+
+    def test_refill_retries_the_original_stage(self):
+        game = self.game('challenge', 'refill', 'challenge', 'board')
+        self.assertEqual(pilot.prepare(game, Mock(), auto_refill=True), ('board', 'ready position'))
+        stage = call(*stages.CLICK['challenge'])
+        self.assertEqual(game.click.call_args_list, [stage, call(*stages.CLICK['refill']), stage])
+
+    def test_unavailable_or_repeated_refill_stops(self):
+        unavailable = self.game('refill_panel')
+        with self.assertRaisesRegex(pilot.StopPlay, '一瓶道具'):
+            pilot.prepare(unavailable, Mock(), auto_refill=True)
+        unavailable.click.assert_not_called()
+
+        repeated = self.game('challenge', 'refill', 'challenge', 'refill')
+        with self.assertRaisesRegex(pilot.StopPlay, '補充後仍然需要能量'):
+            pilot.prepare(repeated, Mock(), auto_refill=True)
+        self.assertEqual(repeated.click.call_args_list.count(call(*stages.CLICK['refill'])), 1)

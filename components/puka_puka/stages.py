@@ -20,10 +20,12 @@ CLICK = {
     "result_details": (1368, 828),
     "win_details": (1368, 828),
     "reward": (812, 807),
+    "refill": (1362, 838),
 }
 CHALLENGES = ("challenge_left", "challenge", "challenge_right")
 MENU_STATES = {"level_menu", "level_next", "hub", *CHALLENGES}
 RESULT_STATES = {"result", "result_details", "win_details"}
+REFILL_STATES = {"refill", "refill_panel"}
 
 
 def blue_button(area, fraction=.42):
@@ -117,6 +119,21 @@ def reward_popup(frame):
     return cyan.mean() > .94
 
 
+def refill_screen(frame):
+    if not white(frame[143:193, 931:1045]):
+        return None
+    b, g, r = bgr(frame[700:757, 930:1085])
+    summary = ((b > 208) & (g > 111) & (g < 173) & (r < 99)).mean() > .90
+    b, g, r = bgr(frame[304:389, 1337:1400])
+    flame = ((g > 138) & (g-r > 25) & (g-b > 8)).mean() > .32
+    if not (summary and flame and blue_button(frame[304:379, 1028:1119], .17)):
+        return None
+    # At the default quantity the slider knob is at the left end of the track.
+    one_item = white(frame[575:598, 1100:1124], .80)
+    ready = white(frame[816:856, 992:1170], .68) and blue_button(frame[816:856, 1258:1475], .70)
+    return "refill" if one_item and ready else "refill_panel"
+
+
 def result_screen(frame):
     if not hammer(frame) or not blue_button(frame[805:854, 1280:1525], .60):
         return None
@@ -139,6 +156,9 @@ def hub(frame):
 
 
 def classify_screen(frame):
+    refill = refill_screen(frame)
+    if refill:
+        return refill
     if is_ready(frame):
         return "board"
     if tutorial(frame):

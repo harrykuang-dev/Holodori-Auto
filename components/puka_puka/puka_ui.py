@@ -19,41 +19,48 @@ COPY = {
         '局數上限', '本次完成', '開始', '停止', '等待開始', '正在切換到遊戲…',
         '遊玩中', '正在停止', '已停止', '已達局數上限', '請輸入 1 至 9999 局。',
         '等待單人入口或關卡選單…', '等待棋盤…', '等待結算與領獎…',
-        '落子 {moves}（{plies} 手）', '依照遊戲流程前進，兩種模式合計局數。', '關閉'),
+        '落子 {moves}（{plies} 手）', '依照遊戲流程前進，兩種模式合計局數。', '關閉',
+        '自動補充能量', '正在補充能量…'),
     'English': (
         'Open {game}, then click Start.',
         'Match limit', 'Completed this run', 'Start', 'Stop', 'Ready', 'Switching to the game…',
         'Playing', 'Stopping', 'Stopped', 'Match limit reached', 'Enter 1 to 9999 matches.',
         'Waiting for the solo lobby or stage menu…', 'Waiting for the board…', 'Waiting for results and rewards…',
-        'Move {moves} ({plies} plies)', 'The match limit applies across both modes.', 'Close'),
+        'Move {moves} ({plies} plies)', 'The match limit applies across both modes.', 'Close',
+        'Automatically refill energy', 'Refilling energy…'),
     '日本語': (
         '「{game}」を開いてから「開始」をクリックしてください。',
         '対局数の上限', '今回のクリア数', '開始', '停止', '待機中', 'ゲームに切り替え中…',
         '対局中', '停止中', '停止しました', '設定した対局数に到達', '1〜9999の対局数を入力してください。',
         'ソロ画面またはステージ選択を待機中…', '盤面を待機中…', '結果と報酬を待機中…',
-        '着手 {moves}（{plies}手）', '対局数の上限は両モードの合計です。', '閉じる'),
+        '着手 {moves}（{plies}手）', '対局数の上限は両モードの合計です。', '閉じる',
+        'エネルギーを自動回復', 'エネルギーを回復中…'),
     '한국어': (
         '{game}에 입장한 뒤 ‘시작’을 클릭하세요.',
         '대국 수 제한', '이번 실행 완료', '시작', '중지', '준비', '게임으로 전환 중…',
         '진행 중', '중지 중', '중지됨', '대국 수 제한에 도달', '1~9999 사이의 대국 수를 입력하세요.',
         '솔로 화면 또는 스테이지 선택 대기 중…', '게임판 대기 중…', '결과 및 보상 대기 중…',
-        '착수 {moves} ({plies}수)', '두 모드의 대국 수를 합산합니다.', '닫기'),
+        '착수 {moves} ({plies}수)', '두 모드의 대국 수를 합산합니다.', '닫기',
+        '에너지 자동 충전', '에너지 충전 중…'),
     'Indonesian': (
         'Buka {game}, lalu klik Mulai.',
         'Batas pertandingan', 'Selesai sesi ini', 'Mulai', 'Berhenti', 'Siap', 'Beralih ke game…',
         'Sedang bermain', 'Menghentikan', 'Berhenti', 'Batas pertandingan tercapai', 'Masukkan 1 hingga 9999 pertandingan.',
         'Menunggu lobi solo atau menu level…', 'Menunggu papan…', 'Menunggu hasil dan hadiah…',
-        'Langkah {moves} ({plies} giliran)', 'Batas dihitung untuk kedua mode.', 'Tutup'),
+        'Langkah {moves} ({plies} giliran)', 'Batas dihitung untuk kedua mode.', 'Tutup',
+        'Isi ulang energi otomatis', 'Mengisi ulang energi…'),
     '简体中文': (
         '先进入{game}，再点击「开始」',
         '局数上限', '本次完成', '开始', '停止', '等待开始', '正在切换到游戏…',
         '游玩中', '正在停止', '已停止', '已达局数上限', '请输入 1 至 9999 局。',
         '等待单人入口或关卡菜单…', '等待棋盘…', '等待结算和领奖…',
-        '落子 {moves}（{plies} 手）', '按游戏进度推进，两种模式合计局数。', '关闭'),
+        '落子 {moves}（{plies} 手）', '按游戏进度推进，两种模式合计局数。', '关闭',
+        '自动补充能量', '正在补充能量…'),
 }
 TEXT_FIELDS = ('instructions', 'limit', 'progress', 'start', 'stop', 'ready', 'starting',
                'playing', 'stopping', 'stopped', 'finished', 'invalid',
-               'waiting_entry', 'waiting_board', 'waiting_result', 'move', 'help', 'close')
+               'waiting_entry', 'waiting_board', 'waiting_result', 'move', 'help', 'close',
+               'auto_refill', 'refilling')
 
 
 def match_limit(value):
@@ -87,6 +94,7 @@ class PukaPukaApp:
         self.start_key = tk.StringVar(root, 'F8')
         self.stop_key = tk.StringVar(root, 'INSERT')
         self.rounds = tk.StringVar(root, '1')
+        self.auto_refill = tk.BooleanVar(root, False)
         scale = root.winfo_fpixels('1i') / 96
         self.px = lambda value: round(value*scale)
         root.geometry(f'{self.px(500)}x{self.px(780)}')
@@ -122,6 +130,9 @@ class PukaPukaApp:
         self.entry.grid(row=0, column=1, sticky='ew', pady=self.px(6))
         help_button = ttk.Button(settings, style='Info.TButton', image=self.theme.help_icon, command=self.show_help)
         help_button.grid(row=0, column=2, padx=(self.px(8), 0))
+        style.configure('Card.TCheckbutton', background=style.lookup('Card.TFrame', 'background'))
+        self.refill_checkbox = ttk.Checkbutton(settings, style='Card.TCheckbutton', variable=self.auto_refill)
+        self.refill_checkbox.grid(row=1, column=0, columnspan=3, sticky='w', pady=(self.px(6), 0))
 
         progress = ttk.Frame(self.main, style='Card.TFrame', padding=self.px(16))
         progress.grid(row=0, column=0, sticky='ew', pady=(0, self.px(12)))
@@ -155,6 +166,7 @@ class PukaPukaApp:
         self.text = dict(zip(TEXT_FIELDS, COPY[language]))
         self.instructions.configure(text=self.text['instructions'].format(game=PUKA_LABELS[language]))
         self.limit_label.configure(text=self.text['limit'])
+        self.refill_checkbox.configure(text=self.text['auto_refill'])
         self.progress_label.configure(text=self.text['progress'])
         self.start_button.configure(text=self.text['start'])
         self.stop_button.configure(text=self.text['stop'])
@@ -180,6 +192,7 @@ class PukaPukaApp:
         self.count_label.configure(text=f'{self.completed} / {goal}')
         active = self.worker is not None
         self.entry.configure(state='disabled' if active else 'normal')
+        self.refill_checkbox.configure(state='disabled' if active else 'normal')
         self.start_button.configure(state='disabled' if active or self.smoke else 'normal')
         self.stop_button.configure(state='normal' if active and not self.stop_event.is_set() else 'disabled')
 
@@ -205,19 +218,20 @@ class PukaPukaApp:
         self.detail_event = None
         self.stop_event.clear()
         self.state = 'starting'
-        self.worker = Thread(target=self.play, args=(target,), kwargs={'activate': not from_shortcut},
+        self.worker = Thread(target=self.play, args=(target,),
+                             kwargs={'activate': not from_shortcut, 'auto_refill': self.auto_refill.get()},
                              name='puka-puka-play')
         self.worker.start()
         self.refresh()
 
-    def play(self, target, *, activate):
+    def play(self, target, *, activate, auto_refill):
         def notify(kind, *args):
             self.messages.put((kind, *args))
 
         try:
             game = GameWindow(self.stop_event.is_set, activate=activate)
             notify('playing')
-            run(game, target, notify)
+            run(game, target, notify, auto_refill=auto_refill)
         except InterruptedError:
             notify('stopped')
         except (OSError, StopPlay, VisionError) as error:
@@ -242,7 +256,7 @@ class PukaPukaApp:
                     self.state = event
                 elif event == 'completed':
                     self.completed = args[0]
-                elif event in ('move', 'waiting_entry', 'waiting_board', 'waiting_result', 'error'):
+                elif event in ('move', 'waiting_entry', 'waiting_board', 'waiting_result', 'refilling', 'error'):
                     self.detail_event = (event, *args)
                     if event == 'error':
                         self.state = 'stopped'
