@@ -5,7 +5,7 @@
       "path": "upstream/high_low",
       "repository": "https://github.com/harrykuang-dev/Hololive-Dreams-High-low-Auto-Personal.git",
       "branch": "main",
-      "commit": "9253c94c3945ad11125ab4b0ff9efc60e8308bea",
+      "commit": "fe6651a43bb7668acabc38d1473d4eb06d83e49c",
       "version": "1.1.4"
     },
     "fishing": {
@@ -19,7 +19,7 @@
       "path": "upstream/jump_rope",
       "repository": "https://github.com/harrykuang-dev/Hololive-Dreams-Jump-Rope-Auto.git",
       "branch": "main",
-      "commit": "5af7b2ffea905776902b295642dd3a7cc020d147",
+      "commit": "6cd4610b6370fac1b98a17d27562a2d9bb658b3c",
       "version": "1.3.3"
     },
     "cooking": {
