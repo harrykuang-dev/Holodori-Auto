@@ -40,14 +40,14 @@ SETTING_LABELS = {
     'Indonesian': ('Bahasa / Language', 'Pintasan mulai', 'Pintasan berhenti', 'Tekan pintasan…', 'Pintasan mulai dan berhenti tidak boleh tumpang tindih.'),
     '简体中文': ('语言 / Language', '开始快捷键', '停止快捷键', '请按下快捷键…', '开始与停止快捷键不能相同或互相包含。'),
 }
-PUKA_LABELS = {
-    '繁體中文': '漂漂大亂鬥', 'English': 'Puka Puka Fight', '日本語': 'ぷかぷかファイト',
-    '한국어': '둥실둥실 파이트', 'Indonesian': 'Puka Puka Fight', '简体中文': '浮排大战',
+RAFT_CHESS_TAB_LABELS = {
+    '繁體中文': '浮台棋', 'English': 'Raft Chess', '日本語': 'いかだ将棋',
+    '한국어': '뗏목 장기', 'Indonesian': 'Catur Rakit', '简体中文': '浮排棋',
 }
 
 
 def tab_label(language, module, index):
-    return PUKA_LABELS[language] if module.id == 'puka_puka' else LABELS[language][index]
+    return RAFT_CHESS_TAB_LABELS[language] if module.id == 'puka_puka' else LABELS[language][index]
 
 
 def family_theme(root, px):
@@ -171,7 +171,7 @@ class HolodoriApp:
             self.navigation.columnconfigure(index, weight=1, uniform='tab')
             button = tk.Button(self.navigation, bg=BG, fg=TEXT, activeforeground=TEXT,
                                activebackground='#E8E8E8', relief='flat', bd=0,
-                               font=('Segoe UI', 10), cursor='hand2',
+                               font=('Segoe UI', 10), cursor='hand2', anchor='n',
                                padx=self.px(4), pady=self.px(9), takefocus=True,
                                command=lambda mid=module.id: self.select(mid))
             button.grid(row=0, column=index, sticky='nsew', padx=self.px(3))
@@ -184,8 +184,7 @@ class HolodoriApp:
                 self.icons.append(icon)
                 button.configure(image=icon, compound='top')
             self.buttons[module.id] = button
-        self.navigation.bind('<Configure>', lambda event: self.buttons['puka_puka'].configure(
-            wraplength=max(1, event.width // len(MODULES) - self.px(14))))
+        self.navigation.bind('<Configure>', self.wrap_tab_labels)
         self.navigation.pack_configure(before=self.shared_card, pady=(self.px(12),self.px(8)))
         self.intro = tk.Frame(root, bg=BG)
         self.intro.pack(before=self.shared_card, fill='x', padx=self.px(20), pady=(0,self.px(12)))
@@ -247,6 +246,11 @@ class HolodoriApp:
             self.root.update_idletasks()
             self.root.deiconify()
             self._startup_hidden = False
+
+    def wrap_tab_labels(self, event):
+        width = max(1, event.width // len(self.buttons) - self.px(14))
+        for button in self.buttons.values():
+            button.configure(wraplength=width)
 
     def translate(self):
         labels = LABELS[self.language.get()]

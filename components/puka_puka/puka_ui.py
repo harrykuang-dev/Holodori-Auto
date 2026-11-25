@@ -6,7 +6,7 @@ import tkinter as tk
 from tkinter import ttk
 import traceback
 
-from holodori.app import PUKA_LABELS, family_theme
+from holodori.app import family_theme
 from holodori.modules import BY_ID
 from holodori.settings import parse_stop_hotkey
 from pilot import StopPlay, run
@@ -15,6 +15,10 @@ from win_window import GameWindow, key
 
 
 ACCENT = BY_ID['puka_puka'].accent
+GAME_NAMES = {
+    '繁體中文': '漂漂大亂鬥', 'English': 'Puka Puka Fight', '日本語': 'ぷかぷかファイト',
+    '한국어': '둥실둥실 파이트', 'Indonesian': 'Puka Puka Fight', '简体中文': '浮排大战',
+}
 COPY = {
     '繁體中文': (
         '先進入{game}，再點擊「開始」',
@@ -212,7 +216,7 @@ class PukaPukaApp:
     def translate(self):
         language = self.language.get()
         self.text = dict(zip(TEXT_FIELDS, COPY[language]))
-        self.instructions.configure(text=self.text['instructions'].format(game=PUKA_LABELS[language]))
+        self.instructions.configure(text=self.text['instructions'].format(game=GAME_NAMES[language]))
         self.limit_label.configure(text=self.text['limit'])
         self.refill_checkbox.configure(text=self.text['auto_refill'])
         self.progress_label.configure(text=self.text['progress'])
