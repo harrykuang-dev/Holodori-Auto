@@ -1,6 +1,6 @@
-# 更新原始程式
+# 更新來源固定版本
 
-Holodori-Auto 以四個 Git submodule 保留原始程式，整合層負責共用視窗、導覽、語言與開始／停止快捷鍵。原始演算法及介面檔案直接來自各自倉庫；各頁面重複的語言與快捷鍵列由適配層隱藏。每個正式整合版本由 submodule commit 與 `upstream-lock.json` 共同固定，不會在使用者啟動時下載或更換程式碼。
+Holodori-Auto 的五個功能共用同一個執行入口。比大小、釣魚、跳繩和料理採用以 Git 子模組固定的來源，浮台棋位於 `components/puka_puka/`。本文件說明如何更新固定版本及驗證共用介面。
 
 共用偏好設定的 `language`、`start_key`、`stop_key` 儲存於 `%LOCALAPPDATA%\HolodoriAuto\settings.json`，並套用至目前及後續開啟的功能。首次啟動優先沿用既有 High & Low 偏好，否則使用繁體中文、`F8` 開始、`INSERT` 停止。原有統計與遊戲紀錄維持原位置。
 
@@ -74,7 +74,7 @@ Windows 整合檢查涵蓋四個原始介面的載入。上游更新後應另檢
 
 `Check upstream updates` workflow 每天 02:15 UTC（UTC+8 為 10:15）檢查四個倉庫，也可以在 Actions 手動執行並選擇一個程式。只有出現 commit 差異時，才更新 `automation/sync-upstreams` 分支並建立或更新 Pull Request；此分支由 workflow 維護，不應放置人工修改。
 
-自動更新會執行離線 Git 測試，接著呼叫 Windows 驗證 workflow，檢查 lock、Python 原始碼、整合測試、四個原始倉庫的測試、四個原始介面及完整 portable build。原始測試各自使用獨立程序和暫存使用者資料，跳繩測試也包含其原始 GUI 測試。建置結果以 Actions artifact 保留 14 天。workflow 不自動合併、不建立 release。
+自動更新會執行離線 Git 測試，再呼叫 Windows 驗證流程。Windows 流程核對來源與鎖定檔，執行整合測試及料理模型暖機，並檢查五個功能的原始碼介面和可攜版介面。介面測試使用獨立程序與暫存使用者資料。建置結果在 Actions 保留 14 天。更新 Pull Request 經檢查後由維護者合併。
 
 倉庫需啟用 Actions，並在 Actions 的 Workflow permissions 允許 GitHub Actions 建立 Pull Request。workflow 只對整合倉庫使用 `contents: write` 和 `pull-requests: write`；不寫入四個原始倉庫。若此設定未開啟，更新流程會明確失敗，維護者仍可按上述步驟手動更新。
 

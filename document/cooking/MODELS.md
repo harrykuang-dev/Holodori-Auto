@@ -1,0 +1,35 @@
+# 辨識模型與開發者模式
+
+> Source reference / 來源參考 [upstream/cooking/docs/model-options.md](../../upstream/cooking/docs/model-options.md). Paths and standalone commands below refer to that source tree. Holodori-Auto builds and runs from the repository root. See [program architecture](../ARCHITECTURE.md).
+
+介面提供「標準」（ResNet18）與「進階」（ResNet101），預設標準。選擇會保存，下次開啟沿用；執行期間不能切換，停止後可重新選擇。
+
+ResNet18運算需求較低，ResNet101模型較大。介面採用單選鈕，旁邊的「？」可直接開啟兩種模型的說明。
+
+先進入料理遊戲，選擇模型與局數，再按「開始」或開始快捷鍵。程式會在獨立程序載入模型並暖機，完成後嘗試還原遊戲視窗並切到前景，確認遊戲位於前景後自動開始。載入中可按「停止」或停止快捷鍵取消，不會接著開始遊戲。
+
+兩種模型都使用65%露出半徑門檻與按需補充定位：主路徑準備等待或抖盤時，才補充尋找所需洋蔥／炸蝦／鮪魚罐，補充點由所選模型驗證，共用同一個模型物件。
+
+65%是原半徑門檻的比例，最小為10標準化像素；只對仍需食材及信心至少0.995的人工點位模型生效，豆芽罐不放寬。不是食材露出面積百分比，也不解除運動、最新畫面或槽位保護。
+
+這兩個選項只切換食材點擊位置的分類模型。畫面分割仍提供可見區域與候選點；食譜／槽位分類、遊戲階段、需求數字辨識、局部運動追蹤與最新畫面點擊驗證各自沿用原職責。
+
+遊戲畫面仍由獨立執行緒擷取，請求頻率為每秒20幀。一般使用預設關閉開發者模式，不保存畫面或詳細辨識紀錄；結束後移除該次暫存工作資料。
+
+開啟開發者模式後，每次執行在 `%LOCALAPPDATA%/CollectCookingAuto/sessions/日期時間/` 產生ZIP，可手動分享診斷資料。旁邊的「？」直接顯示說明與資料夾連結。沒有自動上傳。
+
+診斷包包含版本／模型指紋、環境資訊、逐局摘要、完整辨識與點擊時序、所有決策的動作／等待原因統計，以及有容量上限的遊戲截圖。截圖最長邊1536像素，以JPEG儲存，並在 `image-index.json` 保留原尺寸與縮放尺寸，便於還原點位；最多100張、合計10 MB。一般畫面最多每2秒一張。事件與決策明細不輪替刪除，每筆寫入同資料夾的 `inputs.jsonl`、`trace.jsonl` 與 `round-results.jsonl`，並以 `stream` 區分各局來源，打包後也保留原檔。結算圖與一般截圖共同按容量淘汰較早圖片。每個ZIP硬上限20 MB；若純文字超限，分成多個獨立ZIP，文字不刪減。刪減計數載於 `diagnostic.json`。不包含完整錄影、權重、原始碼副本或設定檔。一般異常與載入失敗也會嘗試產生診斷包；強制結束時已寫入的明細仍在磁碟上，尚在記憶體的一般截圖不保證保留。
+
+原生尺寸完整錄影僅保留在開發用直接CLI流程，擷取與編碼仍各用獨立執行緒，編碼佇列上限4幀；不透過正式GUI提供。
+
+最短抖盤間隔為兩次實際按下至少 5 秒，仍需確認最新畫面的按鈕狀態可用。低紋理周邊運動保護採 48 原生像素；此範圍與標準座標的食物露出半徑不同。
+
+權重與程式指紋見 [models-manifest.json](../../upstream/cooking/models-manifest.json)和 [packaged-runtime.json](../../upstream/cooking/docs/packaged-runtime.json)。GUI提供繁體中文、簡體中文、英文、日文、韓文及印尼文。遊戲名稱來源見 [遊戲用詞](../../upstream/cooking/docs/GAME_TERMS.md)。
+
+封裝後可透過以下命令只載入模型核對，不建立桌面擷取、不輸入遊戲：
+
+```powershell
+.\Collect-Cooking-Auto-v1.0.0.exe --worker --model resnet101 --check-model-only --games 1 --output .\model-check\runs --control-file .\model-check\stop
+```
+
+結果寫在 `model-check/model-check.json`。將 `resnet101` 改成 `resnet18` 即可核對另一個選項。

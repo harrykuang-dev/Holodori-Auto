@@ -2,11 +2,11 @@
 
 [English](README.md) · [繁體中文](README.zh-TW.md) · [日本語](README.ja.md) · [한국어](README.ko.md) · [Indonesian](README.id.md) · [简体中文](README.zh-CN.md)
 
-Holodori-Auto 是一款 Windows 自动化程序，支持 *hololive Dreams* 的**猜高低（High & Low）**、**钓鱼**、**跳绳**、**料理**和**浮排大战**。在导航栏选择模式，即可使用该模式的操作与统计功能。各模式共用语言设置及开始／停止快捷键。
+Holodori-Auto 是一款 Windows 自动化程序，支持 *hololive Dreams* 的**猜高低（High & Low）**、**钓鱼**、**跳绳**、**料理**和**浮排棋**。在导航栏选择模式，即可使用该模式的操作与统计功能。各模式共用语言设置及开始／停止快捷键。
 
 ## 下载
 
-从 [Releases](https://github.com/harrykuang-dev/Holodori-Auto/releases/latest) 下载 `Holodori-Auto-v1.1.5-windows.7z`，使用 7-Zip 解压后运行 `Holodori-Auto.exe`。请保留完整文件夹，无需另外安装 Python 或 CUDA Toolkit。
+从 [Releases](https://github.com/harrykuang-dev/Holodori-Auto/releases/latest) 下载 `Holodori-Auto-v1.2.10-windows.7z`，使用 7-Zip 解压后运行 `Holodori-Auto.exe`。请保留完整文件夹，无需另外安装 Python 或 CUDA Toolkit。
 
 跳绳与料理共用同一套 TensorRT 10.13、CUDA 运行库与 DirectML。兼容的 NVIDIA GPU 自动使用 TensorRT，其他受支持的 GPU 使用 DirectML。跳绳需要兼容 GPU；料理也可回退到 CPU。各功能保留独立模型与设备引擎缓存。
 
@@ -27,11 +27,11 @@ Holodori-Auto 是一款 Windows 自动化程序，支持 *hololive Dreams* 的**
 
 程序启动时会根据所选模式的默认窗口大小和屏幕 DPI 调整显示。手动调整大小或最大化后，切换模式会保留当前窗口状态。点击左下角版本号会打开 Holodori-Auto 仓库。
 
-### 浮排大战
+### 浮排棋
 
-打开游戏的单人页，把**局数上限**设为 1～9999。点击「开始」会切换到游戏并开始游玩。游戏已在前台时也可按共用开始快捷键。Normal 先推进到第 30 关，游戏解锁 Challenge 后继续。两种模式共用局数上限，每局获胜并结算后计数。
+进入游戏内「浮排大战」的单人页面，然后选择 Holodori-Auto 的**浮排棋**。将**局数上限**设为 1～9999，点击**开始**，或在游戏前台按共享开始快捷键。局数以获胜且完成结算的对局计算。程序会推进可用的 Normal 关卡，并在游戏通过 Normal 第 30 关解锁 Challenge 后继续。
 
-程序通过图标、颜色和棋盘标记识别画面。程序会按动物帽识别棋子，用浮台标记核对阵营，并确认合法落点后点击。窗口失焦、位置或尺寸变化时停止。标准八子盘面若无法本地求解，可使用公开的[动物将棋棋谱库](https://dobutsu.brianhliou.com/)，查询内容是抽象棋盘、候补和行棋方。
+**自动补充能量**默认关闭。开启后，程序可确认游戏内的一瓶道具补充后继续。浮排棋会检查前台的 16:9 游戏窗口、棋盘状态和合法落点高亮。标准八子局面可以查询公开的[动物将棋棋谱库](https://dobutsu.brianhliou.com/)，查询包含棋子、候补和行棋方的抽象棋盘。
 
 ## 从源代码运行
 
@@ -66,29 +66,18 @@ python tools/build_release.py --output dist/Holodori-Auto
 
 ## 开发与维护
 
-各模式的源代码通过 Git 子模块引入。`upstream-lock.json` 记录各模式使用的确切提交与版本。
+Holodori-Auto 以 `main.py` 为统一入口。五个功能共享导航、语言、快捷键和 Windows 便携版，各功能分别管理游戏识别与诊断。
 
-各模式的详细操作可参考下方仓库的 README。
-
-| 模式 | 源代码仓库 |
+| 功能 | 技术文档 |
 | --- | --- |
-| 猜高低（High & Low） | [Hololive-Dreams-High-low-Auto-Personal](https://github.com/harrykuang-dev/Hololive-Dreams-High-low-Auto-Personal) |
-| 钓鱼 | [Hololive-Dreams-Fishing-Auto](https://github.com/harrykuang-dev/Hololive-Dreams-Fishing-Auto) |
-| 跳绳 | [Hololive-Dreams-Jump-Rope-Auto](https://github.com/harrykuang-dev/Hololive-Dreams-Jump-Rope-Auto) |
-| 料理 | [Hololive-Dreams-Collect-Cooking-Auto](https://github.com/harrykuang-dev/Hololive-Dreams-Collect-Cooking-Auto) |
+| 猜高低 | [奖励 OCR](document/high-low/OCR.md) · [策略](document/high-low/STRATEGY.md) |
+| 钓鱼 | [识别与诊断](document/fishing/DEVELOPMENT.md) |
+| 跳绳 | [捕获、时序和模型](document/jump-rope/DEVELOPMENT.md) |
+| 料理 | [开发与诊断](document/cooking/DEVELOPMENT.md) · [模型推理](document/cooking/INFERENCE.md) |
+| 浮排棋 | [棋盘识别与落子跟踪](document/raft-chess.md) |
 
-```powershell
-python tools/sync_upstreams.py --check
-python tools/sync_upstreams.py --module fishing
-git add upstream/fishing upstream-lock.json
-python tools/sync_upstreams.py --verify
-python -m unittest discover -s tests -v
-```
-
-省略 `--module fishing` 可更新全部四个功能。合并前应检查依赖、模型清单与整合接口的变更；料理更新后请重新运行模型安装命令。
-
-GitHub Actions 每日及手动运行时检查上游更新，创建更新 Pull Request 并运行整合检查。更新需经检查后手动合并。整合接口与构建结构见[架构与维护说明](docs/ARCHITECTURE.md)。
+[技术文档索引](document/README.md)提供[架构与验证流程](document/ARCHITECTURE.md)及[固定源代码版本的维护方式](document/UPDATING.md)。GitHub Actions 会核对源代码版本、运行测试并验证便携版。
 
 ## 声明与许可
 
-跳绳 1.3.3 与 YOLO 衍生权重采用 **AGPL-3.0-only**，钓鱼采用 **MIT**。猜高低与料理引用组件的现有 MIT 声明继续保留；NVIDIA 运行库、其他依赖及游戏美术维持各自条款。详见[许可与对应源代码](LICENSES.md)。Release 提供包含四个锁定子模块源代码的 `Holodori-Auto-v1.1.5-source.zip`；GitHub 自动生成的源代码压缩包不含子模块。
+跳绳 1.3.3 与 YOLO 衍生权重采用 **AGPL-3.0-only**，钓鱼采用 **MIT**。猜高低与料理引用组件的现有 MIT 声明继续保留；NVIDIA 运行库、其他依赖及游戏美术维持各自条款。详见[许可与对应源代码](LICENSES.md)。Release 提供包含四个锁定子模块源代码的 `Holodori-Auto-v1.2.10-source.zip`；GitHub 自动生成的源代码压缩包不含子模块。

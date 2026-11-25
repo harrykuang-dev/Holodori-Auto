@@ -12,6 +12,8 @@ import faulthandler
 import json
 import os
 from pathlib import Path
+import re
+import subprocess
 import sys
 import tempfile
 import time
@@ -380,6 +382,39 @@ def exercise(*, executable: Path | None, timeout: float, screenshot: Path | None
     return report
 
 
+def run_smoke_attempts(args) -> int:
+    report = args.report.resolve()
+    report.parent.mkdir(parents=True, exist_ok=True)
+    command = [sys.executable, '-X', 'utf8', str(Path(__file__).resolve()),
+               '--timeout', str(args.timeout), '--wall-timeout', str(args.wall_timeout)]
+    for flag, value in (('--executable', args.executable), ('--screenshot', args.screenshot)):
+        if value is not None:
+            command.extend((flag, str(value.resolve())))
+
+    # Keep each attempt's watchdog evidence, including recovered failures.
+    for attempt in range(1, args.retry_native_timeout + 2):
+        log = report.with_name(f'{report.stem}-attempt-{attempt}.log')
+        with tempfile.TemporaryDirectory(prefix='holodori-smoke-report-') as temporary:
+            attempt_report = Path(temporary) / 'report.json'
+            result = subprocess.run([*command, '--report', str(attempt_report)],
+                                    stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+                                    encoding='utf-8', errors='replace')
+            log.write_text(result.stdout, encoding='utf-8')
+            print(result.stdout, end='', flush=True)
+            if attempt_report.is_file():
+                report.write_bytes(attempt_report.read_bytes())
+                return result.returncode
+        native_timeout = (result.returncode != 0
+                          and re.search(r'^Timeout \([^)]+\)!$', result.stdout, re.MULTILINE)
+                          and re.search(r'tkinter[\\/]__init__\.py", line \d+ in update(?:_idletasks)?\b',
+                                        result.stdout))
+        if not native_timeout or attempt > args.retry_native_timeout:
+            report.write_text(json.dumps({'passed': False, 'attempts': attempt, 'log': str(log)}) + '\n',
+                              encoding='utf-8')
+            return result.returncode or 1
+        print('[smoke] Native Tk event loop timed out. Starting a fresh smoke test.', flush=True)
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--executable", type=Path, help="Use the built EXE for the isolated feature processes.")
@@ -388,6 +423,8 @@ def main() -> int:
                         help="Hard limit in seconds, including blocked native window calls and cleanup.")
     parser.add_argument("--screenshot", type=Path, help="Save a PNG of the embedded application after verification.")
     parser.add_argument("--report", type=Path, help="Also save the JSON verification report.")
+    parser.add_argument('--retry-native-timeout', type=int, default=0,
+                        help='Retry only a watchdog timeout inside Tk event processing in a fresh process.')
     args = parser.parse_args()
     if args.executable and not args.executable.is_file():
         parser.error(f"Executable does not exist: {args.executable}")
@@ -395,6 +432,10 @@ def main() -> int:
         parser.error("--timeout must be positive")
     if args.wall_timeout <= 0:
         parser.error("--wall-timeout must be positive")
+    if args.retry_native_timeout < 0 or (args.retry_native_timeout and args.report is None):
+        parser.error('--retry-native-timeout must be nonnegative and requires --report when enabled')
+    if args.retry_native_timeout:
+        return run_smoke_attempts(args)
     # Tk's native calls can block before pump_until can check its deadline.
     # faulthandler uses an independent native watchdog and exits nonzero after
     # dumping all Python stacks. Windows closes the host's kill-on-close jobs.

@@ -2,7 +2,7 @@
 
 ## Integration boundary
 
-Holodori-Auto owns navigation, shared language and Start/Stop preferences, process supervision, Windows window embedding, packaging, and upstream synchronization. The original projects own game recognition, input, strategies, model selection, counters, module-specific options, and diagnostics.
+Holodori-Auto provides High & Low, Fishing, Jump Rope, Cooking and Raft Chess in one Windows program. The host owns navigation, language, shortcuts, process supervision and packaging. Each feature owns its gameplay recognition, input and feature-specific settings.
 
 ```text
 Holodori-Auto / main.py
@@ -16,10 +16,10 @@ upstream/
   jump_rope/   Hololive-Dreams-Jump-Rope-Auto
   cooking/     Hololive-Dreams-Collect-Cooking-Auto
 components/
-  puka_puka/   Puka Puka Fight
+  puka_puka/   Raft Chess
 ```
 
-The four original projects remain unmodified Git submodules. Puka Puka Fight is a bundled component with the same child process lifecycle. The adapter contract records the entry module, application class, artwork, accent color, and settings exposed to the host. The adapter passes common preferences through the component controls and hides duplicate rows. Module execution uses a separate process and resource directory, preventing collisions between names such as `gui`, `vision`, and `app_locale`. The host embeds each Tk window as a Windows child window.
+The four original projects remain unmodified Git submodules. Raft Chess is a bundled component with the same child process lifecycle. The adapter contract records the entry module, application class, artwork, accent color, and settings exposed to the host. The adapter passes common preferences through the component controls and hides duplicate rows. Module execution uses a separate process and resource directory, preventing collisions between names such as `gui`, `vision`, and `app_locale`. The host embeds each Tk window as a Windows child window.
 
 Switching closes the active module through its original close handler. The host waits for its process and workers to exit before opening the next module. An unresponsive module remains visible as a closing state; it must not silently allow another automation process to start. Each new module receives the current shared language and shortcuts. Original statistics, gameplay records, and module-specific data stay in their original locations.
 
@@ -55,6 +55,20 @@ After an upstream update, check its entry class, close behavior, resource paths,
 
 The scheduled workflow checks daily and also supports manual dispatch. It creates an update pull request and runs checks; merging remains explicit. The repository must allow GitHub Actions to create pull requests. Builds continue to use the reviewed pins until an update is merged.
 
+## Validation
+
+Run these checks from the repository root on Windows after installing the dependencies and models described in the README.
+
+```powershell
+python -m unittest discover -s tests -v
+python tools/smoke_test.py --report work/source-ui.json
+python tools/build_release.py --output dist/Holodori-Auto
+python tools/smoke_test.py --executable dist/Holodori-Auto/Holodori-Auto.exe --report work/packaged-ui.json
+python tools/verify_bundle.py dist/Holodori-Auto/Holodori-Auto.exe --report work/packaged-contents.json
+```
+
+The interface checks exercise all five features with isolated preferences and without game input. GitHub Actions allows two fresh-process retries when the watchdog reports a blocked native Tk event loop. Each attempt has its own log. Assertion failures and repeated native timeouts fail the workflow.
+
 ## Cooking checkpoints
 
 The cooking Git submodule contains `models-manifest.json`, which is the authority for the exact archive and checkpoint sizes and SHA-256 hashes. `tools/fetch_models.py` reads `VERSION` from the pinned `gui.py` using Python's AST without importing the module, then downloads `models.zip` from the corresponding release in the original cooking repository.
@@ -75,7 +89,7 @@ Use Windows x64, Python 3.13, `requirements.txt`, and `requirements-build.txt`. 
 
 The portable build includes the host, original module resources, shared dependencies, and model files. Preserve module license files and third-party notices. Source checkouts continue to run each original program independently.
 
-Version 1.1.2 uses a single shared TensorRT 10.13.3.9 package, CUDA runtime 12.9.79 and ONNX Runtime DirectML 1.24.4 under `_internal`. Neither module includes a private accelerator copy, and PyTorch is excluded. Jump Rope retains its FP16/DirectML graphs and GPU-specific engine cache; Cooking retains its FP32 models and separate engine cache. The adapter redirects Cooking's standalone frozen model lookup to `upstream/cooking/models/inference`, preserving the shared `_MEIPASS` import root. Keep each original fallback policy: Jump Rope requires TensorRT or a hardware DirectML GPU; Cooking may fall back to CPU.
+The portable program uses a single shared TensorRT 10.13.3.9 package, CUDA runtime 12.9.79 and ONNX Runtime DirectML 1.24.4 under `_internal`. Neither module includes a private accelerator copy, and PyTorch is excluded. Jump Rope retains its FP16/DirectML graphs and GPU-specific engine cache; Cooking retains its FP32 models and separate engine cache. The adapter redirects Cooking's standalone frozen model lookup to `upstream/cooking/models/inference`, preserving the shared `_MEIPASS` import root. Keep each original fallback policy: Jump Rope requires TensorRT or a hardware DirectML GPU; Cooking may fall back to CPU.
 
 `ddddocr` declares the CPU `onnxruntime` distribution as a dependency. After dependency installation, reinstall `onnxruntime-directml==1.24.4` with `--force-reinstall --no-deps` to select the shared DirectML implementation. The builder refuses an environment without `DmlExecutionProvider`.
 
@@ -87,7 +101,7 @@ Use `python main.py --check-jump-model-only --backend gpu --report work/jump-gpu
 
 ## 繁體中文
 
-Holodori-Auto 負責共用導覽、語言及開始／停止快捷鍵、程序管理、Windows 視窗嵌入、建置與上游同步。原有四個功能以未修改的 Git 子模組保留，內建漂漂大亂鬥同樣使用獨立功能程序。整合層隱藏重複的設定列，透過各功能的控制介面套用共用設定。
+Holodori-Auto 負責共用導覽、語言及開始／停止快捷鍵、程序管理、Windows 視窗嵌入、建置與上游同步。原有四個功能以未修改的 Git 子模組保留，內建浮台棋同樣使用獨立功能程序。整合層隱藏重複的設定列，透過各功能的控制介面套用共用設定。
 
 同一時間只啟動一個功能程序，並將原本的 Tk 介面嵌入主視窗。切換時呼叫目前功能的原始關閉流程，等候程序與工作結束後才啟動下一個功能。共用語言及快捷鍵會沿用至下一個功能；原有統計、遊戲紀錄及專屬資料繼續使用原本位置。
 

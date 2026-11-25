@@ -2,11 +2,11 @@
 
 [English](README.md) · [繁體中文](README.zh-TW.md) · [日本語](README.ja.md) · [한국어](README.ko.md) · [Indonesian](README.id.md) · [简体中文](README.zh-CN.md)
 
-Holodori-Auto adalah program Windows untuk mengotomatiskan minigame **High & Low**, **Memancing**, **Lompat Tali**, **Memasak**, dan **Puka Puka Fight** di *hololive Dreams*. Pilih mode di menu navigasi untuk menggunakan kontrol dan melihat statistiknya. Pengaturan bahasa serta pintasan mulai dan berhenti berlaku untuk semua mode.
+Holodori-Auto adalah program Windows untuk mengotomatiskan minigame **High & Low**, **Memancing**, **Lompat Tali**, **Memasak**, dan **Catur Rakit** di *hololive Dreams*. Pilih mode di menu navigasi untuk menggunakan kontrol dan melihat statistiknya. Pengaturan bahasa serta pintasan mulai dan berhenti berlaku untuk semua mode.
 
 ## Unduh
 
-Unduh `Holodori-Auto-v1.1.5-windows.7z` dari [Releases](https://github.com/harrykuang-dev/Holodori-Auto/releases/latest), ekstrak dengan 7-Zip, lalu jalankan `Holodori-Auto.exe`. Simpan seluruh isi folder bersama. Python dan CUDA Toolkit tidak perlu dipasang secara terpisah.
+Unduh `Holodori-Auto-v1.2.10-windows.7z` dari [Releases](https://github.com/harrykuang-dev/Holodori-Auto/releases/latest), ekstrak dengan 7-Zip, lalu jalankan `Holodori-Auto.exe`. Simpan seluruh isi folder bersama. Python dan CUDA Toolkit tidak perlu dipasang secara terpisah.
 
 Lompat Tali dan Memasak berbagi TensorRT 10.13, pustaka runtime CUDA, dan DirectML dalam satu paket. GPU NVIDIA yang kompatibel otomatis memakai TensorRT; GPU lain yang didukung memakai DirectML. Lompat Tali memerlukan GPU yang kompatibel; Memasak juga dapat beralih ke CPU. Model dan cache engine khusus perangkat tetap terpisah.
 
@@ -26,6 +26,12 @@ Preferensi bersama disimpan di `%LOCALAPPDATA%\HolodoriAuto\settings.json`. Saat
 Memerlukan Windows 10/11 x64 dan klien game versi Windows. Pastikan layar game tetap terlihat selama program berjalan, lalu ikuti persyaratan resolusi, penangkapan layar, dan jendela aktif untuk mode yang dipilih.
 
 Saat dibuka, ukuran awal jendela mengikuti ukuran bawaan mode yang dipilih dan disesuaikan dengan DPI layar. Setelah jendela diubah ukurannya atau dimaksimalkan, perpindahan mode mempertahankan keadaan jendela saat ini. Klik nomor versi di sudut kiri bawah untuk membuka repositori Holodori-Auto.
+
+### Catur Rakit
+
+Buka layar solo Puka Puka Fight di game, lalu pilih **Catur Rakit** di Holodori-Auto. Batas pertandingan adalah 1–9999 dan menghitung kemenangan yang sudah menyelesaikan layar hasil. Program melanjutkan level Normal dan masuk ke Challenge setelah game membukanya seusai Normal 30.
+
+**Isi ulang energi otomatis** nonaktif secara bawaan. Saat aktif, program dapat mengonfirmasi satu item pemulihan dan melanjutkan. Program memeriksa jendela game 16:9 di latar depan dan sorotan sasaran sah sebelum mengeklik. Posisi standar delapan bidak dapat dikirim sebagai data papan, cadangan, dan giliran ke [basis data Animal Shogi](https://dobutsu.brianhliou.com/).
 
 ## Menjalankan dari kode sumber
 
@@ -60,29 +66,18 @@ Pertahankan seluruh isi folder portabel yang dihasilkan saat menjalankan atau me
 
 ## Pengembangan dan pemeliharaan
 
-Kode sumber setiap mode disertakan sebagai submodul Git. `upstream-lock.json` mencatat commit dan versi yang digunakan untuk setiap mode.
+Kelima fitur dapat dijalankan melalui `main.py`. Navigasi, bahasa, pintasan, dan paket portabel Windows digunakan bersama.
 
-Petunjuk lengkap untuk setiap mode tersedia di README repositori berikut.
-
-| Mode | Repositori kode sumber |
+| Fitur | Referensi teknis |
 | --- | --- |
-| High & Low | [Hololive-Dreams-High-low-Auto-Personal](https://github.com/harrykuang-dev/Hololive-Dreams-High-low-Auto-Personal) |
-| Memancing | [Hololive-Dreams-Fishing-Auto](https://github.com/harrykuang-dev/Hololive-Dreams-Fishing-Auto) |
-| Lompat Tali | [Hololive-Dreams-Jump-Rope-Auto](https://github.com/harrykuang-dev/Hololive-Dreams-Jump-Rope-Auto) |
-| Memasak | [Hololive-Dreams-Collect-Cooking-Auto](https://github.com/harrykuang-dev/Hololive-Dreams-Collect-Cooking-Auto) |
+| High & Low | [OCR](document/high-low/OCR.md) · [Strategi](document/high-low/STRATEGY.md) |
+| Memancing | [Pengenalan dan diagnostik](document/fishing/DEVELOPMENT.md) |
+| Lompat Tali | [Perekaman layar, pengaturan waktu, dan model](document/jump-rope/DEVELOPMENT.md) |
+| Memasak | [Pengembangan dan diagnostik](document/cooking/DEVELOPMENT.md) · [Inferensi](document/cooking/INFERENCE.md) |
+| Catur Rakit | [Pengenalan papan dan pelacakan langkah](document/raft-chess.md) |
 
-```powershell
-python tools/sync_upstreams.py --check
-python tools/sync_upstreams.py --module fishing
-git add upstream/fishing upstream-lock.json
-python tools/sync_upstreams.py --verify
-python -m unittest discover -s tests -v
-```
-
-Hilangkan `--module fishing` untuk memperbarui keempat fitur sekaligus. Tinjau perubahan dependensi, manifes model, dan antarmuka integrasi sebelum menggabungkannya. Setelah Memasak diperbarui, jalankan kembali perintah pemasangan model.
-
-GitHub Actions memeriksa pembaruan repositori asal setiap hari dan saat dijalankan secara manual, membuat Pull Request pembaruan, serta menjalankan pemeriksaan integrasi. Pembaruan digabungkan secara manual setelah ditinjau. Lihat [arsitektur dan pemeliharaan](docs/ARCHITECTURE.md) untuk antarmuka integrasi dan susunan build.
+[Indeks dokumentasi teknis](document/README.md) memuat [arsitektur dan prosedur validasi](document/ARCHITECTURE.md) serta [pemeliharaan versi kode sumber](document/UPDATING.md). GitHub Actions memeriksa versi sumber, menjalankan pengujian, dan memverifikasi paket portabel.
 
 ## Hak dan lisensi
 
-Lompat Tali 1.3.3 dan bobot turunan YOLO memakai **AGPL-3.0-only**; Memancing memakai **MIT**. Pemberitahuan MIT yang ada untuk komponen yang dirujuk High & Low dan Memasak tetap disertakan. Runtime NVIDIA, dependensi lain, dan gambar game mempertahankan ketentuannya masing-masing. Lihat [lisensi dan kode sumber terkait](LICENSES.md). Release menyediakan `Holodori-Auto-v1.1.5-source.zip` dengan sumber keempat submodul pada commit yang ditetapkan; arsip sumber otomatis GitHub tidak menyertakan submodul.
+Lompat Tali 1.3.3 dan bobot turunan YOLO memakai **AGPL-3.0-only**; Memancing memakai **MIT**. Pemberitahuan MIT yang ada untuk komponen yang dirujuk High & Low dan Memasak tetap disertakan. Runtime NVIDIA, dependensi lain, dan gambar game mempertahankan ketentuannya masing-masing. Lihat [lisensi dan kode sumber terkait](LICENSES.md). Release menyediakan `Holodori-Auto-v1.2.10-source.zip` dengan sumber keempat submodul pada commit yang ditetapkan; arsip sumber otomatis GitHub tidak menyertakan submodul.

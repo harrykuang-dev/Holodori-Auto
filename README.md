@@ -2,11 +2,11 @@
 
 [English](README.md) · [繁體中文](README.zh-TW.md) · [日本語](README.ja.md) · [한국어](README.ko.md) · [Indonesian](README.id.md) · [简体中文](README.zh-CN.md)
 
-Holodori-Auto is a Windows program that automates **High & Low**, **Fishing**, **Jump Rope**, **Cooking**, and **Puka Puka Fight** in *hololive Dreams*. Select a mode in the navigation to use its controls and statistics. All modes share the same language setting and Start/Stop shortcuts.
+Holodori-Auto is a Windows program that automates **High & Low**, **Fishing**, **Jump Rope**, **Cooking**, and **Raft Chess** in *hololive Dreams*. Select a mode in the navigation to use its controls and statistics. All modes share the same language setting and Start/Stop shortcuts.
 
 ## Download
 
-Download `Holodori-Auto-v1.1.5-windows.7z` from [Releases](https://github.com/harrykuang-dev/Holodori-Auto/releases/latest), extract it with 7-Zip and run `Holodori-Auto.exe`. Keep the complete folder together. Python and CUDA Toolkit do not need to be installed separately.
+Download `Holodori-Auto-v1.2.10-windows.7z` from [Releases](https://github.com/harrykuang-dev/Holodori-Auto/releases/latest), extract it with 7-Zip and run `Holodori-Auto.exe`. Keep the complete folder together. Python and CUDA Toolkit do not need to be installed separately.
 
 Jump Rope and Cooking share TensorRT 10.13, CUDA runtime libraries and DirectML in one package. Compatible NVIDIA GPUs use TensorRT automatically; other supported GPUs use DirectML. Jump Rope requires a compatible GPU; Cooking can also fall back to CPU. Models and device-specific engine caches remain separate.
 
@@ -27,11 +27,11 @@ Windows 10/11 x64 and the Windows game client are required. Keep the game visibl
 
 The window opens at the selected mode’s default size, scaled for your display. Switching modes preserves any resizing or maximized state. Click the version in the lower-left corner to open the Holodori-Auto repository.
 
-### Puka Puka Fight
+### Raft Chess
 
-Enter the solo screen and set **Match limit** to 1–9999. Click Start to bring the game to the foreground and begin, or press the shared Start shortcut while the game is in the foreground. The limit counts completed wins across both modes. The program follows the available Normal stages and continues in Challenge after the game unlocks it at Normal 30.
+Enter the solo screen of Puka Puka Fight, then choose **Raft Chess** in Holodori-Auto. Set **Match limit** to 1–9999 and click **Start** or use the shared Start shortcut while the game is in the foreground. The limit counts completed wins. The program advances through available Normal stages and continues in Challenge once the game unlocks it after Normal 30.
 
-Screen detection uses controls, colors, and board markers. The module reads animal hats, verifies them against tile markings, and checks the game’s highlighted destination before clicking. It stops when the game loses focus, moves, resizes, or leaves the supported 16:9 layout. On standard eight-piece positions where local search is insufficient, it can query the public [Animal Shogi tablebase](https://dobutsu.brianhliou.com/) with an abstract board position. The query includes the pieces, reserves and side to move.
+**Automatically refill energy** is off by default. When enabled, the program can confirm the game's one-item refill and continue. Raft Chess checks the foreground 16:9 client and confirms board state and legal destination highlights before clicking. Standard eight-piece positions can use the public [Animal Shogi tablebase](https://dobutsu.brianhliou.com/) with the abstract board, reserves and side to move.
 
 ## Run from source
 
@@ -66,29 +66,18 @@ Keep the generated portable folder together when distributing or running the pro
 
 ## Development and maintenance
 
-The four original modes remain Git submodules pinned by `upstream-lock.json`. Puka Puka Fight ships from `components/puka_puka`.
+Holodori-Auto has one entry point, `main.py`. Its five features share navigation, language, shortcuts and a portable Windows build. Gameplay and feature-specific diagnostics are organized by feature.
 
-The repositories below document each mode’s controls and behavior.
-
-| Mode | Source repository |
+| Feature | Technical reference |
 | --- | --- |
-| High & Low | [Hololive-Dreams-High-low-Auto-Personal](https://github.com/harrykuang-dev/Hololive-Dreams-High-low-Auto-Personal) |
-| Fishing | [Hololive-Dreams-Fishing-Auto](https://github.com/harrykuang-dev/Hololive-Dreams-Fishing-Auto) |
-| Jump Rope | [Hololive-Dreams-Jump-Rope-Auto](https://github.com/harrykuang-dev/Hololive-Dreams-Jump-Rope-Auto) |
-| Cooking | [Hololive-Dreams-Collect-Cooking-Auto](https://github.com/harrykuang-dev/Hololive-Dreams-Collect-Cooking-Auto) |
+| High & Low | [OCR](document/high-low/OCR.md) · [Strategy](document/high-low/STRATEGY.md) |
+| Fishing | [Recognition and diagnostics](document/fishing/DEVELOPMENT.md) |
+| Jump Rope | [Capture, timing and model runtime](document/jump-rope/DEVELOPMENT.md) |
+| Cooking | [Development and diagnostics](document/cooking/DEVELOPMENT.md) · [Inference](document/cooking/INFERENCE.md) |
+| Raft Chess | [Board recognition and move tracking](document/raft-chess.md) |
 
-```powershell
-python tools/sync_upstreams.py --check
-python tools/sync_upstreams.py --module fishing
-git add upstream/fishing upstream-lock.json
-python tools/sync_upstreams.py --verify
-python -m unittest discover -s tests -v
-```
-
-Omit `--module fishing` to update all four. Review changes to dependencies, model manifests, and the integration contract before merging. When cooking changes, run the model installer again.
-
-GitHub Actions checks for upstream changes daily and on manual runs, opens an update pull request, and runs integration checks. Updates are reviewed and merged explicitly. See [architecture and maintenance](docs/ARCHITECTURE.md) for the integration contract and build layout.
+Start with the [technical documentation](document/README.md) for the [architecture and validation commands](document/ARCHITECTURE.md) and [pinned source maintenance](document/UPDATING.md). GitHub Actions checks the source pins, runs the tests and verifies the portable build.
 
 ## Notices
 
-Jump Rope 1.3.3 and its YOLO-derived weights use **AGPL-3.0-only**; Fishing uses **MIT**. Existing MIT notices for components referenced by High & Low and Cooking remain included. NVIDIA libraries, other dependencies and game artwork retain their own terms. See [licensing and corresponding source](LICENSES.md). The Release provides `Holodori-Auto-v1.1.5-source.zip` with all four pinned submodule source trees; GitHub’s automatic source archives omit submodules.
+Jump Rope 1.3.3 and its YOLO-derived weights use **AGPL-3.0-only**; Fishing uses **MIT**. Existing MIT notices for components referenced by High & Low and Cooking remain included. NVIDIA libraries, other dependencies and game artwork retain their own terms. See [licensing and corresponding source](LICENSES.md). The Release provides `Holodori-Auto-v1.2.10-source.zip` with all four pinned submodule source trees; GitHub’s automatic source archives omit submodules.
