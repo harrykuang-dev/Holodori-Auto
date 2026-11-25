@@ -4,13 +4,6 @@
 
 Holodori-Auto is a Windows program that automates **High & Low**, **Fishing**, **Jump Rope**, **Cooking**, and **Puka Puka Fight** in *hololive Dreams*. Select a mode in the navigation to use its controls and statistics. All modes share the same language setting and Start/Stop shortcuts.
 
-| Module | Original program |
-| --- | --- |
-| High & Low | [Hololive-Dreams-High-low-Auto-Personal](https://github.com/harrykuang-dev/Hololive-Dreams-High-low-Auto-Personal) |
-| Fishing | [Hololive-Dreams-Fishing-Auto](https://github.com/harrykuang-dev/Hololive-Dreams-Fishing-Auto) |
-| Jump Rope | [Hololive-Dreams-Jump-Rope-Auto](https://github.com/harrykuang-dev/Hololive-Dreams-Jump-Rope-Auto) |
-| Cooking | [Hololive-Dreams-Collect-Cooking-Auto](https://github.com/harrykuang-dev/Hololive-Dreams-Collect-Cooking-Auto) |
-
 ## Download
 
 Download `Holodori-Auto-v1.1.5-windows.7z` from [Releases](https://github.com/harrykuang-dev/Holodori-Auto/releases/latest), extract it with 7-Zip and run `Holodori-Auto.exe`. Keep the complete folder together. Python and CUDA Toolkit do not need to be installed separately.
@@ -22,15 +15,15 @@ Jump Rope and Cooking share TensorRT 10.13, CUDA runtime libraries and DirectML 
 ## Usage
 
 1. Open the game and enter the desired minigame.
-2. Run Holodori-Auto and select its module from the navigation.
-3. Set the shared language and Start/Stop shortcuts, then use the selected module's controls. In Cooking, **Start** automatically loads and warms up the selected model before starting; **Stop** cancels loading.
-4. Stop before switching modules. Switching waits for the current module to finish closing, then opens the selected module in the same window.
+2. Run Holodori-Auto and select the matching mode from the navigation.
+3. Set the shared language and Start/Stop shortcuts, then use the selected mode's controls. In Cooking, **Start** automatically loads and warms up the selected model before starting; **Stop** cancels loading.
+4. Stop before switching modes. Switching waits for the current mode to finish closing, then opens the selected mode in the same window.
 
-Only the selected module runs. The common language selector and shortcut fields apply to the current module and carry over when switching modules; duplicate settings rows are hidden inside each page. While capturing a shortcut, the active module's listeners pause until capture finishes.
+Only the selected mode runs. The common language selector and shortcut fields apply to the current mode and carry over when switching modes; duplicate settings rows are hidden inside each page. While capturing a shortcut, the active mode's listeners pause until capture finishes.
 
-Shared preferences are saved in `%LOCALAPPDATA%\HolodoriAuto\settings.json`. The first run uses existing High & Low language and shortcut preferences when available; otherwise the defaults are Traditional Chinese, **F8** to start, and **INSERT** to stop. Original statistics, gameplay records, and module-specific options keep their original data locations.
+Shared preferences are saved in `%LOCALAPPDATA%\HolodoriAuto\settings.json`. The first run uses existing High & Low language and shortcut preferences when available; otherwise the defaults are Traditional Chinese, **F8** to start, and **INSERT** to stop. Original statistics, gameplay records, and mode-specific options keep their original data locations.
 
-Windows 10/11 x64 and the Windows game client are required. Keep the game visible and follow the selected module's requirements for resolution, capture, and foreground operation. The original READMEs linked above describe its controls and behavior.
+Windows 10/11 x64 and the Windows game client are required. Keep the game visible and follow the selected mode’s requirements for resolution, capture, and foreground operation.
 
 The window opens at the selected mode’s default size, scaled for your display. Switching modes preserves any resizing or maximized state. Click the version in the lower-left corner to open the Holodori-Auto repository.
 
@@ -71,9 +64,18 @@ python tools/build_release.py --output dist/Holodori-Auto
 
 Keep the generated portable folder together when distributing or running the program. Dependencies, original resources, and cooking models are included in the build.
 
-## Keep modules current
+## Development and maintenance
 
-The four original repositories remain independent Git submodules. Puka Puka Fight ships from `components/puka_puka`. `upstream-lock.json` records the exact commit and version included for each one. Updating one module does not require copying or merging its game algorithms into Holodori-Auto.
+The four original modes remain Git submodules pinned by `upstream-lock.json`. Puka Puka Fight ships from `components/puka_puka`.
+
+The repositories below document each mode’s controls and behavior.
+
+| Mode | Source repository |
+| --- | --- |
+| High & Low | [Hololive-Dreams-High-low-Auto-Personal](https://github.com/harrykuang-dev/Hololive-Dreams-High-low-Auto-Personal) |
+| Fishing | [Hololive-Dreams-Fishing-Auto](https://github.com/harrykuang-dev/Hololive-Dreams-Fishing-Auto) |
+| Jump Rope | [Hololive-Dreams-Jump-Rope-Auto](https://github.com/harrykuang-dev/Hololive-Dreams-Jump-Rope-Auto) |
+| Cooking | [Hololive-Dreams-Collect-Cooking-Auto](https://github.com/harrykuang-dev/Hololive-Dreams-Collect-Cooking-Auto) |
 
 ```powershell
 python tools/sync_upstreams.py --check

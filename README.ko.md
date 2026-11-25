@@ -4,13 +4,6 @@
 
 Holodori-Auto는 *hololive Dreams*의 **하이&로**, **낚시**, **줄넘기**, **요리**, **둥실둥실 파이트** 미니게임을 자동화하는 Windows 프로그램입니다. 탐색 영역에서 모드를 선택하면 해당 모드의 조작과 통계 기능을 사용할 수 있습니다. 언어 설정과 시작·중지 단축키는 모든 모드에 공통으로 적용됩니다.
 
-| 기능 | 원본 프로그램 |
-| --- | --- |
-| 하이&로 | [Hololive-Dreams-High-low-Auto-Personal](https://github.com/harrykuang-dev/Hololive-Dreams-High-low-Auto-Personal) |
-| 낚시 | [Hololive-Dreams-Fishing-Auto](https://github.com/harrykuang-dev/Hololive-Dreams-Fishing-Auto) |
-| 줄넘기 | [Hololive-Dreams-Jump-Rope-Auto](https://github.com/harrykuang-dev/Hololive-Dreams-Jump-Rope-Auto) |
-| 요리 | [Hololive-Dreams-Collect-Cooking-Auto](https://github.com/harrykuang-dev/Hololive-Dreams-Collect-Cooking-Auto) |
-
 ## 다운로드
 
 [Releases](https://github.com/harrykuang-dev/Holodori-Auto/releases/latest)에서 `Holodori-Auto-v1.1.5-windows.7z`를 다운로드하고 7-Zip으로 압축을 푼 뒤 `Holodori-Auto.exe`를 실행하세요. 전체 폴더를 함께 보관하세요. Python이나 CUDA Toolkit을 별도로 설치할 필요는 없습니다.
@@ -30,7 +23,7 @@ Holodori-Auto는 *hololive Dreams*의 **하이&로**, **낚시**, **줄넘기**,
 
 공통 설정은 `%LOCALAPPDATA%\HolodoriAuto\settings.json`에 저장됩니다. 처음 실행할 때 기존 High & Low의 언어와 단축키 설정이 있으면 우선 적용합니다. 기존 설정이 없으면 번체 중국어, 시작 **F8**, 중지 **INSERT**가 기본값입니다. 통계, 게임 기록, 기능별 옵션은 원본 프로그램의 데이터 위치를 계속 사용합니다.
 
-Windows 10/11 x64와 Windows용 게임 클라이언트가 필요합니다. 실행 중에는 게임 화면이 보이도록 유지하고, 선택한 기능의 해상도, 화면 캡처, 전경 실행 요구 사항을 따르세요. 각 기능의 자세한 조작과 동작은 위에 연결된 원본 저장소의 README를 참조하세요.
+Windows 10/11 x64와 Windows용 게임 클라이언트가 필요합니다. 실행 중에는 게임 화면이 보이도록 유지하고, 선택한 모드의 해상도, 화면 캡처, 전경 실행 요구 사항을 따르세요.
 
 실행 시 선택한 모드의 기본 창 크기가 화면 DPI에 맞게 조정됩니다. 창 크기를 변경하거나 최대화한 뒤 모드를 전환해도 현재 창 상태가 유지됩니다. 왼쪽 아래 버전 표시를 클릭하면 Holodori-Auto 저장소가 열립니다.
 
@@ -65,9 +58,18 @@ python tools/build_release.py --output dist/Holodori-Auto
 
 실행하거나 배포할 때 생성된 포터블 폴더 전체를 유지하세요. 빌드에는 의존성, 원본 리소스, 요리 모델이 포함됩니다.
 
-## 각 기능의 업데이트 반영
+## 개발 및 유지보수
 
-네 원본 저장소는 독립적인 Git 서브모듈로 유지됩니다. `upstream-lock.json`은 통합 버전에서 사용하는 각 기능의 정확한 커밋과 버전을 기록합니다. 기능 하나를 업데이트할 때 게임 알고리즘을 Holodori-Auto로 복사하거나 병합할 필요가 없습니다.
+각 모드의 소스 코드는 Git 서브모듈로 포함됩니다. `upstream-lock.json`에는 각 모드에 사용되는 정확한 커밋과 버전이 기록됩니다.
+
+각 모드의 자세한 조작 방법은 아래 저장소의 README를 참조하세요.
+
+| 모드 | 소스 저장소 |
+| --- | --- |
+| 하이&로 | [Hololive-Dreams-High-low-Auto-Personal](https://github.com/harrykuang-dev/Hololive-Dreams-High-low-Auto-Personal) |
+| 낚시 | [Hololive-Dreams-Fishing-Auto](https://github.com/harrykuang-dev/Hololive-Dreams-Fishing-Auto) |
+| 줄넘기 | [Hololive-Dreams-Jump-Rope-Auto](https://github.com/harrykuang-dev/Hololive-Dreams-Jump-Rope-Auto) |
+| 요리 | [Hololive-Dreams-Collect-Cooking-Auto](https://github.com/harrykuang-dev/Hololive-Dreams-Collect-Cooking-Auto) |
 
 ```powershell
 python tools/sync_upstreams.py --check

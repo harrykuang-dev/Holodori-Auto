@@ -4,13 +4,6 @@
 
 Holodori-Auto 是一款 Windows 自动化程序，支持 *hololive Dreams* 的**猜高低（High & Low）**、**钓鱼**、**跳绳**、**料理**和**浮排大战**。在导航栏选择模式，即可使用该模式的操作与统计功能。各模式共用语言设置及开始／停止快捷键。
 
-| 功能 | 原始程序 |
-| --- | --- |
-| 猜高低（High & Low） | [Hololive-Dreams-High-low-Auto-Personal](https://github.com/harrykuang-dev/Hololive-Dreams-High-low-Auto-Personal) |
-| 钓鱼 | [Hololive-Dreams-Fishing-Auto](https://github.com/harrykuang-dev/Hololive-Dreams-Fishing-Auto) |
-| 跳绳 | [Hololive-Dreams-Jump-Rope-Auto](https://github.com/harrykuang-dev/Hololive-Dreams-Jump-Rope-Auto) |
-| 料理 | [Hololive-Dreams-Collect-Cooking-Auto](https://github.com/harrykuang-dev/Hololive-Dreams-Collect-Cooking-Auto) |
-
 ## 下载
 
 从 [Releases](https://github.com/harrykuang-dev/Holodori-Auto/releases/latest) 下载 `Holodori-Auto-v1.1.5-windows.7z`，使用 7-Zip 解压后运行 `Holodori-Auto.exe`。请保留完整文件夹，无需另外安装 Python 或 CUDA Toolkit。
@@ -30,7 +23,7 @@ Holodori-Auto 是一款 Windows 自动化程序，支持 *hololive Dreams* 的**
 
 共用偏好设置保存在 `%LOCALAPPDATA%\HolodoriAuto\settings.json`。首次启动时，优先沿用已有 High & Low 的语言及快捷键；若没有已有设置，默认使用繁体中文、**F8** 开始、**INSERT** 停止。原有统计、游戏记录及各功能专属选项继续使用原程序的数据位置。
 
-需要 Windows 10/11 x64 与 Windows 版游戏。运行期间保持游戏可见，并遵循所选功能对分辨率、画面捕获与前台操作的要求。各功能的完整操作与行为说明见上方原始仓库的 README。
+需要 Windows 10/11 x64 和 Windows 版游戏。运行期间保持游戏画面可见，并遵循所选模式对分辨率、画面捕获和前台操作的要求。
 
 程序启动时会根据所选模式的默认窗口大小和屏幕 DPI 调整显示。手动调整大小或最大化后，切换模式会保留当前窗口状态。点击左下角版本号会打开 Holodori-Auto 仓库。
 
@@ -71,9 +64,18 @@ python tools/build_release.py --output dist/Holodori-Auto
 
 运行与分发时请保留生成的完整便携式文件夹。构建内容包含依赖、原始资源与料理模型。
 
-## 跟进各功能更新
+## 开发与维护
 
-四个原始仓库以独立 Git 子模块保留，`upstream-lock.json` 记录整合版本所使用的各功能提交与版本。更新单一功能时，无需将游戏算法复制或合并到 Holodori-Auto。
+各模式的源代码通过 Git 子模块引入。`upstream-lock.json` 记录各模式使用的确切提交与版本。
+
+各模式的详细操作可参考下方仓库的 README。
+
+| 模式 | 源代码仓库 |
+| --- | --- |
+| 猜高低（High & Low） | [Hololive-Dreams-High-low-Auto-Personal](https://github.com/harrykuang-dev/Hololive-Dreams-High-low-Auto-Personal) |
+| 钓鱼 | [Hololive-Dreams-Fishing-Auto](https://github.com/harrykuang-dev/Hololive-Dreams-Fishing-Auto) |
+| 跳绳 | [Hololive-Dreams-Jump-Rope-Auto](https://github.com/harrykuang-dev/Hololive-Dreams-Jump-Rope-Auto) |
+| 料理 | [Hololive-Dreams-Collect-Cooking-Auto](https://github.com/harrykuang-dev/Hololive-Dreams-Collect-Cooking-Auto) |
 
 ```powershell
 python tools/sync_upstreams.py --check

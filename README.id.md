@@ -4,13 +4,6 @@
 
 Holodori-Auto adalah program Windows untuk mengotomatiskan minigame **High & Low**, **Memancing**, **Lompat Tali**, **Memasak**, dan **Puka Puka Fight** di *hololive Dreams*. Pilih mode di menu navigasi untuk menggunakan kontrol dan melihat statistiknya. Pengaturan bahasa serta pintasan mulai dan berhenti berlaku untuk semua mode.
 
-| Fitur | Program asal |
-| --- | --- |
-| High & Low | [Hololive-Dreams-High-low-Auto-Personal](https://github.com/harrykuang-dev/Hololive-Dreams-High-low-Auto-Personal) |
-| Memancing | [Hololive-Dreams-Fishing-Auto](https://github.com/harrykuang-dev/Hololive-Dreams-Fishing-Auto) |
-| Lompat Tali | [Hololive-Dreams-Jump-Rope-Auto](https://github.com/harrykuang-dev/Hololive-Dreams-Jump-Rope-Auto) |
-| Memasak | [Hololive-Dreams-Collect-Cooking-Auto](https://github.com/harrykuang-dev/Hololive-Dreams-Collect-Cooking-Auto) |
-
 ## Unduh
 
 Unduh `Holodori-Auto-v1.1.5-windows.7z` dari [Releases](https://github.com/harrykuang-dev/Holodori-Auto/releases/latest), ekstrak dengan 7-Zip, lalu jalankan `Holodori-Auto.exe`. Simpan seluruh isi folder bersama. Python dan CUDA Toolkit tidak perlu dipasang secara terpisah.
@@ -30,7 +23,7 @@ Hanya fitur yang dipilih yang berjalan. Pilihan bahasa dan pintasan bersama berl
 
 Preferensi bersama disimpan di `%LOCALAPPDATA%\HolodoriAuto\settings.json`. Saat pertama kali dijalankan, program mengutamakan pengaturan bahasa dan pintasan High & Low yang sudah ada. Jika belum ada pengaturan, nilai bawaannya adalah bahasa Tionghoa Tradisional, **F8** untuk mulai, dan **INSERT** untuk berhenti. Statistik, catatan permainan, dan opsi khusus setiap fitur tetap menggunakan lokasi data program asal.
 
-Memerlukan Windows 10/11 x64 dan klien game versi Windows. Biarkan game terlihat selama proses berjalan dan ikuti persyaratan resolusi, penangkapan layar, serta jendela aktif dari fitur yang dipilih. Petunjuk lengkap mengenai kontrol dan perilaku setiap fitur tersedia dalam README repositori asal yang ditautkan di atas.
+Memerlukan Windows 10/11 x64 dan klien game versi Windows. Pastikan layar game tetap terlihat selama program berjalan, lalu ikuti persyaratan resolusi, penangkapan layar, dan jendela aktif untuk mode yang dipilih.
 
 Saat dibuka, ukuran awal jendela mengikuti ukuran bawaan mode yang dipilih dan disesuaikan dengan DPI layar. Setelah jendela diubah ukurannya atau dimaksimalkan, perpindahan mode mempertahankan keadaan jendela saat ini. Klik nomor versi di sudut kiri bawah untuk membuka repositori Holodori-Auto.
 
@@ -65,9 +58,18 @@ python tools/build_release.py --output dist/Holodori-Auto
 
 Pertahankan seluruh isi folder portabel yang dihasilkan saat menjalankan atau mendistribusikan program. Hasil build mencakup dependensi, sumber daya asli, dan model Memasak.
 
-## Mengikuti pembaruan setiap fitur
+## Pengembangan dan pemeliharaan
 
-Keempat repositori asal tetap dipelihara sebagai submodul Git yang terpisah. `upstream-lock.json` mencatat commit dan versi yang digunakan untuk setiap fitur dalam program gabungan. Memperbarui satu fitur tidak memerlukan penyalinan atau penggabungan algoritma permainannya ke Holodori-Auto.
+Kode sumber setiap mode disertakan sebagai submodul Git. `upstream-lock.json` mencatat commit dan versi yang digunakan untuk setiap mode.
+
+Petunjuk lengkap untuk setiap mode tersedia di README repositori berikut.
+
+| Mode | Repositori kode sumber |
+| --- | --- |
+| High & Low | [Hololive-Dreams-High-low-Auto-Personal](https://github.com/harrykuang-dev/Hololive-Dreams-High-low-Auto-Personal) |
+| Memancing | [Hololive-Dreams-Fishing-Auto](https://github.com/harrykuang-dev/Hololive-Dreams-Fishing-Auto) |
+| Lompat Tali | [Hololive-Dreams-Jump-Rope-Auto](https://github.com/harrykuang-dev/Hololive-Dreams-Jump-Rope-Auto) |
+| Memasak | [Hololive-Dreams-Collect-Cooking-Auto](https://github.com/harrykuang-dev/Hololive-Dreams-Collect-Cooking-Auto) |
 
 ```powershell
 python tools/sync_upstreams.py --check
