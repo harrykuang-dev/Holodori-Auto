@@ -97,6 +97,22 @@ class PukaScreenTests(unittest.TestCase):
         self.frame[328:380, 100:800] = 0
         self.assertIsNone(stages.classify_screen(self.frame))
 
+    def test_dolphin_tile_ignores_orange_hammer_covering_one_marker(self):
+        raster = np.full((100, 100, 3), (239, 232, 223), dtype=np.uint8)
+        samples = {2: (70, 72, 78), 3: (239, 144, 0),
+                   6: (54, 133, 229), 7: (70, 72, 78)}
+        for marker, color in samples.items():
+            x, y = vision.EDGES[marker]
+            raster[y-4:y+5, x-4:x+5] = color
+        hats = {vision.DOLPHIN: .68, -vision.DOLPHIN: .73}
+
+        self.assertEqual(vision.classify(vision.tile_markers(raster), hats, raster), vision.DOLPHIN)
+
+        x, y = vision.EDGES[6]
+        raster[y-4:y+5, x-4:x+5] = (33, 113, 240)
+        with self.assertRaises(vision.VisionError):
+            vision.classify(vision.tile_markers(raster), hats, raster)
+
 
 class PukaRefillTests(unittest.TestCase):
     def setUp(self):
