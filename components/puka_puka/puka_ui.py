@@ -13,6 +13,7 @@ from vision import VisionError
 from win_window import GameWindow, key
 
 
+ACCENT = '#6D43AA'
 COPY = {
     '繁體中文': (
         '先進入{game}，再點擊「開始」',
@@ -74,6 +75,35 @@ def shortcut_down(shortcut):
     return bool(key(keycode) & 0x8000) and all(key(modifier) & 0x8000 for modifier in modifiers)
 
 
+def configure_card_checkbox(theme):
+    style = theme.style
+    surface = style.lookup('Card.TFrame', 'background')
+
+    def indicator(selected=False, disabled=False):
+        def paint(draw, size, _unit):
+            w, h = size
+            unit = w/18
+            fill = '#E5E5E5' if disabled else ACCENT if selected else surface
+            border = fill if selected or disabled else '#D1D1D1'
+            draw.rounded_rectangle((unit, unit, w-unit, h-unit), radius=3*unit,
+                                   fill=fill, outline=border, width=round(unit))
+            if selected:
+                draw.line([(w*.25, h*.5), (w*.43, h*.68), (w*.76, h*.32)],
+                          fill='#A0A0A0' if disabled else '#FFFFFF', width=round(unit*1.5))
+        return theme.raster((18, 18), paint)
+
+    style.element_create('Puka.check', 'image', indicator(),
+                         ('disabled', 'selected', indicator(True, True)),
+                         ('disabled', indicator(disabled=True)), ('selected', indicator(True)), sticky='')
+    style.layout('Card.TCheckbutton', [('Checkbutton.padding', {'sticky': 'nswe', 'children': [
+        ('Puka.check', {'side': 'left'}), ('Checkbutton.focus', {'side': 'left', 'sticky': 'nswe',
+         'children': [('Checkbutton.label', {'sticky': 'nswe'})]})]})])
+    style.configure('Card.TCheckbutton', background=surface, padding=0,
+                    indicatormargin=(0, 0, theme.px(6), 0))
+    style.map('Card.TCheckbutton', background=[('disabled', surface), ('active', surface)],
+              foreground=[('disabled', '#A0A0A0')])
+
+
 class PukaPukaApp:
     def __init__(self, root, *, smoke=False):
         self.root = root
@@ -119,7 +149,7 @@ class PukaPukaApp:
         inset = self.px(5) + 1
         style.element_create('MatchLimit.field', 'image', round_field('#FFFFFF', '#D1D1D1', 4, '#FFFFFF'),
                              ('disabled', round_field('#F0F0F0', '#E5E5E5', 4, '#FFFFFF')),
-                             ('focus', round_field('#FFFFFF', '#6D43AA', 4, '#FFFFFF')),
+                             ('focus', round_field('#FFFFFF', ACCENT, 4, '#FFFFFF')),
                              border=(self.px(6), inset, self.px(6), inset),
                              width=self.px(13), height=2*inset+1, sticky='nswe')
         style.layout('MatchLimit.TEntry', [('MatchLimit.field', {'sticky': 'nswe', 'children': [
@@ -130,7 +160,7 @@ class PukaPukaApp:
         self.entry.grid(row=0, column=1, sticky='ew', pady=self.px(6))
         help_button = ttk.Button(settings, style='Info.TButton', image=self.theme.help_icon, command=self.show_help)
         help_button.grid(row=0, column=2, padx=(self.px(8), 0))
-        style.configure('Card.TCheckbutton', background=style.lookup('Card.TFrame', 'background'))
+        configure_card_checkbox(self.theme)
         self.refill_checkbox = ttk.Checkbutton(settings, style='Card.TCheckbutton', variable=self.auto_refill)
         self.refill_checkbox.grid(row=1, column=0, columnspan=3, sticky='w', pady=(self.px(6), 0))
 
