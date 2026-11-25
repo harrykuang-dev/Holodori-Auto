@@ -154,6 +154,34 @@ class PukaRefillTests(unittest.TestCase):
 
 
 class PukaTrackingTests(unittest.TestCase):
+    def test_selection_retries_only_on_the_same_board(self):
+        solver = import_module('solver')
+        move = solver.Move(2, 5)
+        for changed in (False, True):
+            with self.subTest(changed=changed):
+                ticks = count(step=.2)
+                clock = SimpleNamespace(monotonic=lambda: next(ticks), sleep=lambda _: None)
+                game = SimpleNamespace(scene='initial')
+                game.capture = lambda: game.scene
+
+                def click(*_):
+                    if game.click.call_count == 1:
+                        if changed:
+                            game.scene = 'different'
+                    else:
+                        game.scene = 'selected'
+
+                game.click = Mock(side_effect=click)
+                with (patch.object(pilot, 'time', clock),
+                      patch.object(pilot, 'source_point', return_value=(10, 10)),
+                      patch.object(pilot, 'selection_ready', side_effect=lambda frame, *_: frame == 'selected')):
+                    if changed:
+                        with self.assertRaises(pilot.StopPlay):
+                            pilot.select_move(game, 'initial', move, lambda frame: frame)
+                    else:
+                        pilot.select_move(game, 'initial', move, lambda frame: frame)
+                self.assertEqual(game.click.call_count, 1 if changed else 2)
+
     def test_next_move_revalidates_with_the_confirmed_reply(self):
         solver = import_module('solver')
         prior = solver.from_table_code('S/R-g/-cl/--E/-GL/E')

@@ -22,10 +22,15 @@ def next_player_position(frame, pos, move):
     if not is_ready(frame):
         raise VisionError("等待我方回合")
     after = pos.next(move)
-    candidates = [after.next(reply) for reply in moves(after)]
-    candidates = [candidate for candidate in candidates
-                  if terminal(candidate) is None and hands_match(frame, candidate)]
-    return match_position(frame, candidates)
+    replies = (after.next(reply) for reply in moves(after))
+    candidates = [reply for reply in replies if terminal(reply) is None and hands_match(frame, reply)]
+    # The game can show the blue legend before the opponent's move is visible.
+    if hands_match(frame, after):
+        candidates.append(after)
+    observed = match_position(frame, candidates, previous=after.board)
+    if observed == after:
+        raise VisionError("等待對方完成落子")
+    return observed
 
 
 def source_point(frame, pos, move):
@@ -43,6 +48,24 @@ def selection_ready(frame, pos, move):
     return (not is_ready(frame) and selected_piece(frame, piece)
             and (move.source < 0 or source_arrow(frame, move.source))
             and highlighted(frame, move.target))
+
+
+def select_move(game, pos, move, read_current):
+    def unchanged(frame):
+        if read_current(frame) != pos:
+            raise StopPlay("求解期间棋盘已变化")
+        return pos
+
+    for _ in range(2):
+        # Retry a source click only after confirming the same unselected board.
+        frame, _ = wait_for(game, unchanged, 4)
+        game.click(*source_point(frame, pos, move))
+        deadline = time.monotonic() + 4
+        while time.monotonic() < deadline:
+            if selection_ready(game.capture(), pos, move):
+                return
+            time.sleep(.10)
+    raise StopPlay(f"无法确认 {move.label()} 的选中标记和合法落点")
 
 
 def choose(pos, history, notify):
@@ -161,27 +184,16 @@ def confirms_win(after, history):
 
 def play_match(game, frame, pos, notify):
     history = []
+    read_current = read_position
     for _ in range(90):
         move = choose(pos, history, notify)
-        # Revalidate after solving. The game may have lost focus or changed in the meantime.
-        def unchanged(new_frame):
-            if read_position(new_frame) != pos:
-                raise StopPlay("求解期间棋盘已变化")
-            return pos
-
-        frame, _ = wait_for(game, unchanged, 4)
-        game.click(*source_point(frame, pos, move))
-        deadline = time.monotonic() + 4
-        while time.monotonic() < deadline:
-            frame = game.capture()
-            if selection_ready(frame, pos, move):
-                break
-            time.sleep(.10)
-        else:
-            raise StopPlay(f"无法确认 {move.label()} 的选中标记和合法落点")
+        select_move(game, pos, move, read_current)
         game.click(*point(move.target, selected=True))
         after = pos.next(move)
         history.extend((pos, after))
+
+        def read_reply(new_frame, previous=pos, submitted=move):
+            return next_player_position(new_frame, previous, submitted)
 
         def read_next(new_frame):
             scene = classify_screen(new_frame)
@@ -190,7 +202,7 @@ def play_match(game, frame, pos, notify):
             # Do not accept the old board or end-of-turn animation as the opponent's response.
             if after.turn not in after.board:
                 return None
-            return next_player_position(new_frame, pos, move)
+            return read_reply(new_frame)
 
         # The result splash can flash before the stage's tutorial overlay opens.
         frame, reply = wait_for(game, read_next, 32, stable_for=.7)
@@ -198,6 +210,7 @@ def play_match(game, frame, pos, notify):
             return reply, confirms_win(after, history)
         old = pos
         pos = reply
+        read_current = read_reply
         changes = [f"{square(i)}={NAMES[abs(p)] or '空'}" for i, p in enumerate(pos.board)
                    if p != after.board[i]]
         notify("reply", move.label(), "，".join(changes))

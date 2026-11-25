@@ -43,16 +43,23 @@ class OccludedRaftTests(unittest.TestCase):
         marks[5] = [None] * 7 + [0]
         marks[7] = [None] * 5 + [0, 0, 0]  # Only the unused alternative changes D2.
         candidates = [self.expected, self.alternative]
+        b2_hats = self.hats
+
+        def scores(_frame, index):
+            return b2_hats if index == 5 else {self.turtle: 0, -self.turtle: 0}
+
         with patch.object(vision, 'read_board', side_effect=vision.VisionError), \
              patch.object(vision, 'marker_observations', return_value=marks), \
              patch.object(vision, 'tile', return_value=self.raster), \
-             patch.object(vision, 'hat_scores', return_value=self.hats) as score:
+             patch.object(vision, 'hat_scores', side_effect=scores):
             self.assertEqual(vision.match_position(self.frame, candidates, previous=self.before.board),
                              self.expected)
-            score.return_value = {self.turtle: .53, -self.turtle: .48}
+            self.assertEqual(vision.match_position(self.frame, [*candidates, self.before],
+                                                   previous=self.before.board), self.expected)
+            b2_hats = {self.turtle: .53, -self.turtle: .48}
             with self.assertRaises(vision.VisionError):
-                vision.match_position(self.frame, candidates, previous=self.before.board)
-            score.return_value = self.hats
+                vision.match_position(self.frame, [*candidates, self.before], previous=self.before.board)
+            b2_hats = self.hats
             marks[5] = [solver.BLUE, solver.BLUE, 0, None, 0, None, None, 0]
             with self.assertRaisesRegex(vision.VisionError, 'B2'):
                 vision.match_position(self.frame, candidates, previous=self.before.board)

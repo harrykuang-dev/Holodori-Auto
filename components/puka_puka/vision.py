@@ -165,7 +165,8 @@ def classify(observed, hats, raster):
     color_counts = Counter(mark for mark in observed if mark)
     known = sum(mark is not None for mark in observed)
     if not color_counts:
-        hat = max(hats.values())
+        piece = max(hats, key=hats.get)
+        hat = hats[piece]
         if known >= 5 or (known == 4 and hat < .23):
             if known < 7 and hat > .37:
                 raise VisionError("看到动物帽，阵营标记被挡住")
@@ -173,6 +174,10 @@ def classify(observed, hats, raster):
         # A foreground hat can cover most of the next tile's surface.
         if known == 3 and hat < .14 and visible_white_edge(raster, observed):
             return 0
+        if 0 < known < 4 and hat >= .80 and mismatch(observed, pattern(piece)) == 0:
+            alternate = max((score for other, score in hats.items() if other != piece), default=0)
+            if hat - alternate >= .30:
+                return piece
         raise VisionError(f"浮台标记不明确 {observed}")
     hat_matches = sorted(((confidence, piece) for piece, confidence in hats.items()
                           if color_counts[BLUE if piece > 0 else ORANGE]), reverse=True)
@@ -211,7 +216,7 @@ def read_board(frame):
     return tuple(pieces)
 
 
-def match_position(frame, candidates):
+def match_position(frame, candidates, *, previous):
     candidates = set(candidates)
     if not candidates:
         raise VisionError("预期状态为空")
@@ -225,17 +230,37 @@ def match_position(frame, candidates):
             return matching[0]
         raise VisionError("识别到的棋盘与预期的合法局面不一致")
     observations = marker_observations(frame)
+    visible = [sum(mark is not None for mark in marks) for marks in observations]
+    if sum(visible) < 65:
+        raise VisionError("棋盘仍在移动或被遮挡")
+
+    sparse_pieces = {}
+    for index, count in enumerate(visible):
+        if count >= 4 or all(previous[index] == pos.board[index] for pos in candidates):
+            continue
+        try:
+            sparse_pieces[index] = classify(observations[index], hat_scores(frame, index), tile(frame, index))
+        except VisionError:
+            continue
+    candidates = [pos for pos in candidates
+                  if all(pos.board[index] == piece for index, piece in sparse_pieces.items())]
+    if not candidates:
+        raise VisionError("被遮挡的棋子与预期的合法局面不一致")
     scores = [(sum(mismatch(marks, pattern(piece)) for marks, piece in zip(observations, pos.board)), pos)
               for pos in candidates]
     scores.sort(key=lambda value: value[0])
     errors, best = scores[0]
     if errors > 6 or (len(scores) > 1 and scores[1][0] <= errors + 2):
         raise VisionError(f"无法唯一确认对方落子，最低标记误差 {errors}")
-    distinct = [i for i in range(12) if len({p.board[i] for p in candidates}) > 1]
-    if any(sum(mark is not None for mark in observations[i]) < 4 for i in distinct):
-        raise VisionError("关键浮台被遮挡")
-    if sum(mark is not None for marks in observations for mark in marks) < 65:
-        raise VisionError("棋盘仍在移动或被遮挡")
+    for index, expected in enumerate(best.board):
+        if previous[index] == expected:
+            continue
+        ink = [mark for mark in observations[index] if mark]
+        side = BLUE if expected > 0 else ORANGE if expected < 0 else 0
+        if len(ink) >= 2 and side not in ink:
+            raise VisionError(f"{square(index)} 的浮台颜色与预期落子不符")
+        if visible[index] < 4 and index not in sparse_pieces:
+            raise VisionError(f"{square(index)} 的落子标记被遮挡")
     return best
 
 
