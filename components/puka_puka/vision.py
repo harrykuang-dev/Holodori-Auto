@@ -6,7 +6,7 @@ import cv2
 import numpy as np
 
 from hats import observe
-from solver import BLUE, DOLPHIN, GOLD, KING, ORANGE, TURTLE, WHALE, Position, full_inventory, square
+from solver import BLUE, DOLPHIN, GOLD, KING, ORANGE, TURTLE, WHALE, Position, square
 
 
 WIDTH, HEIGHT = 1626, 915
@@ -215,8 +215,5 @@ def read_position(frame):
     if not is_ready(frame):
         raise VisionError("尚未確認藍方回合與單人棋盤。")
     board = read_board(frame)
-    position = Position(board, *(tuple(sorted(p for _, _, p in hand_read(frame, side)))
-                                 for side in (BLUE, ORANGE)))
-    if not full_inventory(position):
-        raise VisionError("棋帽或候補棋子尚未辨識完整")
-    return position
+    return Position(board, *(tuple(sorted(p for _, _, p in hand_read(frame, side)))
+                             for side in (BLUE, ORANGE)))
