@@ -9,6 +9,9 @@ from vision import (VisionError, hand_read, highlighted, is_ready, match_positio
                     point, read_position, selected_piece, source_arrow)
 
 
+POST_MATCH_OVERLAYS = {"reward", "event_next"}
+
+
 class StopPlay(RuntimeError):
     pass
 
@@ -118,7 +121,7 @@ def wait_menu(game, allowed, seconds=30, *, stable_for=0):
 
 def prepare(game, notify, *, auto_refill=False):
     entries = {"hub", "level_next", *CHALLENGES}
-    allowed = {"tutorial", "board", "team_auto", "team_start", *entries}
+    allowed = {"tutorial", "board", "team_auto", "team_start", *entries} | POST_MATCH_OVERLAYS
     selected_stage = None
     refilled = False
     notify("waiting_entry")
@@ -167,10 +170,13 @@ def settle(game, state, proven_win, notify):
             raise StopPlay("未確認獲勝，已停止推進。") from error
     game.click(*CLICK[state])
     # The stage carousel can appear briefly before the reward overlay opens.
-    state = wait_menu(game, MENU_STATES | {"reward"}, stable_for=1.2)
-    if state == "reward":
+    overlays = POST_MATCH_OVERLAYS.copy()
+    while True:
+        state = wait_menu(game, MENU_STATES | overlays, stable_for=1.2)
+        if state in MENU_STATES:
+            return
         game.click(*CLICK[state])
-        wait_menu(game, MENU_STATES, stable_for=1.2)
+        overlays.remove(state)
 
 
 def confirms_win(after, history):

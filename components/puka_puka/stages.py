@@ -19,6 +19,7 @@ CLICK = {
     "result": (1368, 828),
     "result_details": (1368, 828),
     "win_details": (1368, 828),
+    "event_next": (1368, 828),
     "reward": (812, 807),
     "refill": (1362, 838),
 }
@@ -134,6 +135,14 @@ def refill_screen(frame):
     return "refill" if one_item and ready else "refill_panel"
 
 
+def event_next(frame):
+    # The event artwork and labels vary. The settlement header, back control,
+    # score card and bottom-right Next button are part of the shared layout.
+    return (hammer(frame) and white(frame[41:100, 1515:1595], .43)
+            and white(frame[297:639, 793:1502], .68)
+            and blue_button(frame[805:854, 1280:1525], .60))
+
+
 def result_screen(frame):
     if not hammer(frame) or not blue_button(frame[805:854, 1280:1525], .60):
         return None
@@ -170,4 +179,7 @@ def classify_screen(frame):
         return stage or ('level_next' if has_next_page(frame) else 'level_menu')
     if hub(frame):
         return "hub"
-    return team_screen(frame) or result_screen(frame)
+    team = team_screen(frame)
+    if team:
+        return team
+    return "event_next" if event_next(frame) else result_screen(frame)
