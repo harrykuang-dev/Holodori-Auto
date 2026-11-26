@@ -7,7 +7,7 @@ from typing import NamedTuple
 import cv2
 import numpy as np
 
-from solver import DOLPHIN, GOLD, KING, TURTLE, WHALE
+from solver import BLUE, DOLPHIN, GOLD, KING, ORANGE, TURTLE, WHALE
 
 
 class Hat(NamedTuple):
@@ -17,10 +17,18 @@ class Hat(NamedTuple):
     saturation: float
 
 
-@lru_cache(maxsize=1)
-def references():
+class TileEvidence(NamedTuple):
+    compatible: tuple[int, ...]
+    exact: int | None
+    painted: int
+    visible: int
+
+
+@lru_cache(maxsize=2)
+def references(*, wide_whale=False):
     with np.load(Path(__file__).with_name("hat_reference.npz"), allow_pickle=False) as archive:
-        return {int(key): archive[key].astype(np.float32) / 255 for key in archive.files}
+        keys = {WHALE: "wide_whale"} if wide_whale else {kind: str(kind) for kind in MIN_AREAS}
+        return {kind: archive[key].astype(np.float32) / 255 for kind, key in keys.items()}
 
 
 DILATION = np.ones((13, 13), np.uint8)
@@ -31,10 +39,12 @@ MIN_AREAS = {KING: 290, WHALE: 2300, DOLPHIN: 2300, TURTLE: 2300, GOLD: 420}
 POSE_WEIGHTS = np.float32([1, .12])[None, :, None, None]
 
 
-def describe(patch, row):
+def describe(patch, row, *, wide_whale=False):
     """Extract the dominant shape of each hat color near a square."""
     radius = 64 + row * 5
-    patch = patch[16:76, 115-radius:116+radius]
+    extra = 26 if wide_whale else 0
+    patch = (patch[:, 115-radius-extra:116+radius+extra] if wide_whale
+             else patch[16:76, 115-radius:116+radius])
     h, s, v = cv2.cvtColor(patch, cv2.COLOR_BGR2HSV).transpose(2, 0, 1)
     colors = {
         KING: ((h <= 9) | (h >= 175)) & (s > 145),
@@ -43,11 +53,20 @@ def describe(patch, row):
         TURTLE: (h >= 37) & (h <= 78) & (s > 100),
         GOLD: (h >= 19) & (h < 37) & (s > 125),
     }
+    if wide_whale:
+        colors = {WHALE: colors[WHALE]}
     for kind, color in colors.items():
         count, labels, stats, _ = cv2.connectedComponentsWithStats(np.uint8(color & (v > 105)))
         if count <= 1:
             continue
-        largest = np.argmax(stats[1:, cv2.CC_STAT_AREA]) + 1
+        if wide_whale:
+            # Expand the shape that was visible in the original crop.
+            overlap = np.bincount(labels[16:76, extra:-extra].ravel(), minlength=count)
+            if not overlap[1:].any():
+                continue
+            largest = np.argmax(overlap[1:]) + 1
+        else:
+            largest = np.argmax(stats[1:, cv2.CC_STAT_AREA]) + 1
         x, y, width, height, size = stats[largest]
         if size < 90 or width < 18 or height < 12:
             continue
@@ -71,7 +90,13 @@ def pose_costs(pose, bank):
     return cost(pose), cost(pose[:, :, ::-1])
 
 
-def observe(patch, index):
+def pose_side(blue, orange):
+    if abs(blue - orange) <= max(.003, min(blue, orange) * .8):
+        return None
+    return BLUE if blue < orange else ORANGE
+
+
+def observe(patch, index, *, floor=None):
     """Return the admissible signed pieces, or (0,) for an empty square."""
     detected = []
     bank = references()
@@ -90,9 +115,25 @@ def observe(patch, index):
             continue
         detected.append((hat.area, hat.kind, blue, orange))
     if not detected:
+        if floor and floor.exact is not None and floor.painted >= 3 and floor.visible >= 6:
+            return (floor.exact,)
         return (0,)
-    _, kind, blue, orange = max(detected)
-    best = min(blue, orange)
-    if abs(blue-orange) <= max(.003, best * .8):
-        return (kind, -kind)
-    return (kind if blue < orange else -kind,)
+    primary = max(detected)
+    if floor and floor.exact is not None and floor.painted >= 2:
+        # A distinctive pattern can distinguish two plausible hat matches.
+        alternative = next((match for match in detected if match[1] == abs(floor.exact)), None)
+        if alternative is not None and min(alternative[2:]) <= min(primary[2:]) + .012:
+            primary = alternative
+    _, kind, blue, orange = primary
+    side = pose_side(blue, orange)
+    if floor:
+        matching = [piece for piece in floor.compatible if abs(piece) == kind]
+        if len(matching) == 1 and (side is None or floor.painted >= 2):
+            return (matching[0],)
+    if side is None and kind == WHALE:
+        wide = next(describe(patch, index // 4, wide_whale=True), None)
+        if wide is not None:
+            costs = pose_costs(wide.pose, references(wide_whale=True)[WHALE])
+            if min(costs) <= .065:
+                side = pose_side(*costs)
+    return (kind, -kind) if side is None else (side * kind,)

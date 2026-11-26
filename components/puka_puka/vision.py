@@ -5,7 +5,7 @@ from functools import lru_cache
 import cv2
 import numpy as np
 
-from hats import observe
+from hats import TileEvidence, observe
 from solver import BLUE, DOLPHIN, GOLD, KING, ORANGE, TURTLE, WHALE, Position, square
 
 
@@ -27,6 +27,8 @@ SELECTED_LEFT = (
     ((630, 553), (782, 553), (778, 685), (624, 685)),
 )
 DEST = np.float32(((0, 0), (99, 0), (99, 99), (0, 99)))
+RAFT_EDGES = ((7, 7), (50, 7), (92, 7), (7, 50), (92, 50), (7, 92), (50, 92), (92, 92))
+MIRROR_EDGES = (2, 1, 0, 4, 3, 7, 6, 5)
 MOVE_DIAGRAMS = {
     KING: (1, 1, 1, 1, 1, 1, 1, 1),
     WHALE: (1, 0, 1, 0, 0, 1, 0, 1),
@@ -87,12 +89,60 @@ def bgr(area):
     return np.moveaxis(area.astype(np.int16), -1, 0)
 
 
+def raft_markers(raster):
+    markers = []
+    weak_orange = []
+    for x, y in RAFT_EDGES:
+        b, g, r = bgr(raster[y-4:y+5, x-4:x+5])
+        orange = (r > 200) & (g > 65) & (g < 153) & (b < 90)
+        strengths = (((b > 170) & (g > 120) & (g < 185) & (r < 80)).mean(),
+                     orange.mean(),
+                     ((b > 164) & (r > 147) & (abs(b-r) < 45) & (abs(g-r) < 35)).mean())
+        winner = int(np.argmax(strengths))
+        marker = (BLUE, ORANGE, 0)[winner] if strengths[winner] > .48 else None
+        if marker == ORANGE and (orange & (g < 125)).mean() <= .48:
+            weak_orange.append(len(markers))
+        markers.append(marker)
+    if BLUE in markers:
+        # A bright hammer can cover one tile edge without changing its team.
+        for edge in weak_orange:
+            markers[edge] = None
+    return markers
+
+
+def raft_evidence(markers):
+    painted = [mark for mark in markers if mark]
+    visible = sum(mark is not None for mark in markers)
+    if not painted or len(set(painted)) > 1:
+        return None
+    side = painted[0]
+    compatible = []
+    exact = []
+    for kind, pattern in MOVE_DIAGRAMS.items():
+        if side == ORANGE:
+            pattern = tuple(pattern[i] for i in MIRROR_EDGES)
+        if any(mark and not edge for mark, edge in zip(markers, pattern)):
+            continue
+        white_misses = sum(mark == 0 and edge for mark, edge in zip(markers, pattern))
+        if len(painted) == 1:
+            opposite = 3 if side == BLUE else 4
+            if kind != TURTLE or markers[opposite] != 0:
+                continue
+        if white_misses <= 1:
+            compatible.append(side * kind)
+        if white_misses == 0:
+            exact.append(side * kind)
+    unique = exact[0] if len(exact) == 1 and visible >= 4 else None
+    return TileEvidence(tuple(compatible), unique, len(painted), visible)
+
+
 def observe_board(frame):
     for index in range(12):
         row = index // 4
         x, _ = point(index)
         y = (100, 242, 404)[row]
-        yield observe(frame[y-46:y+45, x-115:x+115], index)
+        floor = raft_evidence(raft_markers(tile(frame, index)))
+        yield observe(frame[y-46:y+45, x-115:x+115], index, floor=floor)
 
 
 def read_board(frame):
