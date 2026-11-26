@@ -187,33 +187,44 @@ def is_ready(frame):
 
 def hand_read(frame, side):
     """Classify the row of captured-piece icons by hat hue, in display order."""
-    left = frame[806:855, 145:695] if side == BLUE else frame[806:855, 931:1480]
-    hsv = cv2.cvtColor(left, cv2.COLOR_BGR2HSV)
+    first = 210 if side == BLUE else 1465
+    spacing = 127
+    centers = [first + spacing * slot * side for slot in range(6)]
+    left, right = min(centers) - 65, max(centers) + 66
+    hsv = cv2.cvtColor(frame[806:855, left:right], cv2.COLOR_BGR2HSV)
     h, s, v = np.moveaxis(hsv, -1, 0)
     masks = {TURTLE: (h >= 40) & (h <= 78), DOLPHIN: (h >= 140) & (h <= 178),
              WHALE: (h >= 106) & (h <= 128)}
-    pieces = []
+    pieces = [None] * len(centers)
     for piece, mask in masks.items():
         valid = (mask & (s > 90) & (v > 105)).astype(np.uint8)
-        n, _, stats, _ = cv2.connectedComponentsWithStats(valid)
-        for x, y, w, ch, area in stats[1:n]:
-            if 35 <= w <= 108 and 12 <= ch <= 49 and area >= 450 and y < 39:
-                pieces.append((int(x + w // 2 + (145 if side == BLUE else 931)), 847, piece))
-    pieces.sort(reverse=side == ORANGE)
-    previous = 115 if side == BLUE else 1511
+        _, _, stats, _ = cv2.connectedComponentsWithStats(valid)
+        for x, y, w, ch, area in stats[1:]:
+            if not (35 <= w <= 108 and ch >= 30 and area >= 450 and y + ch >= 36):
+                continue
+            center = int(x + w // 2 + left)
+            slot = round(side * (center - first) / spacing)
+            if not (0 <= slot < len(centers) and abs(center - centers[slot]) <= 25):
+                continue
+            if pieces[slot] is None or area > pieces[slot][0]:
+                pieces[slot] = (area, center, piece)
+
     row = []
     for entry in pieces:
-        gap = side * (entry[0] - previous)
-        if not 58 <= gap <= 153:
+        if entry is None:
             break
-        row.append(entry)
-        previous = entry[0]
+        _, center, piece = entry
+        row.append((center, 847, piece))
     return row
+
+
+def hand_inventory(frame):
+    return tuple(tuple(sorted(piece for _, _, piece in hand_read(frame, side)))
+                 for side in (BLUE, ORANGE))
 
 
 def read_position(frame):
     if not is_ready(frame):
         raise VisionError("尚未確認藍方回合與單人棋盤。")
     board = read_board(frame)
-    return Position(board, *(tuple(sorted(p for _, _, p in hand_read(frame, side)))
-                             for side in (BLUE, ORANGE)))
+    return Position(board, *hand_inventory(frame))

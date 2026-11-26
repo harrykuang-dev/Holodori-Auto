@@ -106,6 +106,24 @@ class PukaScreenTests(unittest.TestCase):
         self.frame[113:136, 193:216] = (55, 168, 241)
         self.assertFalse(vision.is_ready(self.frame))
 
+    def test_reserve_detection_ignores_background_between_icons(self):
+        self.frame[806:819, 1229:1312] = (222, 70, 60)
+        self.frame[821:855, 1296:1380] = (222, 70, 60)
+        self.frame[807:855, 1415:1515] = (220, 60, 208)
+        self.assertEqual(vision.hand_read(self.frame, vision.ORANGE),
+                         [(1465, 847, vision.DOLPHIN), (1338, 847, vision.WHALE)])
+
+    def test_reserve_detection_covers_all_slots_in_display_order(self):
+        for side, first in ((vision.BLUE, 210), (vision.ORANGE, 1465)):
+            with self.subTest(side=side):
+                self.frame[:] = 0
+                entries = []
+                for slot in range(6):
+                    x = first + side * slot * 127
+                    self.frame[810:855, x-45:x+45] = (70, 210, 65)
+                    entries.append((x, 847, vision.TURTLE))
+                self.assertEqual(vision.hand_read(self.frame, side), entries)
+
     def test_reward_layout_requires_the_turquoise_band(self):
         self.frame[328:380, 100:1510] = (226, 217, 109)
         self.assertEqual(stages.classify_screen(self.frame), 'reward')
@@ -186,12 +204,18 @@ class PukaSettlementTests(unittest.TestCase):
             return state
 
         with patch.object(pilot, 'wait_menu', side_effect=wait):
-            pilot.settle(game, 'result', True, Mock())
+            pilot.settle(game, 'result', Mock())
 
         self.assertEqual(game.click.call_args_list, [call(*stages.CLICK[state])
             for state in ('result', 'result_details', 'event_next', 'reward')])
         self.assertNotIn('event_next', waits[2])
         self.assertNotIn('reward', waits[3])
+
+    def test_a_draw_or_loss_can_finish_without_a_proven_win(self):
+        game = Mock()
+        with patch.object(pilot, 'wait_menu', return_value='stage_start'):
+            pilot.settle(game, 'result_details', Mock())
+        game.click.assert_called_once_with(*stages.CLICK['result_details'])
 
 
 class PukaTrackingTests(unittest.TestCase):
