@@ -3,7 +3,7 @@
 import time
 
 from solver import BLUE, NAMES, moves, recommend, square, terminal
-from stages import CLICK, MENU_STATES, REFILL_STATES, RESULT_STATES, classify_screen
+from stages import CHALLENGE_ENTRIES, CLICK, MENU_STATES, REFILL_STATES, RESULT_STATES, classify_screen
 from vision import (VisionError, hand_inventory, hand_read, highlighted, is_ready, match_position,
                     point, read_position, selected_piece, source_arrow)
 
@@ -106,18 +106,25 @@ def wait_menu(game, allowed, seconds=30, *, stable_for=0):
 
 
 def prepare(game, notify, *, auto_refill=False):
-    entries = {"hub", "stage_start"}
+    entries = {"hub", "stage_start"} | CHALLENGE_ENTRIES
     allowed = {"tutorial", "board", "team_auto", "team_start", *entries} | POST_MATCH_OVERLAYS
-    clicked_stage = False
+    retry_entry = None
     refilled = False
     notify("waiting_entry")
     while True:
         state = wait_menu(game, allowed | REFILL_STATES, 50, stable_for=.55)
-        if state in REFILL_STATES:
+        if state in REFILL_STATES or state == "challenge_low_energy":
             if not auto_refill:
                 raise StopPlay('能量不足。可手動補充，或開啟「自動補充能量」後再開始。')
             if refilled:
                 raise StopPlay('補充後仍然需要能量，已停止本次入場。')
+            if state == "challenge_low_energy":
+                # The pink card opens the refill dialog when the cost is red.
+                retry_entry = "challenge_continue"
+                allowed.discard(state)
+                game.click(*CLICK[retry_entry])
+                state = wait_menu(game, REFILL_STATES | {retry_entry, "board"}, stable_for=.55)
+        if state in REFILL_STATES:
             try:
                 wait_menu(game, {"refill"}, 4, stable_for=.45)
             except StopPlay as error:
@@ -125,45 +132,38 @@ def prepare(game, notify, *, auto_refill=False):
             notify("refilling")
             game.click(*CLICK["refill"])
             refilled = True
-            if clicked_stage:
-                allowed.add("stage_start")
+            if retry_entry:
+                allowed.add(retry_entry)
             state = wait_menu(game, allowed, stable_for=.55)
         if state == "board":
             return wait_for(game, read_position, 8, stable_for=.4)
         game.click(*CLICK[state])
         allowed.remove(state)
-        if state in ("stage_start", "tutorial", "team_auto", "team_start"):
+        if state in ("stage_start", "challenge_continue", "tutorial", "team_auto", "team_start"):
             allowed -= entries
         if state == 'team_start':
             allowed.discard('team_auto')
-        if state == "stage_start":
-            clicked_stage = True
+        if state in ("stage_start", "challenge_continue"):
+            retry_entry = state
             notify("waiting_board")
 
 
 def settle(game, state, notify):
     notify("waiting_result")
-    if state == "tutorial":
-        game.click(*CLICK[state])
-        state = wait_menu(game, RESULT_STATES)
-    if state == "result":
-        game.click(*CLICK[state])
-        state = wait_menu(game, {"result_details", "win_details"})
-    game.click(*CLICK[state])
     # The stage carousel can appear briefly before the reward overlay opens.
-    overlays = POST_MATCH_OVERLAYS.copy()
-    while True:
-        state = wait_menu(game, MENU_STATES | overlays, stable_for=1.2)
-        if state in MENU_STATES:
-            return
+    pending = RESULT_STATES | POST_MATCH_OVERLAYS | {"tutorial"}
+    while state not in MENU_STATES:
         game.click(*CLICK[state])
-        overlays.remove(state)
+        pending.discard(state)
+        if state in {"result_details", "win_details"} | POST_MATCH_OVERLAYS:
+            pending -= RESULT_STATES
+        state = wait_menu(game, MENU_STATES | pending, stable_for=1.2)
 
 
 def play_match(game, frame, pos, notify):
     history = []
     read_current = read_position
-    endings = RESULT_STATES | {"tutorial"}
+    endings = RESULT_STATES | CHALLENGE_ENTRIES | POST_MATCH_OVERLAYS | {"tutorial"}
     while True:
         if terminal(pos) is not None or not any(moves(pos)):
             return wait_menu(game, endings, 32, stable_for=.7)

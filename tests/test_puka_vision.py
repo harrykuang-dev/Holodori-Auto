@@ -96,6 +96,21 @@ class PukaScreenTests(unittest.TestCase):
         self.frame[304:379, 1028:1119] = 245
         self.assertNotIn(stages.classify_screen(self.frame), stages.REFILL_STATES)
 
+    def test_challenge_requires_both_cards_and_reads_the_cost_color(self):
+        self.frame[305:680, 478:776] = (152, 45, 250)
+        self.frame[400:482, 583:668] = 250
+        self.frame[305:680, 844:1150] = (250, 192, 46)
+        self.frame[320:660, 867:1137] = 250
+        self.frame[402:473, 960:1032] = (250, 192, 46)
+        self.assertIsNone(stages.classify_screen(self.frame))
+
+        for color, expected in ((250, 'challenge_continue'), ((40, 44, 248), 'challenge_low_energy')):
+            with self.subTest(expected=expected):
+                self.frame[275:295, 639:671] = color
+                self.assertEqual(stages.classify_screen(self.frame), expected)
+        self.frame[:, 844:1150] = 0
+        self.assertIsNone(stages.classify_screen(self.frame))
+
     def test_board_uses_move_diagram_color(self):
         self.frame[112:319, 37:52] = 231
         self.frame[112:319, 218:234] = 231
@@ -190,6 +205,30 @@ class PukaEntryTests(unittest.TestCase):
             pilot.prepare(repeated, Mock(), auto_refill=True)
         self.assertEqual(repeated.click.call_args_list.count(call(*stages.CLICK['refill'])), 1)
 
+    def test_challenge_continues_without_refilling_when_energy_is_sufficient(self):
+        game = self.game('challenge_continue', 'board')
+        self.assertEqual(pilot.prepare(game, Mock()), ('board', 'ready position'))
+        game.click.assert_called_once_with(*stages.CLICK['challenge_continue'])
+
+    def test_challenge_low_energy_requires_enabling_refills(self):
+        game = self.game('challenge_low_energy')
+        with self.assertRaisesRegex(pilot.StopPlay, '能量不足'):
+            pilot.prepare(game, Mock())
+        game.click.assert_not_called()
+
+    def test_challenge_refills_once_and_retries_the_same_card(self):
+        game = self.game('challenge_low_energy', 'refill', 'challenge_continue', 'board')
+        self.assertEqual(pilot.prepare(game, Mock(), auto_refill=True), ('board', 'ready position'))
+        play = call(*stages.CLICK['challenge_continue'])
+        self.assertEqual(game.click.call_args_list, [play, call(*stages.CLICK['refill']), play])
+
+    def test_challenge_stops_if_still_low_after_refilling(self):
+        game = self.game('challenge_low_energy', 'refill', 'challenge_low_energy')
+        with self.assertRaises(pilot.StopPlay):
+            pilot.prepare(game, Mock(), auto_refill=True)
+        self.assertEqual(game.click.call_args_list, [call(*stages.CLICK['challenge_continue']),
+                                                    call(*stages.CLICK['refill'])])
+
 
 class PukaSettlementTests(unittest.TestCase):
     def test_event_and_rewards_are_acknowledged_once_before_next_round(self):
@@ -216,6 +255,26 @@ class PukaSettlementTests(unittest.TestCase):
         with patch.object(pilot, 'wait_menu', return_value='stage_start'):
             pilot.settle(game, 'result_details', Mock())
         game.click.assert_called_once_with(*stages.CLICK['result_details'])
+
+    def test_challenge_leaves_the_continue_card_unclicked_at_the_round_limit(self):
+        for card in ('challenge_continue', 'challenge_low_energy'):
+            with self.subTest(card=card):
+                game, notify = Mock(), Mock()
+                waits = []
+
+                def wait(_game, allowed, **kwargs):
+                    waits.append(allowed)
+                    self.assertIn(card, allowed)
+                    return card
+
+                with patch.object(pilot, 'prepare', return_value=(None, 'ready board')) as prepare, \
+                        patch.object(pilot, 'play_match', return_value='event_next'), \
+                        patch.object(pilot, 'wait_menu', side_effect=wait):
+                    pilot.run(game, 1, notify, auto_refill=True)
+                self.assertEqual(len(waits), 1)
+                prepare.assert_called_once_with(game, notify, auto_refill=True)
+                game.click.assert_called_once_with(*stages.CLICK['event_next'])
+                notify.assert_called_with('completed', 1, 1)
 
 
 class PukaTrackingTests(unittest.TestCase):
