@@ -11,6 +11,7 @@ from vision import bgr, is_ready
 CLICK = {
     "hub": (1412, 830),
     "stage_start": (812, 737),
+    "challenge_continue": (625, 490),
     "team_auto": (1345, 56),
     "team_start": (1405, 824),
     "tutorial": (1324, 132),
@@ -21,7 +22,8 @@ CLICK = {
     "reward": (812, 807),
     "refill": (1362, 838),
 }
-MENU_STATES = {"level_menu", "stage_start", "hub"}
+CHALLENGE_ENTRIES = {"challenge_continue", "challenge_low_energy"}
+MENU_STATES = {"level_menu", "stage_start", "hub"} | CHALLENGE_ENTRIES
 RESULT_STATES = {"result", "result_details", "win_details"}
 REFILL_STATES = {"refill", "refill_panel"}
 
@@ -117,6 +119,26 @@ def refill_screen(frame):
     return "refill" if one_item and ready else "refill_panel"
 
 
+def challenge_continue(frame):
+    b, g, r = bgr(frame[370:490, 490:568])
+    pink = (r > 217) & (r - b >= 60) & (r - g >= 100) & (g < 153)
+    if pink.mean() < .83 or not white(frame[400:482, 583:668], .53):
+        return None
+    if not (white(frame[489:520, 874:1125], .82)
+            and blue_button(frame[370:560, 830:887], .12)
+            and blue_button(frame[391:492, 940:1051], .20)):
+        return None
+    # Only check the color of the cost on the card. Its label varies by language.
+    cost = frame[269:301, 632:683]
+    b, g, r = bgr(cost)
+    red = (r > 187) & (g < 112) & (b < 105) & (r - b > 110) & (r - g > 105)
+    if red.mean() > .14:
+        return "challenge_low_energy"
+    if white(cost, .14):
+        return "challenge_continue"
+    return None
+
+
 def event_next(frame):
     if not (hammer(frame) and white(frame[41:100, 1515:1595], .43)
             and blue_button(frame[805:854, 1280:1525], .60)):
@@ -154,6 +176,9 @@ def classify_screen(frame):
     refill = refill_screen(frame)
     if refill:
         return refill
+    challenge = challenge_continue(frame)
+    if challenge:
+        return challenge
     if is_ready(frame):
         return "board"
     if tutorial(frame):
