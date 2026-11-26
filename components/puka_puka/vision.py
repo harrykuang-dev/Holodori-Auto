@@ -89,11 +89,16 @@ def bgr(area):
     return np.moveaxis(area.astype(np.int16), -1, 0)
 
 
+def marker_sample(raster, edge):
+    x, y = EDGES[edge]
+    return raster[y-4:y+5, x-4:x+5]
+
+
 def tile_markers(raster):
     observed = []
     weak_orange = []
-    for x, y in EDGES:
-        blue, green, red = bgr(raster[y-4:y+5, x-4:x+5])
+    for edge in range(len(EDGES)):
+        blue, green, red = bgr(marker_sample(raster, edge))
         orange = (red > 200) & (green > 65) & (green < 153) & (blue < 90)
         fractions = (
             ((blue > 170) & (green > 120) & (green < 185) & (red < 80)).mean(),
@@ -116,15 +121,25 @@ def marker_observations(frame):
     return [tile_markers(tile(frame, index)) for index in range(12)]
 
 
+def raft_white(area):
+    blue, green, red = bgr(area)
+    return ((blue > 225) & (green > 221) & (red > 210)
+            & (blue - red > 5) & (blue - red < 36) & (green - red > 3))
+
+
 def visible_white_edge(raster, observed):
     for marks, left, right in (((0, 3, 5), 14, 35), ((2, 4, 7), 65, 86)):
-        if all(observed[index] == 0 for index in marks):
-            blue, green, red = bgr(raster[14:83, left:right])
-            tile_white = ((blue > 225) & (green > 221) & (red > 210)
-                          & (blue - red > 5) & (blue - red < 36) & (green - red > 3))
-            if tile_white.mean() > .8:
-                return True
+        if (all(observed[index] == 0 for index in marks)
+                and raft_white(raster[14:83, left:right]).mean() > .8):
+            return True
     return False
+
+
+def turtle_stripe_occluded(raster, observed, piece):
+    stripe, opposite = (4, 3) if piece > 0 else (3, 4)
+    return (observed[opposite] == 0
+            and raft_white(marker_sample(raster, opposite)).mean() >= .8
+            and raft_white(marker_sample(raster, stripe)).mean() <= .15)
 
 
 def pattern(piece):
@@ -169,6 +184,12 @@ def classify(observed, hats, raster):
         hat = hats[piece]
         if known >= 5 or (known == 4 and hat < .23):
             if known < 7 and hat > .37:
+                # A turtle has one stripe. Light foreground hair can hide it
+                # while the broad marker sample still reads as neutral.
+                if abs(piece) == TURTLE and hat >= .68:
+                    alternate = max((score for other, score in hats.items() if other != piece), default=0)
+                    if hat - alternate >= .25 and turtle_stripe_occluded(raster, observed, piece):
+                        return piece
                 raise VisionError("看到动物帽，阵营标记被挡住")
             return 0
         # A foreground hat can cover most of the next tile's surface.

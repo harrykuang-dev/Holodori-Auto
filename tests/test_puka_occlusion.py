@@ -38,6 +38,27 @@ class OccludedRaftTests(unittest.TestCase):
         with self.assertRaises(vision.VisionError):
             vision.classify(exposed, self.hats, self.raster)
 
+    def test_turtle_with_a_neutral_sample_over_its_hidden_stripe(self):
+        for piece in (solver.TURTLE, -solver.TURTLE):
+            with self.subTest(piece=piece):
+                raster = np.full_like(self.raster, (239, 232, 223))
+                raster[3:12, 46:55] = 0
+                raster[3:12, 88:97] = 0
+                stripe, opposite = (slice(88, 97), slice(3, 12)) if piece > 0 else (slice(3, 12), slice(88, 97))
+                raster[46:55, stripe] = (177, 208, 211)
+                marks = vision.tile_markers(raster)
+                self.assertEqual(marks, [0, None, None, 0, 0, 0, 0, 0])
+                self.assertEqual(vision.classify(marks, {piece: .70, -piece: .42}, raster), piece)
+
+                with self.assertRaises(vision.VisionError):
+                    vision.classify(marks, {piece: .70, -piece: .48}, raster)
+                raster[46:55, opposite] = (177, 208, 211)
+                with self.assertRaises(vision.VisionError):
+                    vision.classify(vision.tile_markers(raster), {piece: .70, -piece: .42}, raster)
+                raster[46:55, stripe] = raster[46:55, opposite] = (239, 232, 223)
+                with self.assertRaises(vision.VisionError):
+                    vision.classify(vision.tile_markers(raster), {piece: .70, -piece: .42}, raster)
+
     def test_legal_reply_can_recover_when_its_target_and_other_tiles_are_hidden(self):
         marks = [list(vision.pattern(piece)) for piece in self.expected.board]
         marks[5] = [None] * 7 + [0]
