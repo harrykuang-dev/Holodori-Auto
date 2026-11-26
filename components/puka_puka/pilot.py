@@ -5,7 +5,7 @@ import time
 from solver import BLUE, NAMES, moves, recommend, square, terminal
 from stages import CHALLENGE_ENTRIES, CLICK, MENU_STATES, REFILL_STATES, RESULT_STATES, classify_screen
 from vision import (VisionError, hand_inventory, hand_read, highlighted, is_ready, match_position,
-                    point, read_position, selected_piece, source_arrow)
+                    point, read_position, selected_layout_visible, selected_piece, source_arrow)
 
 
 POST_MATCH_OVERLAYS = {"reward", "event_next"}
@@ -32,7 +32,7 @@ def next_player_position(frame, pos, move):
 
 def source_point(frame, pos, move):
     if move.source >= 0:
-        return point(move.source)
+        return point(move.source, rows=pos.rows)
     capture_icons = hand_read(frame, BLUE)
     candidates = [(x, y) for x, y, p in capture_icons if p == -move.source]
     if hand_inventory(frame) != (pos.blue, pos.orange) or not candidates:
@@ -43,8 +43,9 @@ def source_point(frame, pos, move):
 def selection_ready(frame, pos, move):
     piece = abs(pos.board[move.source]) if move.source >= 0 else -move.source
     return (not is_ready(frame) and selected_piece(frame, piece)
-            and (move.source < 0 or source_arrow(frame, move.source))
-            and highlighted(frame, move.target))
+            and selected_layout_visible(frame, pos.rows)
+            and (move.source < 0 or source_arrow(frame, move.source, rows=pos.rows))
+            and highlighted(frame, move.target, rows=pos.rows))
 
 
 def select_move(game, pos, move, read_current):
@@ -169,7 +170,7 @@ def play_match(game, frame, pos, notify):
             return wait_menu(game, endings, 32, stable_for=.7)
         move = choose(pos, history, notify)
         select_move(game, pos, move, read_current)
-        game.click(*point(move.target, selected=True))
+        game.click(*point(move.target, selected=True, rows=pos.rows))
         after = pos.next(move)
         history.extend((pos, after))
 

@@ -121,6 +121,16 @@ class PukaScreenTests(unittest.TestCase):
         self.frame[113:136, 193:216] = (55, 168, 241)
         self.assertFalse(vision.is_ready(self.frame))
 
+    def test_boards_wait_for_the_warning_to_clear_before_reading_hats(self):
+        for rows in (3, 4):
+            with self.subTest(rows=rows):
+                self.frame[88:116, 510:675] = (118, 68, 66)
+                self.frame[88:116, 1000:1135] = (118, 68, 66)
+                with self.assertRaisesRegex(vision.VisionError, '提示移開'):
+                    tuple(vision.observe_board(self.frame, rows=rows))
+                self.frame[88:116, 1000:1135] = 0
+                self.assertEqual(len(tuple(vision.observe_board(self.frame, rows=rows))), rows * 4)
+
     def test_reserve_detection_ignores_background_between_icons(self):
         self.frame[806:819, 1229:1312] = (222, 70, 60)
         self.frame[821:855, 1296:1380] = (222, 70, 60)
