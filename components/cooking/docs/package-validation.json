@@ -1,0 +1,131 @@
+{
+  "build": "complete-shared-fp32-runtime",
+  "frontend_version": "1.1.2",
+  "runtime_version": "4d85adc138fb02b2",
+  "exe_sha256": "192a4a94ebfeadd007433cae37ff1bd050834877624b9673d0715dc45c3b8597",
+  "unit_tests_passed": 74,
+  "packaged_checks": [
+    {
+      "model": "resnet18",
+      "requested_backend": "auto",
+      "actual": {
+        "backend": "tensorrt",
+        "requested_backend": "auto",
+        "precision": "fp32",
+        "gpu": {
+          "gpu": "NVIDIA GeForce RTX 4070 Laptop GPU",
+          "compute": "8.9",
+          "driver_api": 13050,
+          "device": 0
+        },
+        "tensorrt": "10.13.3.9.post1",
+        "fallback_reason": null
+      },
+      "passed": true,
+      "torch_imported": false,
+      "game_inputs_sent": 0,
+      "icon_template_count": 270
+    },
+    {
+      "model": "resnet101",
+      "requested_backend": "auto",
+      "actual": {
+        "backend": "tensorrt",
+        "requested_backend": "auto",
+        "precision": "fp32",
+        "gpu": {
+          "gpu": "NVIDIA GeForce RTX 4070 Laptop GPU",
+          "compute": "8.9",
+          "driver_api": 13050,
+          "device": 0
+        },
+        "tensorrt": "10.13.3.9.post1",
+        "fallback_reason": null
+      },
+      "passed": true,
+      "torch_imported": false,
+      "game_inputs_sent": 0,
+      "icon_template_count": 270
+    },
+    {
+      "model": "resnet18",
+      "requested_backend": "directml",
+      "actual": {
+        "backend": "directml",
+        "requested_backend": "directml",
+        "precision": "fp32",
+        "gpu": {
+          "device": 0,
+          "gpu": "NVIDIA GeForce RTX 4070 Laptop GPU",
+          "vendor_id": 4318,
+          "dedicated_video_bytes": 8334082048,
+          "api": "DirectX 12"
+        },
+        "tensorrt": null,
+        "fallback_reason": null
+      },
+      "passed": true,
+      "torch_imported": false,
+      "game_inputs_sent": 0,
+      "icon_template_count": 270
+    },
+    {
+      "model": "resnet101",
+      "requested_backend": "directml",
+      "actual": {
+        "backend": "directml",
+        "requested_backend": "directml",
+        "precision": "fp32",
+        "gpu": {
+          "device": 0,
+          "gpu": "NVIDIA GeForce RTX 4070 Laptop GPU",
+          "vendor_id": 4318,
+          "dedicated_video_bytes": 8334082048,
+          "api": "DirectX 12"
+        },
+        "tensorrt": null,
+        "fallback_reason": null
+      },
+      "passed": true,
+      "torch_imported": false,
+      "game_inputs_sent": 0,
+      "icon_template_count": 270
+    },
+    {
+      "model": "resnet18",
+      "requested_backend": "cpu",
+      "actual": {
+        "backend": "cpu",
+        "requested_backend": "cpu",
+        "precision": "fp32",
+        "gpu": null,
+        "tensorrt": null,
+        "fallback_reason": null
+      },
+      "passed": true,
+      "torch_imported": false,
+      "game_inputs_sent": 0,
+      "icon_template_count": 270
+    },
+    {
+      "model": "resnet101",
+      "requested_backend": "cpu",
+      "actual": {
+        "backend": "cpu",
+        "requested_backend": "cpu",
+        "precision": "fp32",
+        "gpu": null,
+        "tensorrt": null,
+        "fallback_reason": null
+      },
+      "passed": true,
+      "torch_imported": false,
+      "game_inputs_sent": 0,
+      "icon_template_count": 270
+    }
+  ],
+  "unicode_install_path_verified": true,
+  "shared_onnx_model_files": 5,
+  "game_inputs_during_checks": 0,
+  "live_game_acceptance_completed": false
+}

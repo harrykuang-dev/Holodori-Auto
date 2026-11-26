@@ -1,79 +1,30 @@
-# Architecture and maintenance / 架構與維護
+# Architecture and validation / 架構與驗證
 
-## Integration boundary
+## Program structure
 
-Holodori-Auto provides High & Low, Fishing, Jump Rope, Cooking and Raft Chess in one Windows program. The host owns navigation, language, shortcuts, process supervision and packaging. Each feature owns its gameplay recognition, input and feature-specific settings.
+Holodori-Auto is a Windows program with five features. `main.py` starts the shared window and dispatches feature processes. `holodori/` owns navigation, language, shortcuts, Windows process supervision and the shared UI. The game recognition, models, controls and diagnostics are in `components/`.
 
 ```text
-Holodori-Auto / main.py
-  └─ shared navigation, settings card, and module container
-       └─ one active module process
-            └─ original Tk interface and game implementation
-
-upstream/
-  high_low/    Hololive-Dreams-High-low-Auto-Personal
-  fishing/     Hololive-Dreams-Fishing-Auto
-  jump_rope/   Hololive-Dreams-Jump-Rope-Auto
-  cooking/     Hololive-Dreams-Collect-Cooking-Auto
-components/
-  puka_puka/   Raft Chess
+main.py
+holodori/               shared settings, window and process management
+components/high_low/    High & Low
+components/fishing/     Fishing
+components/jump_rope/   Jump Rope
+components/cooking/     Cooking
+components/puka_puka/   Raft Chess
 ```
 
-The four original projects remain unmodified Git submodules. Raft Chess is a bundled component with the same child process lifecycle. The adapter contract records the entry module, application class, artwork, accent color, and settings exposed to the host. The adapter passes common preferences through the component controls and hides duplicate rows. Module execution uses a separate process and resource directory, preventing collisions between names such as `gui`, `vision`, and `app_locale`. The host embeds each Tk window as a Windows child window.
+The program runs one feature at a time and embeds its Tk window as a Windows child window. During a switch it waits for the active feature to close and for its Windows Job to become empty before starting the next feature. The job's kill-on-close flag ends any remaining feature processes if the main program exits unexpectedly. This boundary also isolates libraries with the same Python module name and releases capture, input and GPU resources when leaving a feature.
 
-Switching closes the active module through its original close handler. The host waits for its process and workers to exit before opening the next module. An unresponsive module remains visible as a closing state; it must not silently allow another automation process to start. Each new module receives the current shared language and shortcuts. Original statistics, gameplay records, and module-specific data stay in their original locations.
+The shared preferences file at `%LOCALAPPDATA%\HolodoriAuto\settings.json` stores `language`, `start_key` and `stop_key`. The first launch can adopt existing High & Low preferences. Defaults are Traditional Chinese, `F8` and `INSERT`. Feature statistics, records, preferences and engine caches keep their existing storage locations. During shortcut capture the active feature suspends its shortcut listener. Modifier-only presses are ignored. In Tk events `0x20000` represents Alt and `0x8` is a lock-state bit.
 
-Each module session uses a Windows job containing its GUI and descendant processes. If the GUI exits while descendants remain, the host terminates those descendants and verifies that the job has no active processes before switching. Closing the host also waits for session cleanup. The job's kill-on-close flag prevents module processes from outliving a crashed host.
+The host records the embedded feature's starting window size and minimum size, then applies them when the first feature is ready. Later tab changes preserve manual resizing and maximization. The version in the lower-left corner opens the Holodori-Auto repository. The program's own window sizing and each feature's game-window capture are separate responsibilities.
 
-## Shared preferences
+## Source and models
 
-The common Fluent settings card controls `language`, `start_key`, and `stop_key`. Values are persisted in `%LOCALAPPDATA%\HolodoriAuto\settings.json` and applied to the current module and future module launches. Initial values come from existing High & Low preferences when available; otherwise they are Traditional Chinese, `F8`, and `INSERT` respectively. This settings file does not replace or migrate original statistics and gameplay records.
+Clone the main repository to get all five features. [Source origins](SOURCE-ORIGINS.json) records the commits that the feature source was imported from. [Maintenance](UPDATING.md) describes changes to the canonical source and how to find historical training or diagnostic references.
 
-Shortcut capture suspends the active module's shortcut listeners until capture finishes. Modifier-only presses are ignored. Windows Tk events use `0x20000` for Alt; `0x8` is a lock-state bit and must not add Alt to a binding. Updating an upstream module requires checking that the adapter still hides its original language/shortcut rows and applies common preferences through the correct control variables and listener APIs.
-
-## Source pins and updates
-
-`.gitmodules` records each original repository and tracked branch. Gitlinks fix the source commit. `upstream-lock.json` records matching commits and display versions, allowing a build to reproduce the same set of modules.
-
-`tools/sync_upstreams.py` fetches upstream changes and updates the selected submodule checkouts plus the lock. It rejects dirty module checkouts and edits to protected integration metadata. It does not copy source files or commit changes.
-
-```powershell
-# Fetch and report without changing checkouts or the lock.
-python tools/sync_upstreams.py --check
-
-# Update just one module, then review and stage the resulting pins.
-python tools/sync_upstreams.py --module jump_rope
-git diff --submodule=log
-git add upstream/jump_rope upstream-lock.json
-
-# Verify the staged source pins and run the integration tests.
-python tools/sync_upstreams.py --verify
-python -m unittest discover -s tests -v
-```
-
-After an upstream update, check its entry class, close behavior, resource paths, dependencies, native Tk embedding, and shared preference bindings. Game implementation changes normally need only a new gitlink and lock entry. Changes to the entry, lifecycle, or settings contract require adapting the host and its contract tests.
-
-The scheduled workflow checks daily and also supports manual dispatch. It creates an update pull request and runs checks; merging remains explicit. The repository must allow GitHub Actions to create pull requests. Builds continue to use the reviewed pins until an update is merged.
-
-## Validation
-
-Run these checks from the repository root on Windows after installing the dependencies and models described in the README.
-
-```powershell
-python -m unittest discover -s tests -v
-python tools/smoke_test.py --report work/source-ui.json
-python tools/build_release.py --output dist/Holodori-Auto
-python tools/smoke_test.py --executable dist/Holodori-Auto/Holodori-Auto.exe --report work/packaged-ui.json
-python tools/verify_bundle.py dist/Holodori-Auto/Holodori-Auto.exe --report work/packaged-contents.json
-```
-
-The interface checks exercise all five features with isolated preferences and without game input. GitHub Actions allows two fresh-process retries when the watchdog reports a blocked native Tk event loop. Each attempt has its own log. Assertion failures and repeated native timeouts fail the workflow.
-
-## Cooking checkpoints
-
-The cooking Git submodule contains `models-manifest.json`, which is the authority for the exact archive and checkpoint sizes and SHA-256 hashes. `tools/fetch_models.py` reads `VERSION` from the pinned `gui.py` using Python's AST without importing the module, then downloads `models.zip` from the corresponding release in the original cooking repository.
-
-The installer verifies the complete archive fingerprint, requires archive entries to match the manifest exactly, rejects unsafe paths and symbolic links, and verifies every checkpoint in staging before publishing any model. Only missing models are installed. Existing files must already match the manifest and are never overwritten; installation failures roll back files added by that attempt. Staging uses the cooking directory so completed files can be published with filesystem hard links.
+`components/cooking/models-manifest.json` pins the upstream `models.zip` and each checkpoint by size and SHA-256. The installer verifies the archive and the manifest's exact entries, rejects unsafe paths and links, and verifies every model in staging before installing missing files. To keep an existing conflicting model, move it to a backup location before running the installer again.
 
 ```powershell
 python tools/fetch_models.py
@@ -81,46 +32,42 @@ python tools/fetch_models.py --archive C:\path\models.zip
 python tools/fetch_models.py --check
 ```
 
-`--check` verifies installed checkpoints offline. None of these commands imports the inference runtime, opens the game, or sends input. If an upstream release changes its version convention or model asset name, update the release URL resolver alongside that pin. Existing mismatching checkpoints must be moved to a backup location before installing the new manifest's versions.
+## Build and accelerator layout
 
-## Packaging
+Use Windows x64 and Python 3.13. The README gives the setup for the standard build. After installing runtime and build requirements, reinstall `onnxruntime-directml==1.24.4` with `--force-reinstall --no-deps` to select the DirectML implementation because the OCR dependency also declares a CPU ONNX Runtime distribution.
 
-Use Windows x64, Python 3.13, `requirements.txt`, and `requirements-build.txt`. Install verified cooking models before invoking `python tools/build_release.py --output dist/Holodori-Auto`.
+```powershell
+python tools/build_release.py --output dist/Holodori-Auto
+```
 
-The portable build includes the host, original module resources, shared dependencies, and model files. Preserve module license files and third-party notices. Source checkouts continue to run each original program independently.
+The standard folder contains the executable, `_internal/`, feature resources and the cooking models. DirectML is the standard GPU backend. To build the optional NVIDIA component in a compatible build environment, install `requirements-nvidia.txt` and select a fresh output folder.
 
-The portable program uses a single shared TensorRT 10.13.3.9 package, CUDA runtime 12.9.79 and ONNX Runtime DirectML 1.24.4 under `_internal`. Neither module includes a private accelerator copy, and PyTorch is excluded. Jump Rope retains its FP16/DirectML graphs and GPU-specific engine cache; Cooking retains its FP32 models and separate engine cache. The adapter redirects Cooking's standalone frozen model lookup to `upstream/cooking/models/inference`, preserving the shared `_MEIPASS` import root. Keep each original fallback policy: Jump Rope requires TensorRT or a hardware DirectML GPU; Cooking may fall back to CPU.
+```powershell
+python -m pip install -r requirements-nvidia.txt
+python tools/build_tensorrt_component.py --output dist/nvidia/accelerators/tensorrt
+```
 
-`ddddocr` declares the CPU `onnxruntime` distribution as a dependency. After dependency installation, reinstall `onnxruntime-directml==1.24.4` with `--force-reinstall --no-deps` to select the shared DirectML implementation. The builder refuses an environment without `DmlExecutionProvider`.
+The optional archive supplies `accelerators/tensorrt/` next to `Holodori-Auto.exe`. Jump Rope and Cooking share this component on supported NVIDIA hardware. They use different models and keep separate device-specific engine caches. Jump Rope requires a hardware GPU backend. Cooking can fall back to CPU.
 
-During embedded construction, the adapter records the original DPI-scaled window size and minimum size, then the host applies them once when that module becomes ready. It does not hard-code a second size table or reset a user's resize on each status update. The version number in the footer opens the Holodori-Auto repository.
+## Verification
 
-The host remains withdrawn until the initial module's size is applied, so no temporary large window is shown. The adapter normalizes outer page padding, compensates for a visible page scrollbar, and reports the actual card gap. The host uses that gap below the shared settings card to keep the page aligned across languages and resizing.
+```powershell
+python -m unittest discover -s tests -v
+python tools/check_models_runtime.py --report work/source-model-runtime.json
+python tools/smoke_test.py --report work/source-ui.json
+python tools/verify_bundle.py dist/Holodori-Auto/Holodori-Auto.exe --report work/packaged-contents.json
+python tools/check_models_runtime.py --executable dist/Holodori-Auto/Holodori-Auto.exe --report work/packaged-model-runtime.json
+python tools/smoke_test.py --executable dist/Holodori-Auto/Holodori-Auto.exe --report work/packaged-ui.json
+```
 
-Use `python main.py --check-jump-model-only --backend gpu --report work/jump-gpu.json` to load and warm the original jump detector with synthetic pixels. `--backend directml` checks DirectML separately. Cooking's equivalent is `python tools/check_models_runtime.py`. Both also support the packaged executable; no game capture or input is performed.
+The UI checks cover all five features with temporary preferences and without game input. GitHub Actions retries a native Tk event-loop watchdog timeout in a fresh process. Assertions and exhausted retries fail the workflow. Run the GPU preflights on supported hardware. For example, `python main.py --check-jump-model-only --backend directml --report work/jump-directml.json` uses synthetic pixels without opening the game.
 
 ## 繁體中文
 
-Holodori-Auto 負責共用導覽、語言及開始／停止快捷鍵、程序管理、Windows 視窗嵌入、建置與上游同步。原有四個功能以未修改的 Git 子模組保留，內建浮台棋同樣使用獨立功能程序。整合層隱藏重複的設定列，透過各功能的控制介面套用共用設定。
+Holodori-Auto 的五個功能都在 `components/` 維護，共用 `main.py` 入口、導覽、語言、快捷鍵與 Windows 建置。程式一次使用一個功能程序。切換前等待既有功能和 Windows Job 內的程序關閉，以釋放畫面擷取、輸入及 GPU 資源。共用設定存於 `%LOCALAPPDATA%\HolodoriAuto\settings.json`，現有紀錄、功能設定與模型快取沿用原路徑。
 
-同一時間只啟動一個功能程序，並將原本的 Tk 介面嵌入主視窗。切換時呼叫目前功能的原始關閉流程，等候程序與工作結束後才啟動下一個功能。共用語言及快捷鍵會沿用至下一個功能；原有統計、遊戲紀錄及專屬資料繼續使用原本位置。
+程式啟動時依顯示器 DPI 和首個功能的預設大小配置視窗。切換功能時保留使用者手動調整的大小與最大化狀態。點擊左下角的版本號可開啟 Holodori-Auto 倉庫。
 
-共用 Fluent 設定卡的 `language`、`start_key`、`stop_key` 儲存於 `%LOCALAPPDATA%\HolodoriAuto\settings.json`。首次使用時，優先讀取既有 High & Low 偏好設定，否則使用繁體中文、`F8` 開始、`INSERT` 停止。擷取新快捷鍵時暫停目前功能的監聽，完成後恢復；單獨按修飾鍵不會建立綁定。Windows Tk 事件的 Alt 位元是 `0x20000`，Num Lock 的 `0x8` 不得被當作 Alt。上游更新後需一併檢查設定列隱藏、控制變數與監聽介面的適配關係。
+標準版提供 DirectML。NVIDIA 使用者可另外安裝 TensorRT 元件到執行檔旁的 `accelerators/tensorrt/`。跳繩需要相容的硬體 GPU。料理可回退至 CPU。兩個功能共用加速元件，各自保留模型和快取。料理模型由 `tools/fetch_models.py` 下載並按大小、SHA-256 與 manifest 核對。
 
-每次功能執行使用獨立的 Windows Job 管理介面與其子程序。若介面意外結束但子程序仍存活，主程式會終止殘留程序，確認全部結束後才允許切換；關閉主程式時也會等候清理完成。主程式異常退出時，Job 的關閉終止設定會清除所屬功能程序。
-
-Git 子模組提交與 `upstream-lock.json` 共同鎖定整合版本。執行 `tools/sync_upstreams.py --module 功能名稱` 可只跟進一個功能；省略 `--module` 則更新全部。檢查變更並暫存新的子模組與鎖定檔後，以 `--verify` 核對一致性，再執行測試。若上游只修改遊戲實作，通常只需更新提交；若啟動類別、關閉流程或資源路徑改變，則需調整整合介面。
-
-每日及手動工作流程會建立更新 Pull Request 並執行檢查，不自動合併。倉庫需開啟允許 GitHub Actions 建立 Pull Request 的設定。
-
-料理模型以鎖定來源中的 `models-manifest.json` 為準。安裝程式從原始料理倉庫對應版本下載模型，核對壓縮包與每個模型的大小、SHA-256 及允許路徑，全部驗證後才安裝缺少的檔案。既有檔案不會被覆寫，安裝失敗時回復本次新增的模型。`--check` 可離線驗證，不載入推論程式或操作遊戲。
-
-Windows 建置需先安裝依賴與通過驗證的料理模型，再執行 `python tools/build_release.py --output dist/Holodori-Auto`。分發時保留完整可攜式資料夾、各功能資源、授權檔與第三方聲明。
-
-1.1.2 的跳繩與料理共用 `_internal` 中同一套 TensorRT 10.13.3.9、CUDA 執行庫 12.9.79 與 ONNX Runtime DirectML 1.24.4，不包含獨立加速器副本或 PyTorch。各功能維持原本的模型、快取與回退規則：跳繩需要 TensorRT 或硬體 DirectML GPU；料理可回退至 CPU。整合層僅重新指定料理封裝版的模型資料夾，不改動共用 `_MEIPASS` 或原始演算法。
-
-`ddddocr` 依賴 CPU 版 `onnxruntime`，因此安裝依賴後需以 `--force-reinstall --no-deps` 重新安裝 `onnxruntime-directml==1.24.4`。建置前會檢查 DirectML 提供者，避免依賴安裝順序覆蓋 GPU 執行環境。
-
-嵌入時記錄原始程式依 DPI 計算的預設及最小視窗尺寸，功能就緒後由主視窗套用一次；後續狀態更新不會覆寫使用者調整的大小。版本彈窗沿用 Fluent 卡片樣式，從 `upstream-lock.json` 顯示四個程式版本與倉庫連結。
-
-主視窗在首個功能尺寸套用後才顯示，避免啟動時先大後小。整合層統一頁面外邊距並補償捲軸寬度，將實際卡片間距回傳給主視窗，作為共用設定框下方的間距；切換語言與調整視窗大小後仍保持對齊。
+請用上方命令執行單元測試、模型預檢與五個功能的原始碼及可攜版介面檢查。測試會使用暫存設定，介面檢查不操作遊戲。來源提交與開發流程收錄於[來源紀錄](SOURCE-ORIGINS.json)及[維護文件](UPDATING.md)。

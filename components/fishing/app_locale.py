@@ -1,0 +1,321 @@
+"""User-facing wording for the six language names shown by hololive Dreams.
+
+Recognition stays image-based; selecting a language changes the assistant UI,
+messages and CLI wording, not the game's own setting.
+"""
+
+GAME_LANGUAGES = {
+    "日本語": "ja",
+    "English": "en",
+    "Indonesian": "id",
+    "한국어": "ko",
+    "繁體中文": "zh-TW",
+    "简体中文": "zh-CN",
+}
+
+TEXT = {
+    "ja": {
+        "subtitle": "自動さかな釣りアシスタント", "idle": "待機中",
+        "instructions": "ゲームを同じ言語に設定し、さかな釣り画面を開いてから開始してください。\n魚との駆け引き、図鑑・報酬の閉鎖、次の釣りを自動で行います。F9 で停止します。",
+        "game_language": "ゲームの言語", "start": "▶  はじめる", "stop": "■  停止",
+        "diagnostics": "診断データをローカルに保存（画面・追跡記録、アップロードなし）",
+        "log": "実行履歴", "footer": "画面認識とマウス入力のみ使用  ·  画面を切り替えると停止します",
+        "connecting": "ゲームに接続中…", "started": "自動さかな釣り開始：{language}",
+        "stopping": "停止中…", "connected": "接続済み", "stopped": "停止しました",
+        "error": "エラー", "error_title": "自動さかな釣りを開始できません", "unknown_error": "原因不明のエラー",
+        "diagnostic_path": "ローカル診断：{path}", "waiting": "待機中", "tap": "TAP",
+        "reeling": "駆け引き", "tracking_lost": "追跡中断", "ending": "終了アニメーション",
+        "button": "ボタン", "reward": "獲得アイテムを閉じる",
+        "reward_continue": "アイテム報酬／つづける", "encyclopedia": "新しい図鑑を閉じる",
+        "item_detail": "アイテム詳細を閉じる", "action": "つづける／次へ",
+        "result_continue": "釣果／つづける", "state_prefix": "状態：",
+        "connected_window": "ウィンドウに接続：{title}；言語：{language}（F9 で停止）",
+        "timeout": "実行時間の上限に達しました。", "f9_stop": "F9：停止しました。",
+        "focus_lost": "ゲームが非アクティブになったため、安全のため停止しました。",
+        "aspect_stop": "停止：ゲーム画面が 16:9 ではありません。比率を戻してください。",
+        "catch_confirmed": "釣果確認：第 {round} 回；連続成功 {streak} 回",
+        "target_reached": "連続成功 {target} 回を確認しました。テストを終了します。",
+        "lost_streak": "前回の釣果を確認できません。連続成功をリセット（累計 {failed} 回）",
+        "reel_started": "第 {round} 回の駆け引き開始",
+        "switched_scene": "画面が切り替わりました：{scene}",
+        "once_done": "1 回の駆け引きが終了（画面消失だけでは成功と判定しません）。",
+        "retry_stop": "停止：{scene} を 6 回試しましたが画面が変わりません。",
+        "click_action": "クリック：{scene} ({x}, {y}) {attempt} 回目；画面切替待ち",
+        "final_stop": "停止：{frames} フレーム / {seconds:.1f} 秒；駆け引き {rounds} 回；釣果 {catches} 回；連続成功 {streak} 回",
+    },
+    "en": {
+        "subtitle": "Auto Fishing Assistant", "idle": "Ready",
+        "instructions": "Set the game to the same language and open the fishing screen, then select Start.\nThe assistant reels, closes collection/reward pop-ups, and continues fishing. F9 stops it.",
+        "game_language": "Game language", "start": "▶  Start", "stop": "■  Stop",
+        "diagnostics": "Save local diagnostics (screenshots and tracking; never uploaded)",
+        "log": "Activity log", "footer": "Screen recognition and mouse input only  ·  Switching windows stops the assistant",
+        "connecting": "Connecting to game…", "started": "Auto fishing started; game language: {language}",
+        "stopping": "Stopping…", "connected": "Connected", "stopped": "Stopped",
+        "error": "Error", "error_title": "Cannot start auto fishing", "unknown_error": "Unknown error",
+        "diagnostic_path": "Local diagnostics: {path}", "waiting": "Waiting", "tap": "TAP",
+        "reeling": "Reeling", "tracking_lost": "Tracking lost", "ending": "Result animation",
+        "button": "Button", "reward": "Dismiss item reward",
+        "reward_continue": "Item reward / Continue", "encyclopedia": "Close new collection entry",
+        "item_detail": "Close item details", "action": "Continue / Next",
+        "result_continue": "Catch / Continue", "state_prefix": "Status: ",
+        "connected_window": "Connected to {title}; game language: {language} (F9 to stop)",
+        "timeout": "Time limit reached.", "f9_stop": "F9: stopped.",
+        "focus_lost": "Game lost focus; stopped to avoid clicking another window.",
+        "aspect_stop": "Stopped: game client area is not 16:9. Restore its aspect ratio.",
+        "catch_confirmed": "Catch confirmed: round {round}; {streak} consecutive successes",
+        "target_reached": "Confirmed {target} consecutive catches; test complete.",
+        "lost_streak": "Previous catch unconfirmed; streak reset ({failed} unconfirmed rounds total)",
+        "reel_started": "Round {round}: reeling started",
+        "switched_scene": "Screen changed after: {scene}",
+        "once_done": "One reel finished (a vanished HUD is not proof of a catch).",
+        "retry_stop": "Stopped: {scene} did not change the screen after 6 attempts.",
+        "click_action": "Click: {scene} ({x}, {y}) attempt {attempt}; waiting for screen change",
+        "final_stop": "Stopped: {frames} frames / {seconds:.1f} s; {rounds} reels; {catches} catches; {streak} consecutive successes",
+    },
+    "id": {
+        "subtitle": "Asisten Memancing Otomatis", "idle": "Siap",
+        "instructions": "Atur bahasa game agar sama dan buka layar memancing, lalu tekan Mulai.\nAsisten akan menarik ikan, menutup koleksi/hadiah, dan melanjutkan memancing. F9 untuk berhenti.",
+        "game_language": "Bahasa game", "start": "▶  Mulai", "stop": "■  Berhenti",
+        "diagnostics": "Simpan diagnostik lokal (layar dan pelacakan; tidak diunggah)",
+        "log": "Riwayat aktivitas", "footer": "Hanya pengenalan layar dan input mouse  ·  Beralih jendela akan menghentikan asisten",
+        "connecting": "Menghubungkan ke game…", "started": "Memancing otomatis dimulai; bahasa game: {language}",
+        "stopping": "Menghentikan…", "connected": "Terhubung", "stopped": "Berhenti",
+        "error": "Kesalahan", "error_title": "Tidak dapat memulai memancing otomatis", "unknown_error": "Kesalahan tidak diketahui",
+        "diagnostic_path": "Diagnostik lokal: {path}", "waiting": "Menunggu", "tap": "TAP",
+        "reeling": "Menarik ikan", "tracking_lost": "Pelacakan terputus", "ending": "Animasi hasil",
+        "button": "Tombol", "reward": "Tutup hadiah item",
+        "reward_continue": "Hadiah item / Lanjutkan", "encyclopedia": "Tutup entri koleksi baru",
+        "item_detail": "Tutup detail item", "action": "Lanjutkan / Berikutnya",
+        "result_continue": "Ikan tertangkap / Lanjutkan", "state_prefix": "Status: ",
+        "connected_window": "Terhubung ke {title}; bahasa game: {language} (F9 untuk berhenti)",
+        "timeout": "Batas waktu tercapai.", "f9_stop": "F9: berhenti.",
+        "focus_lost": "Game kehilangan fokus; berhenti agar tidak mengeklik jendela lain.",
+        "aspect_stop": "Berhenti: area game bukan 16:9. Kembalikan rasio layarnya.",
+        "catch_confirmed": "Ikan tertangkap: ronde {round}; {streak} keberhasilan beruntun",
+        "target_reached": "{target} tangkapan beruntun terkonfirmasi; tes selesai.",
+        "lost_streak": "Tangkapan sebelumnya belum dikonfirmasi; rangkaian diatur ulang ({failed} ronde)",
+        "reel_started": "Ronde {round}: mulai menarik ikan",
+        "switched_scene": "Layar berganti setelah: {scene}",
+        "once_done": "Satu tarikan selesai (HUD hilang bukan bukti tangkapan).",
+        "retry_stop": "Berhenti: {scene} tidak mengubah layar setelah 6 percobaan.",
+        "click_action": "Klik: {scene} ({x}, {y}) percobaan {attempt}; menunggu layar berganti",
+        "final_stop": "Berhenti: {frames} frame / {seconds:.1f} dtk; {rounds} ronde; {catches} tangkapan; {streak} keberhasilan beruntun",
+    },
+    "ko": {
+        "subtitle": "자동 낚시 도우미", "idle": "대기 중",
+        "instructions": "게임을 같은 언어로 설정하고 낚시 화면을 연 뒤 시작을 누르세요.\n물고기를 끌어올리고 도감/보상 창을 닫은 뒤 다음 낚시를 진행합니다. F9로 중지할 수 있습니다.",
+        "game_language": "게임 언어", "start": "▶  시작", "stop": "■  중지",
+        "diagnostics": "로컬 진단 저장 (화면·추적 기록, 업로드 안 함)",
+        "log": "실행 기록", "footer": "화면 인식과 마우스 입력만 사용  ·  창을 전환하면 중지됩니다",
+        "connecting": "게임에 연결 중…", "started": "자동 낚시 시작; 게임 언어: {language}",
+        "stopping": "중지 중…", "connected": "연결됨", "stopped": "중지됨",
+        "error": "오류", "error_title": "자동 낚시를 시작할 수 없습니다", "unknown_error": "알 수 없는 오류",
+        "diagnostic_path": "로컬 진단: {path}", "waiting": "대기 중", "tap": "TAP",
+        "reeling": "끌어올리기", "tracking_lost": "추적 중단", "ending": "결과 애니메이션",
+        "button": "버튼", "reward": "아이템 보상 닫기",
+        "reward_continue": "아이템 보상 / 계속", "encyclopedia": "새 도감 닫기",
+        "item_detail": "아이템 상세 닫기", "action": "계속 / 다음",
+        "result_continue": "획득 / 계속", "state_prefix": "상태: ",
+        "connected_window": "{title}에 연결됨; 게임 언어: {language} (F9로 중지)",
+        "timeout": "실행 시간 제한에 도달했습니다.", "f9_stop": "F9: 중지했습니다.",
+        "focus_lost": "게임 창이 비활성화되어 다른 창을 누르지 않도록 중지했습니다.",
+        "aspect_stop": "중지: 게임 화면이 16:9가 아닙니다. 화면 비율을 복원하세요.",
+        "catch_confirmed": "획득 확인: {round}회차; 연속 성공 {streak}회",
+        "target_reached": "연속 {target}회 성공을 확인했습니다. 테스트를 종료합니다.",
+        "lost_streak": "이전 획득을 확인하지 못해 연속 성공 초기화 ({failed}회)",
+        "reel_started": "{round}회차 끌어올리기 시작",
+        "switched_scene": "화면 전환 확인: {scene}",
+        "once_done": "한 번의 끌어올리기 종료 (HUD가 사라진 것만으로 성공으로 보지 않음).",
+        "retry_stop": "중지: {scene} 6회 시도 후에도 화면이 바뀌지 않았습니다.",
+        "click_action": "클릭: {scene} ({x}, {y}) {attempt}회차; 화면 전환 대기",
+        "final_stop": "중지: {frames}프레임 / {seconds:.1f}초; 끌어올리기 {rounds}회; 획득 {catches}회; 연속 성공 {streak}회",
+    },
+    "zh-TW": {
+        "subtitle": "自動釣魚助手", "idle": "待命",
+        "instructions": "請先把遊戲設為相同語言，進入釣魚畫面後按下開始。\n自動拉扯、關閉圖鑑／獎勵並續竿。F9 可立即停止。",
+        "game_language": "遊戲語言", "start": "▶  開始釣魚", "stop": "■  停止",
+        "diagnostics": "儲存本機診斷（畫面與追蹤紀錄，不上傳）",
+        "log": "運行紀錄", "footer": "僅使用畫面辨識與滑鼠輸入  ·  切換視窗會自動停止",
+        "connecting": "正在連接遊戲…", "started": "開始自動釣魚；遊戲語言：{language}",
+        "stopping": "正在停止…", "connected": "已連接", "stopped": "已停止",
+        "error": "發生錯誤", "error_title": "無法開始自動釣魚", "unknown_error": "未知錯誤",
+        "diagnostic_path": "本機診斷：{path}", "waiting": "等待", "tap": "TAP",
+        "reeling": "拉扯", "tracking_lost": "追蹤暫失", "ending": "收尾動畫",
+        "button": "按鈕", "reward": "關閉獲得物品",
+        "reward_continue": "物品獎勵／繼續", "encyclopedia": "關閉新圖鑑",
+        "item_detail": "關閉道具詳情", "action": "繼續／下一步",
+        "result_continue": "釣獲／繼續", "state_prefix": "狀態：",
+        "connected_window": "已連接視窗：{title}；遊戲語言：{language}（F9 停止）",
+        "timeout": "已達執行時間上限。", "f9_stop": "F9：已停止。",
+        "focus_lost": "遊戲失去焦點，為避免點到其他視窗，程式已停止。",
+        "aspect_stop": "停止：遊戲客戶區不是 16:9，請恢復遊戲畫面比例。",
+        "catch_confirmed": "成功釣獲：第 {round} 局；連續成功 {streak} 局",
+        "target_reached": "已確認連續成功 {target} 局；測試結束。",
+        "lost_streak": "上一局未確認釣獲；連續成功歸零（累計 {failed} 局）",
+        "reel_started": "第 {round} 局拉扯開始",
+        "switched_scene": "畫面已切換：{scene}",
+        "once_done": "單次拉扯已結束（未以 HUD 消失判定成功）。",
+        "retry_stop": "停止：{scene} 重試 6 次仍未切換，請檢查畫面。",
+        "click_action": "點擊：{scene} ({x}, {y}) 第 {attempt} 次；等待畫面切換",
+        "final_stop": "停止：{frames} 幀 / {seconds:.1f} 秒；{rounds} 局拉扯；確認釣獲 {catches} 局；連續成功 {streak} 局",
+    },
+    "zh-CN": {
+        "subtitle": "自动钓鱼助手", "idle": "待命",
+        "instructions": "请先把游戏设为相同语言，进入钓鱼画面后点击开始。\n自动拉扯、关闭图鉴／奖励并继续钓鱼。按 F9 可立即停止。",
+        "game_language": "游戏语言", "start": "▶  开始钓鱼", "stop": "■  停止",
+        "diagnostics": "保存本地诊断（画面和追踪记录，不上传）",
+        "log": "运行记录", "footer": "仅使用画面识别与鼠标输入  ·  切换窗口会自动停止",
+        "connecting": "正在连接游戏…", "started": "开始自动钓鱼；游戏语言：{language}",
+        "stopping": "正在停止…", "connected": "已连接", "stopped": "已停止",
+        "error": "发生错误", "error_title": "无法开始自动钓鱼", "unknown_error": "未知错误",
+        "diagnostic_path": "本地诊断：{path}", "waiting": "等待", "tap": "TAP",
+        "reeling": "拉扯", "tracking_lost": "追踪暂失", "ending": "结算动画",
+        "button": "按钮", "reward": "关闭获得物品",
+        "reward_continue": "物品奖励／继续", "encyclopedia": "关闭新图鉴",
+        "item_detail": "关闭道具详情", "action": "继续／下一步",
+        "result_continue": "钓获／继续", "state_prefix": "状态：",
+        "connected_window": "已连接窗口：{title}；游戏语言：{language}（F9 停止）",
+        "timeout": "已达到运行时间上限。", "f9_stop": "F9：已停止。",
+        "focus_lost": "游戏失去焦点，为避免点到其他窗口，程序已停止。",
+        "aspect_stop": "停止：游戏画面不是 16:9，请恢复画面比例。",
+        "catch_confirmed": "成功钓获：第 {round} 局；连续成功 {streak} 局",
+        "target_reached": "已确认连续成功 {target} 局；测试结束。",
+        "lost_streak": "上一局未确认钓获；连续成功归零（累计 {failed} 局）",
+        "reel_started": "第 {round} 局拉扯开始",
+        "switched_scene": "画面已切换：{scene}",
+        "once_done": "单次拉扯已结束（不以 HUD 消失判定成功）。",
+        "retry_stop": "停止：{scene} 重试 6 次仍未切换，请检查画面。",
+        "click_action": "点击：{scene} ({x}, {y}) 第 {attempt} 次；等待画面切换",
+        "final_stop": "停止：{frames} 帧 / {seconds:.1f} 秒；{rounds} 局拉扯；确认钓获 {catches} 局；连续成功 {streak} 局",
+    },
+}
+
+
+UI_KEYS = ('counter','target_count','target_hint','stop_shortcut','developer_mode',
+           'developer_help_title','developer_help','invalid_settings','target_done',
+           'catch_target_reached','hotkey_stop','connected_hotkey','instructions')
+UI_TEXT = {
+    'zh-TW': ('已釣獲：{count} 條魚','目標釣魚數量','0 表示不限；達標後停止','停止快捷鍵','開發者模式',
+        '開發者模式說明','會儲存以日期時間為標題的狀態截圖、魚獲卡片及追蹤與耗時作為診斷資料，用於定位與排查異常。資料不會自動上傳。\n\n診斷資料位於：\n{path}\n\n每次運行會建立以時間命名的資料夾。如遇異常，可透過下方項目地址聯繫作者，並提供問題描述及診斷資料。開啟開發者模式會增加效能負擔。',
+        '請輸入非負整數目標及有效快捷鍵，例如 F9、Esc、Ctrl+Alt+Q。',
+        '已達到目標數量；調高目標或設為 0 後可繼續。','已確認釣獲 {target} 條魚，達標停止。',
+        '{hotkey}：已停止。','已連接：{title}；語言：{language}（{hotkey} 停止）',
+        '先進入遊戲釣魚畫面再開始。切換到其他視窗會停止。'),
+    'zh-CN': ('已钓获：{count} 条鱼','目标钓鱼数量','0 表示不限；达标后停止','停止快捷键','开发者模式',
+        '开发者模式说明','会保存以日期时间为标题的状态截图、鱼获卡片及跟踪与耗时数据作为诊断资料，用于定位与排查异常。资料不会自动上传。\n\n诊断资料位于：\n{path}\n\n每次运行会建立以时间命名的文件夹。如遇异常，可通过下方项目地址联系作者，并提供问题描述及诊断资料。开启开发者模式会增加性能负担。',
+        '请输入非负整数目标及有效快捷键，例如 F9、Esc、Ctrl+Alt+Q。',
+        '已达到目标数量；提高目标或设为 0 后可继续。','已确认钓获 {target} 条鱼，达标停止。',
+        '{hotkey}：已停止。','已连接：{title}；语言：{language}（{hotkey} 停止）',
+        '先进入游戏钓鱼画面再开始。切换到其他窗口会停止。'),
+    'en': ('Fish caught: {count}','Target catches','0 = unlimited; stop at target','Stop shortcut','Developer mode',
+        'Developer mode','Scene screenshots, catch cards, tracking and timing data are saved under date-and-time titles as diagnostics to help identify and troubleshoot issues. Nothing is uploaded automatically.\n\nDiagnostic data location:\n{path}\n\nEach run creates a timestamped folder. If an issue occurs, contact the author via the project address below and provide a description of the issue and the diagnostic data. Developer mode adds a performance overhead.',
+        'Enter a non-negative integer target and a valid shortcut, e.g. F9, Esc, Ctrl+Alt+Q.',
+        'Target already reached. Increase it or set 0 to continue.','Confirmed {target} catches; target reached.',
+        '{hotkey}: stopped.','Connected to {title}; language: {language} ({hotkey} to stop)',
+        'Open the game fishing screen before starting. Switching windows stops the assistant.'),
+    'ja': ('釣果：{count} 匹','目標の釣果数','0 は無制限；達成すると停止','停止ショートカット','開発者モード',
+        '開発者モードについて','日時をタイトルにした画面、釣果カード、追跡情報と処理時間を診断データとして保存し、問題の特定と調査に使用します。自動アップロードはありません。\n\n診断データの保存先：\n{path}\n\n実行ごとに日時を名前にしたフォルダーを作成します。問題が発生した場合は、下記のプロジェクトURLから作者に連絡し、問題の説明と診断データをお送りください。開発者モードは処理負荷を増やします。',
+        '目標は0以上の整数、キーは F9、Esc、Ctrl+Alt+Q などを指定してください。',
+        '目標達成済みです。目標を増やすか0にしてください。','釣果 {target} 匹を確認し、目標達成で停止しました。',
+        '{hotkey}：停止しました。','接続：{title}；言語：{language}（{hotkey} で停止）',
+        'ゲームの釣り画面を開いてから開始してください。別のウィンドウに切り替えると停止します。'),
+    'id': ('Ikan tertangkap: {count}','Target tangkapan','0 = tanpa batas; berhenti saat tercapai','Pintasan berhenti','Mode pengembang',
+        'Mode pengembang','Tangkapan layar, kartu hasil tangkapan, pelacakan dan waktu proses disimpan dengan judul tanggal dan waktu sebagai data diagnostik untuk mengidentifikasi dan menelusuri masalah. Data tidak diunggah otomatis.\n\nLokasi data diagnostik:\n{path}\n\nSetiap sesi membuat folder dengan nama berdasarkan waktu. Jika terjadi masalah, hubungi pengembang melalui alamat proyek di bawah dan kirim deskripsi masalah serta data diagnostik. Mode pengembang menambah beban kinerja.',
+        'Masukkan target bilangan bulat non-negatif dan pintasan valid, misalnya F9, Esc, Ctrl+Alt+Q.',
+        'Target tercapai. Naikkan target atau gunakan 0.','{target} tangkapan dikonfirmasi; target tercapai.',
+        '{hotkey}: berhenti.','Terhubung ke {title}; bahasa: {language} ({hotkey} untuk berhenti)',
+        'Buka layar memancing sebelum mulai. Beralih jendela akan menghentikan asisten.'),
+    'ko': ('잡은 물고기: {count} 마리','목표 물고기 수','0 = 무제한; 목표 도달 시 정지','정지 단축키','개발자 모드',
+        '개발자 모드 안내','날짜와 시간을 제목으로 하는 화면, 물고기 결과 카드, 추적 정보와 처리 시간을 진단 자료로 저장하여 문제를 확인하고 원인을 조사합니다. 자료는 자동으로 업로드되지 않습니다.\n\n진단 자료 위치:\n{path}\n\n실행마다 시간을 이름으로 하는 폴더를 만듭니다. 문제가 발생하면 아래 프로젝트 주소를 통해 제작자에게 연락하여 문제 설명과 진단 자료를 보내 주세요. 개발자 모드는 성능 부하를 증가시킵니다.',
+        '목표는 0 이상의 정수, 단축키는 F9, Esc, Ctrl+Alt+Q 등으로 지정하세요.',
+        '목표를 달성했습니다. 목표를 늘리거나 0으로 설정하세요.','물고기 {target} 마리를 확인하여 정지했습니다.',
+        '{hotkey}: 정지했습니다.','연결: {title}; 언어: {language} ({hotkey} 정지)',
+        '게임 낚시 화면에서 시작하세요. 다른 창으로 전환하면 정지합니다.'),
+}
+for code,values in UI_TEXT.items():
+    TEXT[code].update(dict(zip(UI_KEYS,values)))
+    TEXT[code]['start'] = TEXT[code]['start'].replace('▶  ','')
+    TEXT[code]['stop'] = TEXT[code]['stop'].replace('■  ','')
+
+# Keep an English label in every locale so the selector is discoverable.
+for code,label,prompt in (
+    ('zh-TW','語言 / Language','請按下快捷鍵…'),
+    ('zh-CN','语言 / Language','请按下快捷键…'),
+    ('en','Language','Press a shortcut…'),
+    ('ja','言語 / Language','ショートカットを押してください…'),
+    ('id','Bahasa / Language','Tekan pintasan…'),
+    ('ko','언어 / Language','단축키를 누르세요…'),
+):
+    TEXT[code]['game_language'] = label
+    TEXT[code]['capture_shortcut'] = prompt
+
+for code,label,close in (
+    ('zh-TW','項目地址：','關閉'),
+    ('zh-CN','项目地址：','关闭'),
+    ('en','Project address:','Close'),
+    ('ja','プロジェクトURL：','閉じる'),
+    ('id','Alamat proyek:','Tutup'),
+    ('ko','프로젝트 주소:','닫기'),
+):
+    TEXT[code]['project_address'] = label
+    TEXT[code]['close_help'] = close
+
+
+for code, archive, error in (
+    ('zh-TW', '診斷壓縮檔：{path}', '診斷保存未完成：{error}'),
+    ('zh-CN', '诊断压缩包：{path}', '诊断保存未完成：{error}'),
+    ('en', 'Diagnostic ZIP: {path}', 'Diagnostics incomplete: {error}'),
+    ('ja', '診断 ZIP：{path}', '診断保存が未完了：{error}'),
+    ('ko', '진단 ZIP: {path}', '진단 저장 미완료: {error}'),
+    ('id', 'ZIP diagnostik: {path}', 'Diagnostik belum lengkap: {error}'),
+):
+    TEXT[code]['diagnostic_archive'] = archive
+    TEXT[code]['diagnostic_error'] = error
+
+
+for code, label, conflict in (
+    ('zh-TW','開始快捷鍵','開始與停止快捷鍵不能相同。'),
+    ('zh-CN','开始快捷键','开始与停止快捷键不能相同。'),
+    ('en','Start shortcut','Start and stop shortcuts must be different.'),
+    ('ja','開始ショートカット','開始と停止には異なるショートカットを設定してください。'),
+    ('id','Pintasan mulai','Pintasan mulai dan berhenti harus berbeda.'),
+    ('ko','시작 단축키','시작과 정지 단축키는 서로 달라야 합니다.'),
+):
+    TEXT[code].update(start_shortcut=label, shortcut_conflict=conflict)
+
+
+START_TEXT = {
+ 'zh-TW': ('啟動來源：{source}（{build}）','全域快捷鍵','程式按鈕','開始快捷鍵已就緒：{hotkey}','無法註冊開始快捷鍵 {hotkey}（{error}）；請關閉舊版或改用其他按鍵。','連接階段：尋找遊戲視窗','連接階段：已找到遊戲，確認前景','連接階段：準備釣魚控制'),
+ 'zh-CN': ('启动来源：{source}（{build}）','全局快捷键','程序按钮','开始快捷键已就绪：{hotkey}','无法注册开始快捷键 {hotkey}（{error}）；请关闭旧版或改用其他按键。','连接阶段：查找游戏窗口','连接阶段：已找到游戏，确认前台','连接阶段：准备钓鱼控制'),
+ 'en': ('Started via {source} ({build})','global shortcut','app button','Start shortcut ready: {hotkey}','Cannot register start shortcut {hotkey} ({error}); close old copies or choose another key.','Connecting: finding game window','Connecting: game found, checking foreground','Connecting: preparing fishing controls'),
+ 'ja': ('開始方法：{source}（{build}）','グローバルショートカット','アプリのボタン','開始ショートカット準備完了：{hotkey}','開始ショートカット {hotkey} を登録できません（{error}）。旧版を閉じるか別のキーを選んでください。','接続：ゲームウィンドウを検索中','接続：ゲームを検出、前面を確認中','接続：釣り操作を準備中'),
+ 'ko': ('시작 방식: {source} ({build})','전역 단축키','프로그램 버튼','시작 단축키 준비 완료: {hotkey}','시작 단축키 {hotkey} 등록 실패 ({error}). 이전 버전을 닫거나 다른 키를 선택하세요.','연결: 게임 창 찾는 중','연결: 게임 확인, 전경 확인 중','연결: 낚시 제어 준비 중'),
+ 'id': ('Dimulai melalui {source} ({build})','pintasan global','tombol aplikasi','Pintasan mulai siap: {hotkey}','Tidak dapat mendaftarkan pintasan {hotkey} ({error}); tutup versi lama atau pilih tombol lain.','Menghubungkan: mencari jendela game','Menghubungkan: game ditemukan, memeriksa fokus','Menghubungkan: menyiapkan kontrol memancing'),
+}
+for code, values in START_TEXT.items():
+ TEXT[code].update(zip(('start_source','source_hotkey','source_button','hotkey_ready','hotkey_unavailable','startup_find','startup_activate','startup_prepare'),values))
+
+
+# Compact product labels shared by the six GUI languages.
+GUI_PRESENTATION = {
+    'zh-TW': ('自動釣魚','等待開始','先進入游戲釣魚畫面，再點擊「開始」','目標釣獲數','不限','開始',
+              '請選擇不限或輸入大於 0 的整數，並設定有效快捷鍵。'),
+    'zh-CN': ('自动钓鱼','等待开始','先进入游戏钓鱼画面，再点击「开始」','目标钓获数','不限','开始',
+              '请选择不限或输入大于 0 的整数，并设置有效快捷键。'),
+    'en': ('Auto Fishing','Waiting to start','Open the game fishing screen, then click “Start”','Target catches','Unlimited','Start',
+           'Choose Unlimited or enter a positive integer, and set valid shortcuts.'),
+    'ja': ('自動釣り','開始待ち','ゲームの釣り画面を開いてから「開始」をクリックしてください','目標釣果数','無制限','開始',
+           '無制限を選ぶか正の整数を入力し、有効なショートカットを設定してください。'),
+    'ko': ('자동 낚시','시작 대기','게임의 낚시 화면을 연 다음 “시작”을 클릭하세요','목표 물고기 수','무제한','시작',
+           '무제한을 선택하거나 양의 정수를 입력하고 유효한 단축키를 설정하세요.'),
+    'id': ('Memancing Otomatis','Menunggu mulai','Buka layar memancing dalam game, lalu klik “Mulai”','Target tangkapan','Tanpa batas','Mulai',
+           'Pilih Tanpa batas atau masukkan bilangan bulat positif, lalu atur pintasan yang valid.'),
+}
+for code,values in GUI_PRESENTATION.items():
+    TEXT[code].update(zip(('subtitle','idle','instructions','target_count','unlimited','start','invalid_settings'),values))
+
+
+def text(locale: str, key: str, **values) -> str:
+    """Return fully localized text; CLI 'auto' keeps the previous TW default."""
+    entry = TEXT["zh-TW" if locale == "auto" else locale][key]
+    return entry.format(**values)

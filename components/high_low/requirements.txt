@@ -1,0 +1,8 @@
+opencv-python-headless
+ddddocr
+numba
+numpy
+pillow
+pygetwindow
+mss
+pydirectinput

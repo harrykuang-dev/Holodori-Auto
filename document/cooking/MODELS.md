@@ -1,6 +1,6 @@
 # 辨識模型與開發者模式
 
-> Source reference / 來源參考 [upstream/cooking/docs/model-options.md](https://github.com/harrykuang-dev/Hololive-Dreams-Collect-Cooking-Auto/blob/90c09a242fe335284588d895482a25efe17c3ba6/docs/model-options.md). Paths and standalone commands below refer to that source tree. Holodori-Auto builds and runs from the repository root. See [program architecture](../ARCHITECTURE.md).
+> Current source / 目前原始碼 [components/cooking](../../components/cooking/). [Original reference / 原始文件](https://github.com/harrykuang-dev/Hololive-Dreams-Collect-Cooking-Auto/blob/90c09a242fe335284588d895482a25efe17c3ba6/docs/model-options.md) describes the historical standalone layout and commands. For the current program, use the [shared build and validation instructions](../ARCHITECTURE.md).
 
 介面提供「標準」（ResNet18）與「進階」（ResNet101），預設標準。選擇會保存，下次開啟沿用；執行期間不能切換，停止後可重新選擇。
 
@@ -24,12 +24,10 @@ ResNet18運算需求較低，ResNet101模型較大。介面採用單選鈕，旁
 
 最短抖盤間隔為兩次實際按下至少 5 秒，仍需確認最新畫面的按鈕狀態可用。低紋理周邊運動保護採 48 原生像素；此範圍與標準座標的食物露出半徑不同。
 
-權重與程式指紋見 [models-manifest.json](https://github.com/harrykuang-dev/Hololive-Dreams-Collect-Cooking-Auto/blob/90c09a242fe335284588d895482a25efe17c3ba6/models-manifest.json)和 [packaged-runtime.json](https://github.com/harrykuang-dev/Hololive-Dreams-Collect-Cooking-Auto/blob/90c09a242fe335284588d895482a25efe17c3ba6/docs/packaged-runtime.json)。GUI提供繁體中文、簡體中文、英文、日文、韓文及印尼文。遊戲名稱來源見 [遊戲用詞](https://github.com/harrykuang-dev/Hololive-Dreams-Collect-Cooking-Auto/blob/90c09a242fe335284588d895482a25efe17c3ba6/docs/GAME_TERMS.md)。
+權重與程式指紋見 [models-manifest.json](../../components/cooking/models-manifest.json)和 [原始發行版執行環境紀錄](https://github.com/harrykuang-dev/Hololive-Dreams-Collect-Cooking-Auto/blob/90c09a242fe335284588d895482a25efe17c3ba6/docs/packaged-runtime.json)。GUI提供繁體中文、簡體中文、英文、日文、韓文及印尼文。遊戲名稱來源見 [遊戲用詞](https://github.com/harrykuang-dev/Hololive-Dreams-Collect-Cooking-Auto/blob/90c09a242fe335284588d895482a25efe17c3ba6/docs/GAME_TERMS.md)。
 
-封裝後可透過以下命令只載入模型核對，不建立桌面擷取、不輸入遊戲：
+使用下列命令，只載入及暖機兩種模型，不擷取桌面或輸入遊戲。
 
 ```powershell
-.\Collect-Cooking-Auto-v1.0.0.exe --worker --model resnet101 --check-model-only --games 1 --output .\model-check\runs --control-file .\model-check\stop
+python tools/check_models_runtime.py --executable dist/Holodori-Auto/Holodori-Auto.exe --report work/packaged-model-runtime.json
 ```
-
-結果寫在 `model-check/model-check.json`。將 `resnet101` 改成 `resnet18` 即可核對另一個選項。

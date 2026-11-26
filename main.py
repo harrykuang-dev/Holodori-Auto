@@ -7,7 +7,10 @@ import sys
 
 def main():
     multiprocessing.freeze_support()
-    if '--check-jump-model-only' in sys.argv:
+    if '--check-high-low-only' in sys.argv:
+        from holodori.runtime import check_high_low
+        check_high_low()
+    elif '--check-jump-model-only' in sys.argv:
         from holodori.runtime import check_jump_model
         check_jump_model()
     elif '--worker' in sys.argv:

@@ -1,0 +1,17 @@
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+dist/
+dist-*/
+accelerators/
+build/
+*.spec
+*.log
+debug/
+recordings/
+work/
+
+models/*.engine
+models/engine-device.json
+training-work/

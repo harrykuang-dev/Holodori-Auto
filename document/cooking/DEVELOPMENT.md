@@ -1,40 +1,20 @@
 # 開發說明
 
-> Source reference / 來源參考 [upstream/cooking/docs/DEVELOPMENT.md](https://github.com/harrykuang-dev/Hololive-Dreams-Collect-Cooking-Auto/blob/90c09a242fe335284588d895482a25efe17c3ba6/docs/DEVELOPMENT.md). Paths and standalone commands below refer to that source tree. Holodori-Auto builds and runs from the repository root. See [program architecture](../ARCHITECTURE.md).
+> Current source / 目前原始碼 [components/cooking](../../components/cooking/). [Original reference / 原始文件](https://github.com/harrykuang-dev/Hololive-Dreams-Collect-Cooking-Auto/blob/90c09a242fe335284588d895482a25efe17c3ba6/docs/DEVELOPMENT.md) describes the historical standalone layout and commands. For the current program, use the [shared build and validation instructions](../ARCHITECTURE.md).
 
-玩家端的單一完整版包含TensorRT、ONNX Runtime DirectML與CPU備援，不依賴PyTorch。模型格式、FP32精度、快取與自動切換機制見 [共用模型推論版本](INFERENCE.md)。
+Holodori-Auto 標準版包含 DirectML 與 CPU 備援。TensorRT 以選用元件提供。模型格式、FP32 精度、快取與自動切換機制見[模型推論說明](INFERENCE.md)。
 
-## 環境與模型
+## 環境、模型與預檢
 
-使用Windows x64與Python 3.13，在獨立環境安裝建置依賴，並取得與本版本模型清單相符的 `models.zip`。
-
-```powershell
-py -3.13 -m venv .venv-runtime
-.\.venv-runtime\Scripts\python.exe -m pip install -r requirements-build.txt
-.\.venv-runtime\Scripts\python.exe tools\install_models.py models.zip
-.\.venv-runtime\Scripts\python.exe tools\check_runtime.py
-```
-
-安裝工具核對壓縮包、五個ONNX與同名JSON的SHA-256、檔案大小及允許路徑，再寫入缺少的檔案。既有PT權重保留供訓練與匯出，來源指紋另存於 `tools/checkpoints-manifest.json`。
-
-## 啟動、測試與建置
+依[原始碼安裝說明](../../README.md)準備 Windows x64 與 Python 3.13。在倉庫根目錄執行：
 
 ```powershell
-.\.venv-runtime\Scripts\pythonw.exe gui.py
-.\.venv-runtime\Scripts\python.exe -m unittest discover -s tests -p "test_*.py"
-.\.venv-runtime\Scripts\Activate.ps1
-.\build.ps1
+python tools/fetch_models.py
+python tools/check_models_runtime.py
+python main.py
 ```
 
-產物為 `dist/Collect-Cooking-Auto-v1.1.2/`，EXE與 `_internal` 需一起保留。建置環境不應安裝PyTorch；封裝時亦明確排除PyTorch、torchvision與訓練模型定義。
-
-封裝程式可只載入與暖機模型，核對後退出：
-
-```powershell
-.\Collect-Cooking-Auto-v1.1.2.exe --worker --model resnet18 --check-model-only --games 1 --output .\model-check\runs --control-file .\model-check\stop
-```
-
-將 `resnet18` 改成 `resnet101` 可核對進階模型。環境變數 `COOKING_INFERENCE_BACKEND=cpu` 可核對CPU路徑。結果包含實際後端、精度、GPU、暖機狀態與PyTorch載入檢查；此命令不建立遊戲擷取或輸入介面。
+安裝工具按 [manifest](../../components/cooking/models-manifest.json) 檢查壓縮包與模型。模型預檢會載入並暖機標準、進階兩個模型，並回報實際後端。封裝後傳入 `--executable dist/Holodori-Auto/Holodori-Auto.exe` 可驗證可攜版。預檢不擷取或操作遊戲。
 
 ## 診斷格式
 
@@ -57,7 +37,7 @@ GUI開發者模式在正常停止或例外結束後產生ZIP，每個ZIP硬上�
 開發用直接CLI保留完整記錄入口：
 
 ```powershell
-.\.venv\Scripts\python.exe outputs\kitchen-bot\standalone.py --point-model models/inference/point-classifier-resnet18.onnx --games 5
+python components/cooking/outputs/kitchen-bot/standalone.py --point-model components/cooking/models/inference/point-classifier-resnet18.onnx --games 5
 ```
 
 此入口預設保存原生尺寸錄影及完整逐幀資料，容量需求與GUI診斷包不同。

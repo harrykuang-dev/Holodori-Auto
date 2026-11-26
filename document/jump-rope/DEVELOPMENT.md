@@ -1,34 +1,26 @@
 # 開發說明
 
-> Source reference / 來源參考 [upstream/jump_rope/docs/DEVELOPMENT.md](https://github.com/harrykuang-dev/Hololive-Dreams-Jump-Rope-Auto/blob/5af7b2ffea905776902b295642dd3a7cc020d147/docs/DEVELOPMENT.md). Paths and standalone commands below refer to that source tree. Holodori-Auto builds and runs from the repository root. See [program architecture](../ARCHITECTURE.md).
+> Current source / 目前原始碼 [components/jump_rope](../../components/jump_rope/). [Original reference / 原始文件](https://github.com/harrykuang-dev/Hololive-Dreams-Jump-Rope-Auto/blob/5af7b2ffea905776902b295642dd3a7cc020d147/docs/DEVELOPMENT.md) describes the historical standalone layout and commands. For the current program, use the [shared build and validation instructions](../ARCHITECTURE.md).
 
-目前版本為 1.3.3。程式、控制器及 YOLO 衍生權重採用 AGPL-3.0；舊版完整來源及 MIT 授權位於 `archive/v1.2.1/`。`archive/snapshot.json` 記錄原提交與檔案 SHA-256，建置排除存檔。人工標註與訓練工具分別在 `annotations/` 和 `training/`，兩者不進入執行包。
+跳繩的程式、控制器與 YOLO 衍生權重沿用 AGPL-3.0-only。原始倉庫保留舊版 MIT 原始碼和人工標註，連結見[授權與對應原始碼](../../LICENSES.md)。本倉庫的 `components/jump_rope/training/` 保留訓練和匯出工具。
 
 ## 啟動
 
-安裝 requirements-dev.txt 後可執行 `python main_ui.py`。它只打開前端，必須自行點擊開始／按開始快捷鍵才會操作遊戲。滑條中央為預設策略，範圍−40～+40ms，連續調整；負值提早，正值推遲，點0或中央歸零。
+從倉庫根目錄執行 `python main.py` 後選擇跳繩。必須點擊開始或按開始快捷鍵才會操作遊戲。滑條中央為預設策略，範圍−40～+40ms，連續調整；負值提早，正值推遲，點0或中央歸零。
 
 停止分數預設「不限」。選擇自訂選鈕後可輸入1–999；達標後僅停止本局跳躍，等待遊戲自然結算，再依目標局數繼續。分數來自HUD數字而非點擊次數，使用小型模板比對、連續兩張可信觀察與分數增量檢查。不確定畫面不推定達標；接近門檻時逐幀核對，其他時間每100ms核對。不限時不建立讀數器、不做額外分數辨識。達標後取消預約並釋放按鍵，保留停止／失焦／擷取異常處理；直到結算都不再執行模型或送出跳躍。
 
-獨立環境需要Windows x64、Python3.13與支援DirectX12／DirectML的硬體顯示卡。主程式使用 requirements.txt 的 onnxruntime-directml；不安裝一般 onnxruntime 或 onnxruntime-gpu，以免覆蓋相同模組。TensorRT為選用加速：NVIDIA與CUDA／TensorRT環境可用時優先採用，初始化或暖機失敗時在擷取之前轉用DirectML。沒有可用硬體GPU或DirectML失敗時報錯停止，不使用CPU推論。局內推論錯誤停止，不中途切換。
+獨立環境需要Windows x64、Python3.13與支援DirectX12／DirectML的硬體顯示卡。共用建置使用 `requirements.txt` 中的 ONNX Runtime DirectML。套件安裝順序見[建置說明](../ARCHITECTURE.md)。TensorRT為選用加速：NVIDIA與CUDA／TensorRT環境可用時優先採用，初始化或暖機失敗時在擷取之前轉用DirectML。沒有可用硬體GPU或DirectML失敗時報錯停止，不使用CPU推論。局內推論錯誤停止，不中途切換。
 
 兩種後端均取消固定畫面年齡上限（frame_validity_ms=null），不加5ms呼叫餘量。控制器以實際 now-stamp 扣減過繩倒數；不重寫stamp，也不把推論完成時間冒充擷取時間。停止、失焦、尺寸改變、畫面被取代、擷取中斷，以及既有過繩時間窗、角色狀態、遮擋預測期限仍有效。處理過慢仍會錯過時機，不保證低性能GPU的成績。
 
 ```powershell
-python -m pip install -r requirements-dev.txt
-# Optional NVIDIA acceleration:
-python -m pip install -r requirements-gpu.txt
-python main_ui.py
-python -m pytest -q
-python -m pytest tests/test_gui.py -o addopts= -q
-python main_ui.py --check-only --report model-check.json
-python main_ui.py --check-only --directml --report directml-model-check.json
-python tools/build_release.py
-# Optional: build a portable NVIDIA component from the installed GPU packages.
-python tools/build_tensorrt_component.py dist/HololiveDreamsJumpRopeAuto-1.3.3/accelerators/tensorrt
+python main.py
+python main.py --check-jump-model-only --backend directml --report work/jump-directml.json
+python main.py --check-jump-model-only --backend gpu --report work/jump-tensorrt.json
 ```
 
-`--check-only`只載入並暖機模型，不建立視窗、不擷取、不輸入。GUI測試使用假會話；控制迴圈測試使用合成畫面與假的OS輸入。
+這些模型預檢只載入及暖機模型，不擷取遊戲畫面或輸入。第二個預檢使用已安裝的選用 TensorRT 環境與相容 NVIDIA GPU。
 
 ## 模型與執行
 
@@ -52,18 +44,18 @@ DirectML會話建立時暫時隔離CUDA_VISIBLE_DEVICES並在finally恢復，避
 
 `session_diagnostics.py` 串流追加 JSON；原生輸入回呼只將時間戳放入記憶體佇列，由既有背景診斷工作執行緒寫入。硬體查詢只在初始化進行，CIM 查詢上限8秒，失敗本身也記錄。記錄超量時明確統計省略數量：觀察追蹤上限128MiB原文／約8MiB壓縮資料、其他事件2MiB原文、圖片8MiB；圖片優先保留近期失誤。時間分位數採最近10000筆，總次數與判斷原因覆蓋全程。超過20MiB的ZIP不發布，保留JSON並在介面提示。編碼／寫入失敗會停止輸入並保留資料。
 
-資料夾式EXE必須與`_internal/`一起保留。玩家端不使用 PyTorch；核心不包含TensorRT，使用DirectML即可執行；相容加速元件放在EXE旁的`accelerators/tensorrt/`，`optional_accelerator.py`核對format 2、Python ABI及TensorRT 10.13版本後加入模組與DLL路徑，只有需要NVIDIA加速時才載入。元件缺失或失敗轉用DirectML，沒有自動下載。`archive/`、研究資料、訓練圖片、解包素材及外部模型工具不進入成品。發布包保留依賴授權與 NOTICE；模型引擎快取不納入 Git。
+可攜版保留 `_internal/`。標準版使用 DirectML。相容的選用元件位於 EXE 旁的 `accelerators/tensorrt/`，共用載入器驗證元件格式、Python ABI、架構、依賴版本與必要檔案大小，再設定模組及 DLL 搜尋路徑。元件初始化失敗時，跳繩會在開始擷取前嘗試 DirectML。引擎快取在本機建立。
 
 ## 介面
 
-主視窗預設內容區在 120 DPI 為 517×1055 像素，其他 DPI 按 dpi/120 比例取整數。工作區較小時限制初始尺寸，仍可手動縮放；內容溢出時使用外層捲動，執行記錄保留自己的捲動。版本號沿用 Muted.TLabel，支援滑鼠、Tab、Enter 及空白鍵開啟 PROJECT_URL。
+頁面使用共用導覽、語言及快捷鍵。程式主視窗的尺寸、切換與版本連結見[架構說明](../ARCHITECTURE.md)。
 
 ## 公開資料與模型
 
-原創人工標註採 CC BY 4.0；遊戲截圖保留第三方權利，詳 annotations/NOTICE.md。672 筆可訓練、3 筆未確定排除；來源像素產生的三角不稱為人工標註。訓練切分依錄製群組隔離，保存完整遮罩與標籤轉換品質。models/rope.pt 提供來源權重，training/recipe.json、train.py、export_model.py 和 tools/prepare_fp16_model.py 提供訓練與匯出。
+原創人工標註採 CC BY 4.0。遊戲截圖保留第三方權利，詳見[資料集聲明](https://github.com/harrykuang-dev/Hololive-Dreams-Jump-Rope-Auto/blob/6cd4610b6370fac1b98a17d27562a2d9bb658b3c/annotations/NOTICE.md)。672 筆可訓練、3 筆未確定排除；來源像素產生的三角不稱為人工標註。訓練切分依錄製群組隔離，保存完整遮罩與標籤轉換品質。models/rope.pt 提供來源權重，training/recipe.json、train.py、export_model.py 和 tools/prepare_fp16_model.py 提供訓練與匯出。
 
 ## 發布資產
 
-僅發布完整 `.7z`，包含程式及 TensorRT 10.13 元件，依硬體自動選擇 TensorRT FP16／DirectML，不包含 PyTorch。`tools/package_release.py --core <成品目錄> --full-7z --output <輸出目錄>` 產生完整包並驗證壓縮包；首次 TensorRT 啟動建立本機引擎。訓練及匯出使用獨立環境，仍可依 training/ 的需求安裝 PyTorch。
+Holodori-Auto 的發行方式見[組件建置與發行配置](../ARCHITECTURE.md)。訓練與匯出使用 [training/ 的獨立環境](../../components/jump_rope/training/)。
 
 原生輸入在呼叫開始前核對來源畫面編號、前景、尺寸與停止狀態；預設沒有固定畫面年齡限制。明確帶有限期的內部決策仍檢查其期限。保存呼叫開始／返回時間，函式返回不代表遊戲實際收到輸入的時刻。25ms放開計時不變。

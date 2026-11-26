@@ -1,8 +1,8 @@
 # 共用模型推論版本
 
-> Source reference / 來源參考 [upstream/cooking/docs/TENSORRT.md](https://github.com/harrykuang-dev/Hololive-Dreams-Collect-Cooking-Auto/blob/90c09a242fe335284588d895482a25efe17c3ba6/docs/TENSORRT.md). Paths and standalone commands below refer to that source tree. Holodori-Auto builds and runs from the repository root. See [program architecture](../ARCHITECTURE.md).
+> Current source / 目前原始碼 [components/cooking](../../components/cooking/). [Original reference / 原始文件](https://github.com/harrykuang-dev/Hololive-Dreams-Collect-Cooking-Auto/blob/90c09a242fe335284588d895482a25efe17c3ba6/docs/TENSORRT.md) describes the historical standalone layout and commands. For the current program, use the [shared build and validation instructions](../ARCHITECTURE.md).
 
-單一完整版同時包含TensorRT、ONNX Runtime DirectML與CPU推論，無須另下載組件。相容NVIDIA GPU優先使用TensorRT，其次使用硬體DirectML，最後使用CPU。所有後端共用五份FP32 ONNX模型，不複製權重；玩家端不載入PyTorch或torchvision。
+Holodori-Auto 標準版提供 DirectML 與 CPU 推論。安裝共用 TensorRT 元件且 NVIDIA GPU 相容時，料理會優先使用 TensorRT，再依序回退至硬體 DirectML 和 CPU。所有後端共用同一組 FP32 ONNX 模型權重。
 
 ## 模型與介面
 

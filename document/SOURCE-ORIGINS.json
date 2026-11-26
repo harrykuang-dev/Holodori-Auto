@@ -1,0 +1,35 @@
+{
+  "schema_version": 1,
+  "purpose": "Source provenance at the start of Holodori-Auto 1.3.0 development",
+  "features": {
+    "high_low": {
+      "path": "components/high_low",
+      "repository": "https://github.com/harrykuang-dev/Hololive-Dreams-High-low-Auto-Personal.git",
+      "commit": "fe6651a43bb7668acabc38d1473d4eb06d83e49c",
+      "original_version": "1.1.4"
+    },
+    "fishing": {
+      "path": "components/fishing",
+      "repository": "https://github.com/harrykuang-dev/Hololive-Dreams-Fishing-Auto.git",
+      "commit": "dbc1aee9227d5d7bfecfa542cf424ffaa4a0a2ab",
+      "original_version": "1.1.2"
+    },
+    "jump_rope": {
+      "path": "components/jump_rope",
+      "repository": "https://github.com/harrykuang-dev/Hololive-Dreams-Jump-Rope-Auto.git",
+      "commit": "6cd4610b6370fac1b98a17d27562a2d9bb658b3c",
+      "original_version": "1.3.3"
+    },
+    "cooking": {
+      "path": "components/cooking",
+      "repository": "https://github.com/harrykuang-dev/Hololive-Dreams-Collect-Cooking-Auto.git",
+      "commit": "90c09a242fe335284588d895482a25efe17c3ba6",
+      "original_version": "1.1.2"
+    },
+    "puka_puka": {
+      "path": "components/puka_puka",
+      "repository": "https://github.com/harrykuang-dev/Holodori-Auto.git",
+      "commit": "3dcbf7d4823ef7952553e30b861c2b45a76a82cd"
+    }
+  }
+}

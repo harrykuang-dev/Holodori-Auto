@@ -222,11 +222,12 @@ class RuntimeContractTests(unittest.TestCase):
                 app.configure_hotkeys.assert_not_called()
                 app._hotkey.configure.assert_not_called()
 
-    def test_original_key_contract_distinguishes_windows_alt_from_num_lock(self):
-        validate_shared_settings('English', 'F8', 'INSERT')
-        capture = runtime._HOTKEY_CONTRACT.captured_hotkey
-        self.assertEqual(capture('F8', 0x08, 0x77), 'F8')
-        self.assertEqual(capture('F8', 0x20000, 0x77), 'Alt+F8')
+    def test_shared_settings_validate_overlapping_physical_shortcuts(self):
+        validate_shared_settings('English', 'Ctrl+F8', 'Alt+F8')
+        with self.assertRaisesRegex(ValueError, 'shortcuts conflict'):
+            validate_shared_settings('English', 'Escape', 'Ctrl+ESC')
+        with self.assertRaisesRegex(ValueError, 'Unsupported language'):
+            validate_shared_settings('French', 'F8', 'INSERT')
 
     def test_capture_suspends_original_listeners_and_settings_commit_ends_capture(self):
         for module in ('high_low', 'fishing', 'jump_rope', 'cooking'):

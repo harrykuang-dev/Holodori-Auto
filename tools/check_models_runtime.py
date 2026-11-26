@@ -97,7 +97,7 @@ def check_one(model: str, expected: dict, directory: Path, *,
 def check_models(*, executable: Path | None, timeout: float) -> dict:
     if sys.platform != "win32":
         raise ValueError("Cooking runtime verification requires Windows.")
-    manifest = json.loads((ROOT / "upstream" / "cooking" / "models-manifest.json").read_text(encoding="utf-8"))
+    manifest = json.loads((ROOT / "components" / "cooking" / "models-manifest.json").read_text(encoding="utf-8"))
     report = {
         "mode": "packaged" if executable else "source",
         "models": [], "game_inputs_sent": 0,

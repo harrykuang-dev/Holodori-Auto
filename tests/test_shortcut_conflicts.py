@@ -27,7 +27,7 @@ class ShortcutConflictTests(unittest.TestCase):
 def check_warning(module):
     import tkinter as tk
 
-    sys.path.insert(0, str(ROOT / 'upstream' / module))
+    sys.path[:0] = [str(ROOT / 'components' / module), str(ROOT)]
     import main_ui
 
     class Hotkey:

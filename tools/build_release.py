@@ -1,8 +1,8 @@
 """Build a portable Windows folder containing the five game runtimes.
 
 Run from an environment containing requirements.txt and requirements-build.txt.
-The upstream source files are copied as data, rather than merged into one Python
-module namespace. Each component is imported by its isolated child process.
+Feature sources ship as runtime files. Each feature runs in an isolated child
+process, and Windows libraries are shared by the portable application.
 """
 from __future__ import annotations
 
@@ -23,7 +23,9 @@ import zipfile
 
 
 ROOT = Path(__file__).resolve().parents[1]
-COMPONENTS = ("high_low", "fishing", "jump_rope", "cooking")
+sys.path.insert(0, str(ROOT))
+from holodori.modules import MODULES
+
 SKIP_DIRECTORIES = {
     ".git", ".github", ".venv", "venv", "__pycache__", ".pytest_cache",
     ".mypy_cache", ".ruff_cache", "tests", "docs", "tools", "build", "dist", "work",
@@ -33,14 +35,12 @@ SKIP_SUFFIXES = {".pyc", ".pyo", ".zip", ".7z", ".log", ".spec", ".pt", ".engine
 REQUIRED_MODULES = (
     "PyInstaller", "cv2", "numpy", "PIL", "tkinter", "win32api", "win32event",
     "win32gui", "win32ui", "pygetwindow", "mss", "pydirectinput", "ddddocr",
-    "onnxruntime", "numba", "llvmlite", "dxcam", "tensorrt", "tensorrt_libs",
-    "scipy", "moderngl",
+    "onnxruntime", "numba", "llvmlite", "dxcam",
 )
 RUNTIME_DISTRIBUTIONS = (
     "numpy", "opencv-python", "Pillow", "pywin32", "PyGetWindow", "mss",
     "PyDirectInput", "ddddocr", "onnxruntime-directml", "numba", "llvmlite", "dxcam",
-    "tensorrt-cu12", "tensorrt-cu12-bindings", "tensorrt-cu12-libs",
-    "nvidia-cuda-runtime-cu12", "scipy", "moderngl", "comtypes", "PyInstaller",
+    "comtypes", "PyInstaller",
     "pyinstaller-hooks-contrib",
 )
 
@@ -62,15 +62,13 @@ def runtime_file(relative: Path) -> bool:
         return False
     if relative.suffix.lower() in SKIP_SUFFIXES:
         return False
-    return not name.startswith(".git") and name not in {'segmenter.py', 'engine-device.json'}
+    return not name.startswith(".git") and name not in {'segmenter.py', 'render_samples.py', 'engine-device.json'}
 
 
 def runtime_sources() -> list[tuple[Path, Path]]:
     sources = []
-    directories = [(Path('upstream') / name, 'gui.py' if name in ('fishing', 'cooking') else 'main_ui.py')
-                   for name in COMPONENTS]
-    directories.append((Path('components/puka_puka'), 'puka_ui.py'))
-    for prefix, entry in directories:
+    for module in MODULES:
+        prefix, entry = Path('components') / module.id, module.entry + '.py'
         directory = ROOT / prefix
         if not (directory / entry).is_file():
             raise ValueError(f"Missing runtime source: {directory} / {entry}")
@@ -89,8 +87,7 @@ def external_imports(sources: list[tuple[Path, Path]]) -> list[str]:
     imports = {
         "PIL.ImageDraw", "PIL.ImageFont", "PIL.ImageTk",
         "tkinter.font", "tkinter.ttk", "tkinter.messagebox",
-        "onnxruntime", "llvmlite.binding", "tensorrt", "tensorrt_bindings", "tensorrt_libs",
-        "dxcam", "moderngl",
+        "onnxruntime", "llvmlite.binding", "dxcam",
     }
     for source in python_files:
         tree = ast.parse(source.read_text(encoding="utf-8-sig"), filename=str(source))
@@ -100,7 +97,8 @@ def external_imports(sources: list[tuple[Path, Path]]) -> list[str]:
             elif isinstance(node, ast.ImportFrom) and node.module and not node.level:
                 imports.add(node.module)
     return sorted(name for name in imports if name.split(".")[0] not in local_names | {
-        "__future__", "torch", "torchvision", "onnx", "ultralytics"})
+        "__future__", "torch", "torchvision", "onnx", "ultralytics",
+        "tensorrt", "tensorrt_libs", "tensorrt_bindings"})
 
 
 def validate_environment() -> None:
@@ -119,7 +117,7 @@ def validate_environment() -> None:
 
 
 def validate_models() -> None:
-    cooking = ROOT / "upstream" / "cooking"
+    cooking = ROOT / "components" / "cooking"
     manifest = json.loads((cooking / "models-manifest.json").read_text(encoding="utf-8"))
     failures = []
     for relative, expected in manifest["files"].items():
@@ -140,7 +138,7 @@ def stage_data(directory: Path, sources: list[tuple[Path, Path]]) -> list[tuple[
     # changing sys._MEIPASS would break PyInstaller's package import paths.
     for source, relative in sources:
         parts = relative.parts
-        if len(parts) > 2 and parts[:2] == ('upstream', 'high_low'):
+        if len(parts) > 2 and parts[:2] == ('components', 'high_low'):
             local = Path(*parts[2:])
             if local.parts[0] in ('assets', 'templates') or local.name in ('icon.ico', 'icon_transparent.png'):
                 staged.append((source, local))
@@ -148,6 +146,9 @@ def stage_data(directory: Path, sources: list[tuple[Path, Path]]) -> list[tuple[
         if source.is_file() and (source.suffix.lower() == ".json" or "license" in source.name.lower()
                                  or "notice" in source.name.lower()):
             staged.append((source, Path(source.name)))
+    origins = ROOT / "document/SOURCE-ORIGINS.json"
+    if origins.is_file():
+        staged.append((origins, Path(origins.name)))
     assets = ROOT / "assets"
     if assets.is_dir():
         staged.extend((source, source.relative_to(ROOT)) for source in sorted(assets.rglob("*"))
@@ -162,23 +163,14 @@ def stage_data(directory: Path, sources: list[tuple[Path, Path]]) -> list[tuple[
 
 
 def make_spec(path: Path, data: list[tuple[str, str]], hidden_imports: list[str]) -> None:
-    source = f'''# Generated by tools/build_release.py; upstream programs remain filesystem sources.
-from pathlib import Path
-import sys
+    source = f'''# Generated by tools/build_release.py; feature sources remain filesystem sources.
 from PyInstaller.utils.hooks import collect_all, collect_submodules, collect_dynamic_libs, copy_metadata
 
 datas = {data!r}
 binaries = []
 hiddenimports = {hidden_imports!r}
 
-# Both GPU modules resolve this single package tree from the shared interpreter.
-# No adjacent per-module accelerator copies are bundled.
-binaries += collect_dynamic_libs('tensorrt_libs')
 binaries += collect_dynamic_libs('onnxruntime')
-for entry in sys.path:
-    cuda = Path(entry) / 'nvidia/cuda_runtime/bin'
-    if cuda.is_dir():
-        binaries += [(str(file), 'nvidia/cuda_runtime/bin') for file in cuda.glob('*.dll')]
 
 def production_module(name):
     return not any(part in {{'test', 'tests', 'testing'}} for part in name.split('.'))
@@ -204,9 +196,13 @@ a = Analysis(
     binaries=binaries, datas=datas, hiddenimports=sorted(set(hiddenimports)),
     hookspath=[], hooksconfig={{}}, runtime_hooks=[],
     excludes=['pytest', 'matplotlib', 'IPython', 'tensorflow', 'tensorboard', 'pandas', 'sympy.testing',
-              'torch', 'torchvision', 'ultralytics', 'onnx', 'onnxscript'],
+              'torch', 'torchvision', 'ultralytics', 'onnx', 'onnxscript',
+              'tensorrt', 'tensorrt_libs', 'tensorrt_bindings', 'scipy', 'moderngl'],
     noarchive=False, optimize=0,
 )
+# High & Low uses only the default OCR classifier. Keep its original graph.
+a.datas = [entry for entry in a.datas if entry[0].replace(chr(92), '/') not in
+           ('ddddocr/common.onnx', 'ddddocr/common_det.onnx')]
 pyz = PYZ(a.pure)
 exe = EXE(
     pyz, a.scripts, [], exclude_binaries=True, name='Holodori-Auto',
@@ -285,9 +281,8 @@ def build(output: Path, *, spec_only: bool, create_zip: bool) -> None:
             "built_at_utc": datetime.now(timezone.utc).isoformat(),
             "python": sys.version,
             "packages": package_versions(),
-            "upstream_runtime_files": sum(relative.parts[0] == 'upstream' for _, relative in sources),
-            "bundled_runtime_files": sum(relative.parts[0] == 'components' for _, relative in sources),
-            "upstream_sources_verified": True,
+            "bundled_runtime_files": len(sources),
+            "component_sources_verified": True,
         }
         (bundle / "build-info.json").write_text(json.dumps(info, indent=2) + "\n", encoding="utf-8")
         write_checksums(bundle)
