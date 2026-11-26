@@ -1,12 +1,12 @@
-"""Recognize the move markers printed on each floating tile."""
+"""Read the chess hats and verify language-independent controls."""
 
-from collections import Counter
 from functools import lru_cache
 
 import cv2
 import numpy as np
 
-from solver import BLUE, DOLPHIN, GOLD, KING, ORANGE, TURTLE, WHALE, Position, square
+from hats import observe
+from solver import BLUE, DOLPHIN, GOLD, KING, ORANGE, TURTLE, WHALE, Position, full_inventory, square
 
 
 WIDTH, HEIGHT = 1626, 915
@@ -27,15 +27,13 @@ SELECTED_LEFT = (
     ((630, 553), (782, 553), (778, 685), (624, 685)),
 )
 DEST = np.float32(((0, 0), (99, 0), (99, 99), (0, 99)))
-EDGES = ((7, 7), (50, 7), (92, 7), (7, 50), (92, 50), (7, 92), (50, 92), (92, 92))
-PATTERNS = {
+MOVE_DIAGRAMS = {
     KING: (1, 1, 1, 1, 1, 1, 1, 1),
     WHALE: (1, 0, 1, 0, 0, 1, 0, 1),
     DOLPHIN: (0, 1, 0, 1, 1, 0, 1, 0),
     TURTLE: (0, 0, 0, 0, 1, 0, 0, 0),
     GOLD: (0, 1, 1, 1, 1, 0, 1, 1),
 }
-MIRROR = (2, 1, 0, 4, 3, 7, 6, 5)
 
 
 class VisionError(ValueError):
@@ -89,200 +87,47 @@ def bgr(area):
     return np.moveaxis(area.astype(np.int16), -1, 0)
 
 
-def marker_sample(raster, edge):
-    x, y = EDGES[edge]
-    return raster[y-4:y+5, x-4:x+5]
-
-
-def tile_markers(raster):
-    observed = []
-    weak_orange = []
-    for edge in range(len(EDGES)):
-        blue, green, red = bgr(marker_sample(raster, edge))
-        orange = (red > 200) & (green > 65) & (green < 153) & (blue < 90)
-        fractions = (
-            ((blue > 170) & (green > 120) & (green < 185) & (red < 80)).mean(),
-            orange.mean(),
-            ((blue > 164) & (red > 147) & (abs(blue - red) < 45) & (abs(green - red) < 35)).mean(),
-        )
-        winner = int(np.argmax(fractions))
-        marker = (BLUE, ORANGE, 0)[winner] if fractions[winner] > .48 else None
-        if marker == ORANGE and (orange & (green < 125)).mean() <= .48:
-            weak_orange.append(len(observed))
-        observed.append(marker)
-    # A foreground hammer can look orange on a tile that has blue ink.
-    if BLUE in observed:
-        for index in weak_orange:
-            observed[index] = None
-    return observed
-
-
-def marker_observations(frame):
-    return [tile_markers(tile(frame, index)) for index in range(12)]
-
-
-def raft_white(area):
-    blue, green, red = bgr(area)
-    return ((blue > 225) & (green > 221) & (red > 210)
-            & (blue - red > 5) & (blue - red < 36) & (green - red > 3))
-
-
-def visible_white_edge(raster, observed):
-    for marks, left, right in (((0, 3, 5), 14, 35), ((2, 4, 7), 65, 86)):
-        if (all(observed[index] == 0 for index in marks)
-                and raft_white(raster[14:83, left:right]).mean() > .8):
-            return True
-    return False
-
-
-def turtle_stripe_occluded(raster, observed, piece):
-    stripe, opposite = (4, 3) if piece > 0 else (3, 4)
-    return (observed[opposite] == 0
-            and raft_white(marker_sample(raster, opposite)).mean() >= .8
-            and raft_white(marker_sample(raster, stripe)).mean() <= .15)
-
-
-def pattern(piece):
-    if not piece:
-        return (0,) * 8
-    marks = PATTERNS[abs(piece)]
-    if piece < 0:
-        marks = tuple(marks[i] for i in MIRROR)
-    return tuple((BLUE if piece > 0 else ORANGE) if mark else 0 for mark in marks)
-
-
-def mismatch(observed, expected):
-    return sum(a is not None and a != b for a, b in zip(observed, expected))
-
-
-def hat_scores(frame, index):
-    row = index // 4
-    x, _ = point(index)
-    y = (130, 272, 434)[row] - 30
-    scores = {}
-    for side in (BLUE, ORANGE):
-        cx = x - side * (22 + row * 5)
-        area = frame[y-29:y+26, cx-42:cx+42]
-        h, s, v = np.moveaxis(cv2.cvtColor(area, cv2.COLOR_BGR2HSV), -1, 0)
-        kind = {
-            KING: ((h <= 9) | (h >= 175)) & (s > 145),
-            WHALE: (h >= 108) & (h <= 130) & (s > 128),
-            DOLPHIN: (h >= 142) & (h < 175) & (s > 93),
-            TURTLE: (h >= 37) & (h <= 78) & (s > 100),
-            GOLD: (h >= 19) & (h < 37) & (s > 125),
-        }
-        for piece, mask in kind.items():
-            scores[side * piece] = (mask & (v > 105)).mean()
-    return scores
-
-
-def classify(observed, hats, raster):
-    color_counts = Counter(mark for mark in observed if mark)
-    known = sum(mark is not None for mark in observed)
-    if not color_counts:
-        piece = max(hats, key=hats.get)
-        hat = hats[piece]
-        if known >= 5 or (known == 4 and hat < .23):
-            if known < 7 and hat > .37:
-                # A turtle has one stripe. Light foreground hair can hide it
-                # while the broad marker sample still reads as neutral.
-                if abs(piece) == TURTLE and hat >= .68:
-                    alternate = max((score for other, score in hats.items() if other != piece), default=0)
-                    if hat - alternate >= .25 and turtle_stripe_occluded(raster, observed, piece):
-                        return piece
-                raise VisionError("看到动物帽，阵营标记被挡住")
-            return 0
-        # A foreground hat can cover most of the next tile's surface.
-        if known == 3 and hat < .14 and visible_white_edge(raster, observed):
-            return 0
-        if 0 < known < 4 and hat >= .80 and mismatch(observed, pattern(piece)) == 0:
-            alternate = max((score for other, score in hats.items() if other != piece), default=0)
-            if hat - alternate >= .30:
-                return piece
-        raise VisionError(f"浮台标记不明确 {observed}")
-    hat_matches = sorted(((confidence, piece) for piece, confidence in hats.items()
-                          if color_counts[BLUE if piece > 0 else ORANGE]), reverse=True)
-    if hat_matches:
-        confidence, piece = hat_matches[0]
-        next_best = hat_matches[1][0] if len(hat_matches) > 1 else 0
-        errors = mismatch(observed, pattern(piece))
-        enough_tiles = (known >= 4 and errors <= 3) or (known >= 3 and errors == 0 and confidence >= .55)
-        if confidence >= .38 and confidence - next_best >= .12 and enough_tiles:
-            return piece
-    options = [piece for piece in range(-GOLD, GOLD+1)
-               if piece == 0 or color_counts[BLUE if piece > 0 else ORANGE]]
-    scores = []
-    for piece in options:
-        hat = hats.get(piece, 0)
-        error = mismatch(observed, pattern(piece))
-        penalty = max(0., .19-hat)*8 if piece else 0.
-        scores.append((error + penalty - min(2.1, max(0., hat-.14)*5), piece, error, hat))
-    scores.sort()
-    score, chosen, error, hat = scores[0]
-    if known < (4 if hat > .18 else 5) or error > (3 if hat > .45 else 2) or scores[1][0] - score < .35:
-        raise VisionError(f"浮台标记不明确 {observed}，候选 {scores[:3]}")
-    return chosen
+def observe_board(frame):
+    for index in range(12):
+        row = index // 4
+        x, _ = point(index)
+        y = (100, 242, 404)[row]
+        yield observe(frame[y-46:y+45, x-115:x+115], index)
 
 
 def read_board(frame):
-    pieces = []
-    for square_index in range(12):
-        raster = tile(frame, square_index)
-        try:
-            pieces.append(classify(tile_markers(raster), hat_scores(frame, square_index), raster))
-        except VisionError as e:
-            raise VisionError(f"{square(square_index)} {e}") from e
-    if Counter(pieces)[KING] != 1 or Counter(pieces)[-KING] != 1:
-        raise VisionError("棋盘上应能识别到双方各一枚队长")
-    return tuple(pieces)
+    observations = list(observe_board(frame))
+    crowns = [(index, choices) for index, choices in enumerate(observations)
+              if abs(choices[0]) == KING]
+    if len(crowns) != 2:
+        raise VisionError("棋盤上應有雙方各一枚隊長")
+    (first, one), (second, other) = crowns
+    assignments = [(leader, -leader) for leader in one if -leader in other]
+    if len(assignments) != 1:
+        raise VisionError("暫時無法確認兩枚隊長的朝向")
+    leader, opponent = assignments[0]
+    observations[first], observations[second] = (leader,), (opponent,)
+    for index, choices in enumerate(observations):
+        if len(choices) != 1:
+            raise VisionError(f"{square(index)} 的帽子朝向不明")
+    return tuple(choices[0] for choices in observations)
 
 
 def match_position(frame, candidates, *, previous):
     candidates = set(candidates)
     if not candidates:
-        raise VisionError("预期状态为空")
-    try:
-        board = read_board(frame)
-    except VisionError:
-        board = None
-    if board is not None:
-        matching = [candidate for candidate in candidates if candidate.board == board]
-        if len(matching) == 1:
-            return matching[0]
-        raise VisionError("识别到的棋盘与预期的合法局面不一致")
-    observations = marker_observations(frame)
-    visible = [sum(mark is not None for mark in marks) for marks in observations]
-    if sum(visible) < 65:
-        raise VisionError("棋盘仍在移动或被遮挡")
-
-    sparse_pieces = {}
-    for index, count in enumerate(visible):
-        if count >= 4 or all(previous[index] == pos.board[index] for pos in candidates):
-            continue
-        try:
-            sparse_pieces[index] = classify(observations[index], hat_scores(frame, index), tile(frame, index))
-        except VisionError:
-            continue
-    candidates = [pos for pos in candidates
-                  if all(pos.board[index] == piece for index, piece in sparse_pieces.items())]
-    if not candidates:
-        raise VisionError("被遮挡的棋子与预期的合法局面不一致")
-    scores = [(sum(mismatch(marks, pattern(piece)) for marks, piece in zip(observations, pos.board)), pos)
-              for pos in candidates]
-    scores.sort(key=lambda value: value[0])
-    errors, best = scores[0]
-    if errors > 6 or (len(scores) > 1 and scores[1][0] <= errors + 2):
-        raise VisionError(f"无法唯一确认对方落子，最低标记误差 {errors}")
-    for index, expected in enumerate(best.board):
-        if previous[index] == expected:
-            continue
-        ink = [mark for mark in observations[index] if mark]
-        side = BLUE if expected > 0 else ORANGE if expected < 0 else 0
-        if len(ink) >= 2 and side not in ink:
-            raise VisionError(f"{square(index)} 的浮台颜色与预期落子不符")
-        if visible[index] < 4 and index not in sparse_pieces:
-            raise VisionError(f"{square(index)} 的落子标记被遮挡")
-    return best
+        raise VisionError("預期狀態為空")
+    observations = tuple(observe_board(frame))
+    matching = [candidate for candidate in candidates
+                if all(piece in choices for piece, choices in zip(candidate.board, observations))]
+    if len(matching) != 1:
+        raise VisionError("暫時無法從棋帽確認唯一的合法局面")
+    confirmed = matching[0]
+    changes = [(piece, choices) for before, piece, choices in zip(previous, confirmed.board, observations)
+               if before != piece]
+    if changes and not any(choices == (piece,) for piece, choices in changes):
+        raise VisionError("暫時看不清有變動的棋帽")
+    return confirmed
 
 
 def highlighted(frame, target):
@@ -317,11 +162,11 @@ def selected_piece(frame, piece):
         x, y = 101 + 36*i, 196 + 36*j
         b, g, r = bgr(frame[y-5:y+6, x-5:x+6])
         marks.append(int(((b > 175) & (g > 75) & (g < 180) & (r < 65)).mean() > .55))
-    valid = [PATTERNS[piece]]
+    valid = [MOVE_DIAGRAMS[piece]]
     if piece in (TURTLE, GOLD):
         clockwise = (5, 3, 0, 6, 1, 7, 4, 2)
-        valid.append(tuple(PATTERNS[piece][i] for i in clockwise))
-        valid.append(tuple(PATTERNS[piece][i] for i in reversed(clockwise)))
+        valid.append(tuple(MOVE_DIAGRAMS[piece][i] for i in clockwise))
+        valid.append(tuple(MOVE_DIAGRAMS[piece][i] for i in reversed(clockwise)))
     return tuple(marks) in valid
 
 
@@ -370,5 +215,8 @@ def read_position(frame):
     if not is_ready(frame):
         raise VisionError("尚未確認藍方回合與單人棋盤。")
     board = read_board(frame)
-    return Position(board, *(tuple(sorted(p for _, _, p in hand_read(frame, side)))
-                             for side in (BLUE, ORANGE)))
+    position = Position(board, *(tuple(sorted(p for _, _, p in hand_read(frame, side)))
+                                 for side in (BLUE, ORANGE)))
+    if not full_inventory(position):
+        raise VisionError("棋帽或候補棋子尚未辨識完整")
+    return position
