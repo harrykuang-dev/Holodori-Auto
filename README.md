@@ -6,11 +6,11 @@ Holodori-Auto is a Windows program that automates **High & Low**, **Fishing**, *
 
 ## Download
 
-Download `Holodori-Auto-v1.2.10-windows.7z` from [Releases](https://github.com/harrykuang-dev/Holodori-Auto/releases/latest), extract it with 7-Zip and run `Holodori-Auto.exe`. Keep the complete folder together. Python and CUDA Toolkit do not need to be installed separately.
+Download `Holodori-Auto-v1.3.0-windows.7z` from [Releases](https://github.com/harrykuang-dev/Holodori-Auto/releases/latest), extract it with 7-Zip and run `Holodori-Auto.exe`. Keep the complete folder together. Python and CUDA Toolkit do not need to be installed separately.
 
-Jump Rope and Cooking share TensorRT 10.13, CUDA runtime libraries and DirectML in one package. Compatible NVIDIA GPUs use TensorRT automatically; other supported GPUs use DirectML. Jump Rope requires a compatible GPU; Cooking can also fall back to CPU. Models and device-specific engine caches remain separate.
+The standard package includes DirectML for Jump Rope and Cooking. Jump Rope requires a GPU supported by DirectML or TensorRT. Cooking can fall back to CPU.
 
-> **First-use tip:** On compatible NVIDIA RTX 20-series and newer GPUs, the first use of Jump Rope or Cooking compiles a TensorRT engine for your GPU. Allow about **1–2 minutes**, depending on your hardware and system load. Wait for compilation to finish; the engine is cached for subsequent use.
+For TensorRT on a compatible NVIDIA GPU, download `Holodori-Auto-v1.3.0-tensorrt.7z` from [Releases](https://github.com/harrykuang-dev/Holodori-Auto/releases/latest). Close the program and extract the archive into the folder containing `Holodori-Auto.exe` so that `accelerators/tensorrt/` is beside the executable. Restart the program. The first TensorRT run builds an engine for your GPU and caches it for later runs.
 
 ## Usage
 
@@ -35,10 +35,10 @@ Enter the solo screen of Puka Puka Fight, then choose **Raft Chess** in Holodori
 
 ## Run from source
 
-Use Windows x64 and Python 3.13. Clone with submodules; GitHub's source ZIP does not include them.
+Use Windows x64 and Python 3.13. A regular clone contains the source for all five features.
 
 ```powershell
-git clone --recurse-submodules https://github.com/harrykuang-dev/Holodori-Auto.git
+git clone https://github.com/harrykuang-dev/Holodori-Auto.git
 cd Holodori-Auto
 py -3.13 -m venv .venv
 .\.venv\Scripts\Activate.ps1
@@ -48,7 +48,7 @@ python tools/fetch_models.py
 python main.py
 ```
 
-Dependencies include the shared TensorRT 10.13 and DirectML runtime; PyTorch is no longer required.
+This setup uses DirectML. See the [build and runtime documentation](document/ARCHITECTURE.md) for the optional TensorRT component.
 
 The model command downloads the cooking release's `models.zip` and verifies its pinned size and SHA-256, then verifies every checkpoint before installation. It installs missing models and preserves existing files. If an existing model differs, move it to a backup location before retrying. Cooking automatically loads the selected model when Start is pressed.
 
@@ -62,11 +62,11 @@ With dependencies and cooking models installed:
 python tools/build_release.py --output dist/Holodori-Auto
 ```
 
-Keep the generated portable folder together when distributing or running the program. Dependencies, original resources, and cooking models are included in the build.
+The standard Windows build includes the feature resources and cooking models. Keep the generated portable folder together when running or distributing the program.
 
 ## Development and maintenance
 
-Holodori-Auto has one entry point, `main.py`. Its five features share navigation, language, shortcuts and a portable Windows build. Gameplay and feature-specific diagnostics are organized by feature.
+Holodori-Auto starts at `main.py`. The five features live in `components/` and share navigation, language, shortcuts and the Windows build. The program runs one feature at a time in an isolated process.
 
 | Feature | Technical reference |
 | --- | --- |
@@ -76,8 +76,8 @@ Holodori-Auto has one entry point, `main.py`. Its five features share navigation
 | Cooking | [Development and diagnostics](document/cooking/DEVELOPMENT.md) · [Inference](document/cooking/INFERENCE.md) |
 | Raft Chess | [Board recognition and move tracking](document/raft-chess.md) |
 
-Start with the [technical documentation](document/README.md) for the [architecture and validation commands](document/ARCHITECTURE.md) and [pinned source maintenance](document/UPDATING.md). GitHub Actions checks the source pins, runs the tests and verifies the portable build.
+The [technical documentation](document/README.md) includes the [architecture and validation commands](document/ARCHITECTURE.md) and [maintenance workflow](document/UPDATING.md). GitHub Actions tests the source and verifies the portable build.
 
 ## Notices
 
-Jump Rope 1.3.3 and its YOLO-derived weights use **AGPL-3.0-only**; Fishing uses **MIT**. Existing MIT notices for components referenced by High & Low and Cooking remain included. NVIDIA libraries, other dependencies and game artwork retain their own terms. See [licensing and corresponding source](LICENSES.md). The Release provides `Holodori-Auto-v1.2.10-source.zip` with all four pinned submodule source trees; GitHub’s automatic source archives omit submodules.
+Jump Rope 1.3.3 and its YOLO-derived weights use **AGPL-3.0-only**; Fishing uses **MIT**. Existing MIT notices for components referenced by High & Low and Cooking remain included. NVIDIA libraries, other dependencies and game artwork retain their own terms. See [licensing and corresponding source](LICENSES.md). The [v1.3.0 source archive](https://github.com/harrykuang-dev/Holodori-Auto/archive/refs/tags/v1.3.0.zip) contains all five feature implementations. The [source origins](document/SOURCE-ORIGINS.json) record the original repositories and commits.

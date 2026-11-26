@@ -1,16 +1,12 @@
-# Source programs and notices
+# Third-party notices
 
-Holodori-Auto loads these original programs at the commits recorded in `upstream-lock.json`:
+The five Holodori-Auto features are maintained together. The [source origins](document/SOURCE-ORIGINS.json) record the original source commits. [Licensing and corresponding source](LICENSES.md) describes the scope of each grant and links to historical material.
 
-| Function | Source | Included notices |
+| Feature | Source repository | Notices retained |
 | --- | --- | --- |
-| High & Low | [Hololive-Dreams-High-low-Auto-Personal](https://github.com/harrykuang-dev/Hololive-Dreams-High-low-Auto-Personal) | MIT notices for referenced components: `upstream/high_low/licenses/`; these are not a project-wide license |
-| Fishing | [Hololive-Dreams-Fishing-Auto](https://github.com/harrykuang-dev/Hololive-Dreams-Fishing-Auto) | Original repository license and `assets/NOTICE.md` |
-| Jump Rope | [Hololive-Dreams-Jump-Rope-Auto](https://github.com/harrykuang-dev/Hololive-Dreams-Jump-Rope-Auto) | AGPL-3.0-only: `upstream/jump_rope/LICENSE`, `NOTICE.md`, `models/AGPL-3.0.txt`, `third_party/` |
-| Cooking | [Hololive-Dreams-Collect-Cooking-Auto](https://github.com/harrykuang-dev/Hololive-Dreams-Collect-Cooking-Auto) | Component MIT and runtime notices in `upstream/cooking/third-party/`; no project-wide MIT grant is declared |
+| High & Low | [Hololive-Dreams-High-low-Auto-Personal](https://github.com/harrykuang-dev/Hololive-Dreams-High-low-Auto-Personal) | [MIT component notices](components/high_low/licenses/) |
+| Fishing | [Hololive-Dreams-Fishing-Auto](https://github.com/harrykuang-dev/Hololive-Dreams-Fishing-Auto) | [MIT license](components/fishing/LICENSE) and [artwork notice](components/fishing/assets/NOTICE.md) |
+| Jump Rope | [Hololive-Dreams-Jump-Rope-Auto](https://github.com/harrykuang-dev/Hololive-Dreams-Jump-Rope-Auto) | [AGPL-3.0-only](components/jump_rope/LICENSE), [source notice](components/jump_rope/NOTICE.md), [model license](components/jump_rope/models/AGPL-3.0.txt) and [runtime notices](components/jump_rope/third_party/) |
+| Cooking | [Hololive-Dreams-Collect-Cooking-Auto](https://github.com/harrykuang-dev/Hololive-Dreams-Collect-Cooking-Auto) | [Component MIT and runtime notices](components/cooking/third-party/) |
 
-Source notices, resource notices, model manifests and bundled dependency license files are retained in portable builds. Each original program, model and dependency remains subject to its own terms.
-
-Jump Rope 1.3.3 and its YOLO26-derived model use AGPL-3.0-only. The exact corresponding source is identified by the repository and commit in `upstream-lock.json`; its public training and annotation material remains available in the original repository. The complete pinned source is also attached to the Release. Historical MIT grants and notices remain unchanged. See [licensing and source](LICENSES.md).
-
-TensorRT 10.13.3.9, CUDA runtime 12.9.79 and ONNX Runtime DirectML 1.24.4 are shared by the two GPU modules. Their package licenses and notices are retained with the shared runtime. NVIDIA's system display driver is not redistributed.
+The standard portable build retains the applicable dependency licenses and notices, including ONNX Runtime and DirectML. The optional shared TensorRT package retains NVIDIA's TensorRT and CUDA runtime licenses. NVIDIA's system display driver is supplied separately by the system.

@@ -6,11 +6,11 @@ Holodori-Auto 是一款 Windows 自动化程序，支持 *hololive Dreams* 的**
 
 ## 下载
 
-从 [Releases](https://github.com/harrykuang-dev/Holodori-Auto/releases/latest) 下载 `Holodori-Auto-v1.2.10-windows.7z`，使用 7-Zip 解压后运行 `Holodori-Auto.exe`。请保留完整文件夹，无需另外安装 Python 或 CUDA Toolkit。
+从 [Releases](https://github.com/harrykuang-dev/Holodori-Auto/releases/latest) 下载 `Holodori-Auto-v1.3.0-windows.7z`，使用 7-Zip 解压后运行 `Holodori-Auto.exe`。请保留完整文件夹，无需另外安装 Python 或 CUDA Toolkit。
 
-跳绳与料理共用同一套 TensorRT 10.13、CUDA 运行库与 DirectML。兼容的 NVIDIA GPU 自动使用 TensorRT，其他受支持的 GPU 使用 DirectML。跳绳需要兼容 GPU；料理也可回退到 CPU。各功能保留独立模型与设备引擎缓存。
+标准版内置 DirectML，供跳绳和料理使用。跳绳需要支持 DirectML 或 TensorRT 的 GPU。料理也可回退到 CPU。
 
-> **首次使用提示：** 使用兼容的 NVIDIA RTX 20 系列及更新显卡时，首次使用跳绳或料理需为本机 GPU 编译 TensorRT 引擎，预计约 **1～2 分钟**，实际时间取决于硬件与系统负载。请等待编译完成；引擎会缓存供后续使用。
+兼容的 NVIDIA GPU 可使用可选的 TensorRT 组件。在 [Releases](https://github.com/harrykuang-dev/Holodori-Auto/releases/latest) 下载 `Holodori-Auto-v1.3.0-tensorrt.7z`。关闭程序，将压缩包解压到 `Holodori-Auto.exe` 所在的文件夹。确认 `accelerators/tensorrt/` 位于可执行文件旁，再重新启动程序。首次使用 TensorRT 会为本机 GPU 创建引擎并保留缓存。
 
 ## 使用方式
 
@@ -35,10 +35,10 @@ Holodori-Auto 是一款 Windows 自动化程序，支持 *hololive Dreams* 的**
 
 ## 从源代码运行
 
-使用 Windows x64 与 Python 3.13。克隆仓库时需要一并获取子模块；GitHub 的源代码 ZIP 不包含子模块内容。
+使用 Windows x64 和 Python 3.13。普通克隆即可取得五个功能的源代码。
 
 ```powershell
-git clone --recurse-submodules https://github.com/harrykuang-dev/Holodori-Auto.git
+git clone https://github.com/harrykuang-dev/Holodori-Auto.git
 cd Holodori-Auto
 py -3.13 -m venv .venv
 .\.venv\Scripts\Activate.ps1
@@ -48,7 +48,7 @@ python tools/fetch_models.py
 python main.py
 ```
 
-依赖包含共用的 TensorRT 10.13 与 DirectML 运行环境，不再需要 PyTorch。
+以下步骤使用 DirectML。可选的 TensorRT 组件请参阅[架构与构建说明](document/ARCHITECTURE.md)。
 
 模型安装命令会下载料理对应版本附带的 `models.zip`，核对锁定版本的文件大小与 SHA-256，再逐一验证模型后安装。只安装缺少的模型并保留已有文件；若已有模型内容不同，请先将该文件移至备份位置后重试。料理点击开始后会自动加载所选模型。
 
@@ -62,11 +62,11 @@ python main.py
 python tools/build_release.py --output dist/Holodori-Auto
 ```
 
-运行与分发时请保留生成的完整便携式文件夹。构建内容包含依赖、原始资源与料理模型。
+标准 Windows 构建包含各功能资源和料理模型。运行或分发时请保留生成的完整便携式文件夹。
 
 ## 开发与维护
 
-Holodori-Auto 以 `main.py` 为统一入口。五个功能共享导航、语言、快捷键和 Windows 便携版，各功能分别管理游戏识别与诊断。
+Holodori-Auto 以 `main.py` 为统一入口。五个功能的源代码均位于 `components/`，共用导航、语言、快捷键和 Windows 构建。程序一次在独立进程中运行一个功能。
 
 | 功能 | 技术文档 |
 | --- | --- |
@@ -76,8 +76,8 @@ Holodori-Auto 以 `main.py` 为统一入口。五个功能共享导航、语言�
 | 料理 | [开发与诊断](document/cooking/DEVELOPMENT.md) · [模型推理](document/cooking/INFERENCE.md) |
 | 浮排棋 | [棋盘识别与落子跟踪](document/raft-chess.md) |
 
-[技术文档索引](document/README.md)提供[架构与验证流程](document/ARCHITECTURE.md)及[固定源代码版本的维护方式](document/UPDATING.md)。GitHub Actions 会核对源代码版本、运行测试并验证便携版。
+[技术文档索引](document/README.md)提供[架构与验证流程](document/ARCHITECTURE.md)和[开发维护流程](document/UPDATING.md)。GitHub Actions 会测试源代码并验证便携版。
 
 ## 声明与许可
 
-跳绳 1.3.3 与 YOLO 衍生权重采用 **AGPL-3.0-only**，钓鱼采用 **MIT**。猜高低与料理引用组件的现有 MIT 声明继续保留；NVIDIA 运行库、其他依赖及游戏美术维持各自条款。详见[许可与对应源代码](LICENSES.md)。Release 提供包含四个锁定子模块源代码的 `Holodori-Auto-v1.2.10-source.zip`；GitHub 自动生成的源代码压缩包不含子模块。
+跳绳 1.3.3 与 YOLO 衍生权重采用 **AGPL-3.0-only**，钓鱼采用 **MIT**。猜高低与料理引用组件的现有 MIT 声明继续保留；NVIDIA 运行库、其他依赖及游戏美术维持各自条款。详见[许可与对应源代码](LICENSES.md)。[v1.3.0 源代码压缩包](https://github.com/harrykuang-dev/Holodori-Auto/archive/refs/tags/v1.3.0.zip)包含五个功能的源代码。[来源记录](document/SOURCE-ORIGINS.json)保留原始仓库和提交。

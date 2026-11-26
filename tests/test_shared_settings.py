@@ -2,9 +2,8 @@
 import json
 import os
 from pathlib import Path
-import sys
+import runpy
 import tempfile
-from types import SimpleNamespace
 import unittest
 from unittest import mock
 
@@ -153,11 +152,19 @@ class SharedSettingsTests(unittest.TestCase):
         self.assertFalse(settings.hotkeys_conflict('Ctrl+A', 'Alt+A'))
         self.assertFalse(settings.hotkeys_conflict('Ctrl+Alt+A', 'Ctrl+Shift+A'))
 
-    def test_helper_load_isolated_from_other_upstream_module_names(self):
-        conflicting = SimpleNamespace(parse_stop_hotkey=mock.Mock(side_effect=AssertionError('wrong helper')))
-        with mock.patch.dict(sys.modules, hotkey_settings=conflicting):
-            self.assertEqual(settings.parse_stop_hotkey('F8'), ((), 0x77))
-        conflicting.parse_stop_hotkey.assert_not_called()
+    def test_components_parse_physical_shortcuts_consistently(self):
+        components = Path(__file__).resolve().parents[1] / 'components'
+        for relative_path in (
+            'high_low/hotkey_settings.py',
+            'fishing/app_settings.py',
+            'jump_rope/app_settings.py',
+            'cooking/outputs/kitchen-bot/app_settings.py',
+        ):
+            with self.subTest(component=relative_path):
+                namespace = runpy.run_path(components / relative_path)
+                self.assertEqual(namespace['parse_stop_hotkey']('Ctrl+F8'), ((0x11,), 0x77))
+                self.assertEqual(namespace['captured_hotkey']('F8', 0x8, 0x77), 'F8')
+                self.assertEqual(namespace['captured_hotkey']('F8', 0x20008, 0x77), 'Alt+F8')
 
 
 if __name__ == '__main__':

@@ -6,11 +6,11 @@ Holodori-Auto는 *hololive Dreams*의 **하이&로**, **낚시**, **줄넘기**,
 
 ## 다운로드
 
-[Releases](https://github.com/harrykuang-dev/Holodori-Auto/releases/latest)에서 `Holodori-Auto-v1.2.10-windows.7z`를 다운로드하고 7-Zip으로 압축을 푼 뒤 `Holodori-Auto.exe`를 실행하세요. 전체 폴더를 함께 보관하세요. Python이나 CUDA Toolkit을 별도로 설치할 필요는 없습니다.
+[Releases](https://github.com/harrykuang-dev/Holodori-Auto/releases/latest)에서 `Holodori-Auto-v1.3.0-windows.7z`를 다운로드하고 7-Zip으로 압축을 푼 뒤 `Holodori-Auto.exe`를 실행하세요. 전체 폴더를 함께 보관하세요. Python이나 CUDA Toolkit을 별도로 설치할 필요는 없습니다.
 
-줄넘기와 요리는 한 패키지의 TensorRT 10.13, CUDA 런타임, DirectML을 공유합니다. 호환 NVIDIA GPU는 TensorRT를, 그 외 지원 GPU는 DirectML을 사용합니다. 줄넘기는 호환 GPU가 필요하며 요리는 CPU로도 전환할 수 있습니다. 모델과 장치별 엔진 캐시는 기능마다 별도로 유지됩니다.
+표준 패키지에는 줄넘기와 요리에서 사용하는 DirectML이 포함됩니다. 줄넘기에는 DirectML 또는 TensorRT를 지원하는 GPU가 필요합니다. 요리는 CPU로도 전환할 수 있습니다.
 
-> **첫 사용 안내:** 호환되는 NVIDIA RTX 20 시리즈 이상 GPU에서는 줄넘기나 요리를 처음 사용할 때 해당 GPU용 TensorRT 엔진을 컴파일합니다. 예상 시간은 **1~2분**이며 하드웨어와 시스템 부하에 따라 달라집니다. 완료될 때까지 기다려 주세요. 엔진은 이후 사용을 위해 캐시됩니다.
+호환되는 NVIDIA GPU에서 TensorRT를 사용하려면 [Releases](https://github.com/harrykuang-dev/Holodori-Auto/releases/latest)에서 `Holodori-Auto-v1.3.0-tensorrt.7z`를 다운로드하세요. 프로그램을 종료한 다음 `Holodori-Auto.exe`가 있는 폴더에 압축을 풉니다. 실행 파일 옆에 `accelerators/tensorrt/` 폴더가 있는지 확인하고 프로그램을 다시 실행하세요. TensorRT를 처음 사용하면 해당 GPU의 엔진을 만들고 이후 실행을 위해 캐시에 저장합니다.
 
 ## 사용 방법
 
@@ -35,10 +35,10 @@ Windows 10/11 x64와 Windows용 게임 클라이언트가 필요합니다. 실�
 
 ## 소스에서 실행
 
-Windows x64와 Python 3.13을 사용합니다. 저장소를 복제할 때 서브모듈도 함께 가져와야 합니다. GitHub의 소스 ZIP에는 서브모듈 내용이 포함되지 않습니다.
+Windows x64와 Python 3.13을 사용합니다. 일반적인 복제 명령으로 다섯 기능의 소스를 모두 받을 수 있습니다.
 
 ```powershell
-git clone --recurse-submodules https://github.com/harrykuang-dev/Holodori-Auto.git
+git clone https://github.com/harrykuang-dev/Holodori-Auto.git
 cd Holodori-Auto
 py -3.13 -m venv .venv
 .\.venv\Scripts\Activate.ps1
@@ -48,7 +48,7 @@ python tools/fetch_models.py
 python main.py
 ```
 
-의존성에는 공통 TensorRT 10.13 및 DirectML 런타임이 포함됩니다. PyTorch는 더 이상 필요하지 않습니다.
+아래 절차는 DirectML을 사용합니다. 선택 사항인 TensorRT 구성 요소는 [구조 및 빌드 문서](document/ARCHITECTURE.md)를 참조하세요.
 
 모델 설치 명령은 요리의 해당 릴리스에서 `models.zip`을 다운로드하고, 고정된 파일 크기와 SHA-256을 대조합니다. 각 모델도 검증한 후 누락된 모델만 설치합니다. 기존 파일은 유지합니다. 기존 모델의 내용이 다르면 해당 파일을 백업 위치로 이동한 후 다시 실행하세요. 요리는 시작을 누르면 선택한 모델을 자동으로 불러옵니다.
 
@@ -62,11 +62,11 @@ python main.py
 python tools/build_release.py --output dist/Holodori-Auto
 ```
 
-실행하거나 배포할 때 생성된 포터블 폴더 전체를 유지하세요. 빌드에는 의존성, 원본 리소스, 요리 모델이 포함됩니다.
+표준 Windows 빌드에는 각 기능의 리소스와 요리 모델이 포함됩니다. 실행하거나 배포할 때 생성된 포터블 폴더 전체를 함께 보관하세요.
 
 ## 개발 및 유지보수
 
-`main.py` 하나에서 다섯 기능을 사용할 수 있습니다. 탐색 메뉴, 언어, 단축키, Windows 포터블 빌드를 공유합니다.
+Holodori-Auto는 `main.py`로 시작합니다. 다섯 기능의 소스는 `components/`에 있으며 탐색, 언어, 단축키, Windows 빌드를 공유합니다. 한 번에 한 기능을 별도의 프로세스에서 실행합니다.
 
 | 기능 | 기술 자료 |
 | --- | --- |
@@ -76,8 +76,8 @@ python tools/build_release.py --output dist/Holodori-Auto
 | 요리 | [개발 및 진단](document/cooking/DEVELOPMENT.md) · [추론](document/cooking/INFERENCE.md) |
 | 뗏목 장기 | [보드 인식과 수 추적](document/raft-chess.md) |
 
-[기술 문서 목록](document/README.md)에서 [구조 및 검증 절차](document/ARCHITECTURE.md)와 [고정된 소스 버전의 관리 방법](document/UPDATING.md)을 확인할 수 있습니다. GitHub Actions는 소스 버전, 테스트 및 포터블 빌드를 검증합니다.
+[기술 문서 목록](document/README.md)에서 [구조 및 검증 절차](document/ARCHITECTURE.md)와 [개발 및 유지보수 절차](document/UPDATING.md)를 확인할 수 있습니다. GitHub Actions는 소스를 테스트하고 포터블 빌드를 검증합니다.
 
 ## 권리 및 라이선스
 
-줄넘기 1.3.3과 YOLO 파생 가중치는 **AGPL-3.0-only**, 낚시는 **MIT**를 사용합니다. 하이&로와 요리가 참조하는 구성 요소의 기존 MIT 고지는 유지됩니다. NVIDIA 런타임, 기타 의존성 및 게임 이미지에는 각각의 조건이 적용됩니다. [라이선스 및 대응 소스](LICENSES.md)를 참조하세요. Release의 `Holodori-Auto-v1.2.10-source.zip`에는 고정된 네 서브모듈의 소스가 포함됩니다. GitHub가 자동 생성하는 소스 압축 파일에는 서브모듈이 포함되지 않습니다.
+줄넘기 1.3.3과 YOLO 파생 가중치는 **AGPL-3.0-only**, 낚시는 **MIT**를 사용합니다. 하이&로와 요리가 참조하는 구성 요소의 기존 MIT 고지는 유지됩니다. NVIDIA 런타임, 기타 의존성 및 게임 이미지에는 각각의 조건이 적용됩니다. [라이선스 및 대응 소스](LICENSES.md). [v1.3.0 소스 압축 파일](https://github.com/harrykuang-dev/Holodori-Auto/archive/refs/tags/v1.3.0.zip)에는 다섯 기능의 소스가 포함됩니다. [소스 출처](document/SOURCE-ORIGINS.json)에서 원본 저장소와 커밋을 확인할 수 있습니다.

@@ -4,7 +4,6 @@ from __future__ import annotations
 import argparse
 import ctypes
 import importlib
-import importlib.util
 import os
 import re
 from pathlib import Path
@@ -14,24 +13,13 @@ import traceback
 
 from holodori.channel import read_json, write_json
 from holodori.modules import BY_ID
-
-LANGUAGES = ('繁體中文', 'English', '日本語', '한국어', 'Indonesian', '简体中文')
-_HOTKEY_CONTRACT = None
+from holodori.settings import LANGUAGES, hotkeys_conflict
 
 
 def validate_shared_settings(language, start_key, stop_key):
-    """Use the unchanged Windows physical-key parser for every component."""
-    global _HOTKEY_CONTRACT
     if language not in LANGUAGES:
         raise ValueError(f'Unsupported language: {language}')
-    if _HOTKEY_CONTRACT is None:
-        path = BY_ID['high_low'].path / 'hotkey_settings.py'
-        spec = importlib.util.spec_from_file_location('_holodori_hotkey_contract', path)
-        _HOTKEY_CONTRACT = importlib.util.module_from_spec(spec)
-        spec.loader.exec_module(_HOTKEY_CONTRACT)
-    first, first_key = _HOTKEY_CONTRACT.parse_stop_hotkey(start_key)
-    second, second_key = _HOTKEY_CONTRACT.parse_stop_hotkey(stop_key)
-    if first_key == second_key and (set(first) <= set(second) or set(second) <= set(first)):
+    if hotkeys_conflict(start_key, stop_key):
         raise ValueError('Start and stop shortcuts conflict')
 
 
@@ -312,8 +300,7 @@ def capture_window_size(root):
 def activate_source(module_id):
     module = BY_ID[module_id]
     if not (module.path / (module.entry + '.py')).is_file():
-        hint = '' if module.bundled else ' Run git submodule update --init --recursive.'
-        raise FileNotFoundError(f'Missing component source: {module.path}.{hint}')
+        raise FileNotFoundError(f'Missing component source: {module.path}')
     os.chdir(module.path)
     sys.path.insert(0, str(module.path))
     return module
@@ -327,6 +314,41 @@ def cooking_worker():
     backend = importlib.import_module('inference_backend')
     backend.MODEL_DIRECTORY = module.path / 'models' / 'inference'
     runpy.run_path(str(module.path / 'gui.py'), run_name='__main__')
+
+
+def check_high_low():
+    """Exercise the packaged OCR and poker optimizer without game capture."""
+    import json
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--check-high-low-only', action='store_true')
+    parser.add_argument('--fixture', type=Path, required=True)
+    parser.add_argument('--report', type=Path, required=True)
+    args = parser.parse_args()
+    fixture, report = args.fixture.resolve(), args.report.resolve()
+    activate_source('high_low')
+    try:
+        import cv2
+        import numpy as np
+        from auto_bot import ocr
+        from poker_core import verify_engine
+        from reward_vision import read_result_number
+
+        frame = cv2.imdecode(np.fromfile(fixture, dtype=np.uint8), cv2.IMREAD_COLOR)
+        if frame is None:
+            raise ValueError('Cannot read the settlement reference frame')
+        if frame.shape[:2] != (1080, 1920):
+            frame = cv2.resize(frame[30:], (1920, 1080), interpolation=cv2.INTER_CUBIC)
+        reward = read_result_number(frame, (990, 290, 600, 150), ocr)
+        if reward != 12800:
+            raise ValueError(f'Expected a settlement of 12800, got {reward!r}')
+        verify_engine()
+        result = dict(passed=True, reward=reward, optimizer_verified=True, game_inputs_sent=0)
+    except Exception:
+        result = dict(passed=False, error=traceback.format_exc(), game_inputs_sent=0)
+    report.parent.mkdir(parents=True, exist_ok=True)
+    report.write_text(json.dumps(result, indent=2), encoding='utf-8')
+    if not result['passed']:
+        raise SystemExit(1)
 
 
 def check_jump_model():

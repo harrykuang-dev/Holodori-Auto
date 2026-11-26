@@ -1,0 +1,11 @@
+.venv/
+__pycache__/
+*.pyc
+profiles/
+screenshots/
+sessions/
+tmp/
+dist/
+build/
+*.spec
+gui_preview*.png

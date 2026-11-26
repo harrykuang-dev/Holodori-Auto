@@ -1,20 +1,16 @@
 """Shared interface language and physical shortcuts for Holodori-Auto.
 
-Keyboard conversion uses the pinned High & Low implementation directly. The
-shared preferences have their own data directory; original module data is read
-only when seeding the first launch.
+Shared preferences have their own directory. High & Low preferences seed
+the first launch when available.
 """
 from __future__ import annotations
 
-from functools import lru_cache
-import importlib.util
 import json
 import os
 from pathlib import Path
-import sys
 import tempfile
 
-from .modules import BY_ID
+from .physical_keys import NAMED_KEYS, captured_hotkey, parse_stop_hotkey as _parse_stop_hotkey
 
 
 LANGUAGES = ('繁體中文', 'English', '日本語', '한국어', 'Indonesian', '简体中文')
@@ -29,32 +25,10 @@ def settings_path() -> Path:
     return _data_root() / 'HolodoriAuto' / 'settings.json'
 
 
-@lru_cache(maxsize=1)
-def _load_helper(path: str):
-    # A distinct name avoids collisions with other modules' shortcut helpers.
-    name = '_holodori_upstream_high_low_hotkey_settings'
-    spec = importlib.util.spec_from_file_location(name, path)
-    if spec is None or spec.loader is None:
-        raise ImportError(f'Cannot load the upstream shortcut helper: {path}')
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    sys.modules[name] = module
-    return module
-
-
-def _helper():
-    return _load_helper(str(BY_ID['high_low'].path / 'hotkey_settings.py'))
-
-
 def parse_stop_hotkey(value: str):
     if not isinstance(value, str):
         raise ValueError('A shortcut must be a string')
-    return _helper().parse_stop_hotkey(value)
-
-
-def captured_hotkey(keysym: str, state: int = 0, keycode: int = 0):
-    """Use Windows Tk modifier bits and physical keys from the original helper."""
-    return _helper().captured_hotkey(keysym, state, keycode)
+    return _parse_stop_hotkey(value)
 
 
 def hotkeys_conflict(first: str, second: str) -> bool:
@@ -75,7 +49,7 @@ def canonical_hotkey(value: str) -> str:
     elif 0x30 <= keycode <= 0x39 or 0x41 <= keycode <= 0x5A:
         key = chr(keycode)
     else:
-        key = next(name for name, code in _helper().NAMED_KEYS.items() if code == keycode)
+        key = next(name for name, code in NAMED_KEYS.items() if code == keycode)
     prefixes = [name for code, name in ((0x11, 'Ctrl'), (0x12, 'Alt'), (0x10, 'Shift')) if code in modifiers]
     return '+'.join([*prefixes, key])
 

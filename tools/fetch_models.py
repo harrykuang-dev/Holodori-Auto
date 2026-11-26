@@ -17,7 +17,7 @@ import zipfile
 
 
 ROOT = Path(__file__).resolve().parents[1]
-COOKING_ROOT = ROOT / "upstream" / "cooking"
+COOKING_ROOT = ROOT / "components" / "cooking"
 RELEASE_BASE = (
     "https://github.com/harrykuang-dev/"
     "Hololive-Dreams-Collect-Cooking-Auto/releases/download"
@@ -76,7 +76,7 @@ def load_manifest(cooking_root: Path = COOKING_ROOT) -> dict:
     try:
         manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError) as error:
-        raise ModelError(f"Cannot read {manifest_path}; initialize the submodules first") from error
+        raise ModelError(f"Cannot read {manifest_path}") from error
     if not isinstance(manifest, dict) or not isinstance(manifest.get("files"), dict) or not manifest["files"]:
         raise ModelError("The cooking manifest has no checkpoint files")
     _validate_fingerprint(

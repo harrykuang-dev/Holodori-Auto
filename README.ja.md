@@ -6,11 +6,11 @@ Holodori-Auto は、*hololive Dreams* のミニゲーム **ハイ＆ロー**、*
 
 ## ダウンロード
 
-[Releases](https://github.com/harrykuang-dev/Holodori-Auto/releases/latest) から `Holodori-Auto-v1.2.10-windows.7z` をダウンロードし、7-Zip で展開して `Holodori-Auto.exe` を実行してください。フォルダー全体を保持してください。Python や CUDA Toolkit の別途インストールは不要です。
+[Releases](https://github.com/harrykuang-dev/Holodori-Auto/releases/latest) から `Holodori-Auto-v1.3.0-windows.7z` をダウンロードし、7-Zip で展開して `Holodori-Auto.exe` を実行してください。フォルダー全体を保持してください。Python や CUDA Toolkit の別途インストールは不要です。
 
-縄跳びと料理は、一つのパッケージ内の TensorRT 10.13、CUDA ランタイム、DirectML を共有します。対応する NVIDIA GPU では TensorRT、それ以外の対応 GPU では DirectML を使用します。縄跳びには対応 GPU が必要です。料理は CPU にもフォールバックできます。モデルとデバイス固有のエンジンキャッシュは各機能で独立しています。
+標準版には縄跳びと料理用の DirectML が含まれます。縄跳びには DirectML または TensorRT に対応する GPU が必要です。料理は CPU にも切り替えられます。
 
-> **初回使用時のヒント：** 対応する NVIDIA RTX 20 シリーズ以降の GPU では、縄跳びまたは料理の初回使用時に、その GPU 用の TensorRT エンジンをコンパイルします。目安は **1～2分**ですが、ハードウェアやシステム負荷によって異なります。完了までお待ちください。エンジンは次回以降の使用のためにキャッシュされます。
+対応する NVIDIA GPU で TensorRT を使用する場合は、[Releases](https://github.com/harrykuang-dev/Holodori-Auto/releases/latest) から `Holodori-Auto-v1.3.0-tensorrt.7z` をダウンロードします。プログラムを終了し、`Holodori-Auto.exe` と同じフォルダーに展開します。実行ファイルの隣に `accelerators/tensorrt/` ができたことを確認し、プログラムを起動し直してください。TensorRT の初回使用時に GPU 用のエンジンが作成され、次回以降に再利用されます。
 
 ## 使い方
 
@@ -35,10 +35,10 @@ Windows 10/11 x64 と Windows 版ゲームが必要です。実行中はゲー�
 
 ## ソースから実行
 
-Windows x64 と Python 3.13 を使用します。リポジトリはサブモジュールを含めてクローンしてください。GitHub のソース ZIP にはサブモジュールの内容が含まれません。
+Windows x64 と Python 3.13 を使用します。通常のクローンで五つの機能のソースコードを取得できます。
 
 ```powershell
-git clone --recurse-submodules https://github.com/harrykuang-dev/Holodori-Auto.git
+git clone https://github.com/harrykuang-dev/Holodori-Auto.git
 cd Holodori-Auto
 py -3.13 -m venv .venv
 .\.venv\Scripts\Activate.ps1
@@ -48,7 +48,7 @@ python tools/fetch_models.py
 python main.py
 ```
 
-依存関係には共通の TensorRT 10.13 と DirectML ランタイムが含まれます。PyTorch は不要です。
+以下の手順では DirectML を使用します。オプションの TensorRT コンポーネントについては[構成とビルドの説明](document/ARCHITECTURE.md)を参照してください。
 
 モデルのインストールコマンドは、料理の対応リリースから `models.zip` を取得し、固定されたファイルサイズと SHA-256 を照合します。各モデルも検証してから、不足しているものだけをインストールします。既存のファイルは保持されます。既存モデルの内容が異なる場合は、そのファイルをバックアップ先へ移動してから再実行してください。料理では開始を押すと選択したモデルを自動的に読み込みます。
 
@@ -62,11 +62,11 @@ python main.py
 python tools/build_release.py --output dist/Holodori-Auto
 ```
 
-実行・配布時には、生成されたポータブルフォルダー全体を保持してください。依存関係、元のリソース、料理モデルがビルドに含まれます。
+標準の Windows ビルドには各機能のリソースと料理モデルが含まれます。実行や配布の際は、生成されたポータブルフォルダーを一式保持してください。
 
 ## 開発とメンテナンス
 
-`main.py` から五つの機能を使用できます。ナビゲーション、言語、ショートカット、Windows ポータブル版は共通です。
+Holodori-Auto は `main.py` から起動します。五つの機能のソースは `components/` にあり、ナビゲーション、言語、ショートカット、Windows ビルドを共有します。一度に一つの機能を独立したプロセスで実行します。
 
 | 機能 | 技術資料 |
 | --- | --- |
@@ -76,8 +76,8 @@ python tools/build_release.py --output dist/Holodori-Auto
 | 料理 | [開発と診断](document/cooking/DEVELOPMENT.md) · [推論](document/cooking/INFERENCE.md) |
 | いかだ将棋 | [盤面認識と着手の追跡](document/raft-chess.md) |
 
-[技術資料一覧](document/README.md)から[アーキテクチャーと検証手順](document/ARCHITECTURE.md)、[ソースの固定と更新](document/UPDATING.md)を参照できます。GitHub Actions でソースの固定バージョン、テスト、ポータブル版を検証します。
+[技術資料一覧](document/README.md)から[アーキテクチャーと検証手順](document/ARCHITECTURE.md)、[開発と保守の手順](document/UPDATING.md)を参照できます。GitHub Actions はソースをテストし、ポータブル版を検証します。
 
 ## 権利とライセンス
 
-縄跳び 1.3.3 と YOLO 派生重みは **AGPL-3.0-only**、釣りは **MIT** です。ハイ＆ローと料理が参照するコンポーネントの既存 MIT 通知は保持されています。NVIDIA ランタイム、その他の依存関係、ゲーム画像にはそれぞれの条件が適用されます。[ライセンスと対応ソース](LICENSES.md)を参照してください。Release の `Holodori-Auto-v1.2.10-source.zip` には固定された四つのサブモジュールのソースが含まれます。GitHub の自動生成ソースアーカイブにはサブモジュールが含まれません。
+縄跳び 1.3.3 と YOLO 派生重みは **AGPL-3.0-only**、釣りは **MIT** です。ハイ＆ローと料理が参照するコンポーネントの既存 MIT 通知は保持されています。NVIDIA ランタイム、その他の依存関係、ゲーム画像にはそれぞれの条件が適用されます。[ライセンスと対応ソース](LICENSES.md). [v1.3.0 のソースアーカイブ](https://github.com/harrykuang-dev/Holodori-Auto/archive/refs/tags/v1.3.0.zip)には五つの機能のソースが含まれます。[ソースの由来](document/SOURCE-ORIGINS.json)に元のリポジトリとコミットを記録しています。

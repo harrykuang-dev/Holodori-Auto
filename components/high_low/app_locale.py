@@ -1,0 +1,68 @@
+"""Six-language UI; game nouns verified against extracted master tables."""
+APP_VERSION = '1.1.4'
+LANGUAGES = {'English':'en', '繁體中文':'tw', '日本語':'ja', '한국어':'ko', 'Indonesian':'id', '简体中文':'zh'}
+TEXT = {
+ 'tw': dict(reset='重設當日記錄', reset_confirm='確定將今日入帳、淨利、勝敗次數及三階段進度歸零？此操作無法復原。', daily_reset='當日記錄已歸零。', reset_error='無法保存歸零結果，請確認資料目錄可寫入。', game='比大小', currency='硬幣', title='自動比大小', language='語言/Language', strategy='策略', legacy='1.0.1 原版', phased='三階段：最大 → 計次 → 最大', start_key='開始快捷鍵', stop_key='停止快捷鍵', start='開始', stop='停止', ready='等待開始', running='執行中', stopping='正在停止…', stopped='已停止', instructions='先進入遊戲比大小畫面，再點擊「開始」', coins='今日硬幣：{coins:,} / 20,000', profit='淨利：{profit:+,}', counts='勝局：{wins}　敗局：{fails}', unknown_profit='淨利：無法確認（舊紀錄缺少勝局次數）', capture='請按下快捷鍵…', duplicate='開始與停止快捷鍵不能相同。', hotkey_error='無法註冊快捷鍵 {key}，可能已被其他程式使用。', error='執行失敗', credit='已入帳 {amount:,} 硬幣', failed='本局失敗，已扣除 50 硬幣投入。', NO_WINDOW='等待遊戲視窗', UNKNOWN='等待可辨識畫面', START_BET='開始新一局', HOLD_CARDS='選擇保留牌', TAP_TO_PROCEED='繼續遊戲', ASK_CHALLENGE='判斷是否翻倍', HIGH_LOW='比大小進行中', FAIL='本局失敗', RESULT='核對結算'),
+ 'zh': dict(reset='重置当日记录', reset_confirm='确定将今日入账、净利、胜败次数及三阶段进度归零？此操作无法撤销。', daily_reset='当日记录已归零。', reset_error='无法保存归零结果，请确认数据文件夹可写入。', game='猜高低', currency='代币', title='自动猜高低', language='语言/Language', strategy='策略', legacy='1.0.1 原版', phased='三阶段：最大 → 计次 → 最大', start_key='开始快捷键', stop_key='停止快捷键', start='开始', stop='停止', ready='等待开始', running='运行中', stopping='正在停止…', stopped='已停止', instructions='先进入游戏猜高低画面，再点击「开始」', coins='今日代币：{coins:,} / 20,000', profit='净利：{profit:+,}', counts='胜局：{wins}　败局：{fails}', unknown_profit='净利：无法确认（旧记录缺少胜局次数）', capture='请按下快捷键…', duplicate='开始与停止快捷键不能相同。', hotkey_error='无法注册快捷键 {key}，可能已被其他程序使用。', error='运行失败', credit='已入账 {amount:,} 代币', failed='本局失败，已扣除 50 代币投入。', NO_WINDOW='等待游戏窗口', UNKNOWN='等待可识别画面', START_BET='开始新一局', HOLD_CARDS='选择保留牌', TAP_TO_PROCEED='继续游戏', ASK_CHALLENGE='判断是否翻倍', HIGH_LOW='猜高低进行中', FAIL='本局失败', RESULT='核对结算'),
+ 'en': dict(reset='Reset daily records', reset_confirm='Reset today’s rewards, net profit, wins, losses and three-stage progress? This cannot be undone.', daily_reset='Daily records reset.', reset_error='Cannot save the reset. Check that the data folder is writable.', game='High & Low', currency='Coins', title='High & Low Auto', language='Language', strategy='Strategy', legacy='1.0.1 Original', phased='3 stages: Max → Win count → Max', start_key='Start shortcut', stop_key='Stop shortcut', start='Start', stop='Stop', ready='Ready', running='Running', stopping='Stopping…', stopped='Stopped', instructions='Open the game’s High & Low screen, then click “Start”.', coins='Coins today: {coins:,} / 20,000', profit='Net profit: {profit:+,}', counts='Wins: {wins}    Losses: {fails}', unknown_profit='Net profit unavailable: old records have no win count.', capture='Press a shortcut…', duplicate='Start and stop shortcuts must be different.', hotkey_error='Cannot register {key}; another app may be using it.', error='Run failed', credit='Credited {amount:,} Coins', failed='Round lost; 50 Coins entry cost recorded.', NO_WINDOW='Waiting for the game window', UNKNOWN='Waiting for a recognized screen', START_BET='Starting a round', HOLD_CARDS='Choosing cards to hold', TAP_TO_PROCEED='Continuing', ASK_CHALLENGE='Considering Double Up', HIGH_LOW='Playing High & Low', FAIL='Round lost', RESULT='Checking settlement'),
+ 'ja': dict(reset='当日の記録をリセット', reset_confirm='今日の報酬、純利益、勝敗回数、3段階の進行状況をリセットしますか？この操作は取り消せません。', daily_reset='当日の記録をリセットしました。', reset_error='リセット結果を保存できません。データフォルダーに書き込めるか確認してください。', game='ハイ&ロー', currency='コイン', title='自動ハイ&ロー', language='言語/Language', strategy='戦略', legacy='1.0.1 オリジナル', phased='3段階：最大 → 成功回数 → 最大', start_key='開始ショートカット', stop_key='停止ショートカット', start='開始', stop='停止', ready='待機中', running='実行中', stopping='停止中…', stopped='停止しました', instructions='ゲームのハイ&ロー画面を開いてから「開始」をクリックしてください。', coins='今日のコイン：{coins:,} / 20,000', profit='純利益：{profit:+,}', counts='勝利：{wins}　敗北：{fails}', unknown_profit='純利益：算出不可（以前の記録に勝利回数がありません）', capture='キーを押してください…', duplicate='開始と停止には異なるキーを指定してください。', hotkey_error='{key} を登録できません。他のアプリで使用されている可能性があります。', error='実行エラー', credit='{amount:,} コインを記録', failed='敗北しました。参加費 50 コインを計上しました。', NO_WINDOW='ゲームウィンドウを待機中', UNKNOWN='画面認識を待機中', START_BET='新しいラウンドを開始', HOLD_CARDS='残すカードを選択中', TAP_TO_PROCEED='続行中', ASK_CHALLENGE='ダブルアップを判断中', HIGH_LOW='ハイ&ロー実行中', FAIL='敗北', RESULT='結果を確認中'),
+ 'ko': dict(reset='당일 기록 초기화', reset_confirm='오늘의 보상, 순이익, 승패 횟수 및 3단계 진행 상황을 초기화하시겠습니까? 이 작업은 취소할 수 없습니다.', daily_reset='당일 기록을 초기화했습니다.', reset_error='초기화 결과를 저장할 수 없습니다. 데이터 폴더에 쓰기 권한이 있는지 확인하세요.', game='하이&로', currency='코인', title='하이&로 자동 플레이', language='언어/Language', strategy='전략', legacy='1.0.1 기본', phased='3단계: 최대 → 성공 횟수 → 최대', start_key='시작 단축키', stop_key='중지 단축키', start='시작', stop='중지', ready='대기 중', running='실행 중', stopping='중지 중…', stopped='중지됨', instructions='게임의 하이&로 화면을 연 다음 “시작”을 클릭하세요.', coins='오늘의 코인: {coins:,} / 20,000', profit='순이익: {profit:+,}', counts='승리: {wins}    패배: {fails}', unknown_profit='순이익 계산 불가: 이전 기록에 승리 횟수가 없습니다.', capture='단축키를 누르세요…', duplicate='시작과 중지 단축키는 달라야 합니다.', hotkey_error='{key} 등록 실패. 다른 앱에서 사용 중일 수 있습니다.', error='실행 오류', credit='{amount:,} 코인 기록됨', failed='패배했습니다. 참가 비용 50 코인을 반영했습니다.', NO_WINDOW='게임 창 대기 중', UNKNOWN='인식 가능한 화면 대기 중', START_BET='새 라운드 시작', HOLD_CARDS='남길 카드 선택 중', TAP_TO_PROCEED='계속 진행 중', ASK_CHALLENGE='더블 업 판단 중', HIGH_LOW='하이&로 진행 중', FAIL='패배', RESULT='결과 확인 중'),
+ 'id': dict(reset='Reset catatan harian', reset_confirm='Reset hadiah hari ini, laba bersih, jumlah kemenangan dan kekalahan, serta kemajuan tiga tahap? Tindakan ini tidak dapat dibatalkan.', daily_reset='Catatan harian telah direset.', reset_error='Hasil reset tidak dapat disimpan. Pastikan folder data dapat ditulisi.', game='High & Low', currency='Koin', title='High & Low Otomatis', language='Bahasa/Language', strategy='Strategi', legacy='1.0.1 Asli', phased='3 tahap: Maks → Jumlah menang → Maks', start_key='Pintasan mulai', stop_key='Pintasan berhenti', start='Mulai', stop='Berhenti', ready='Siap', running='Berjalan', stopping='Menghentikan…', stopped='Berhenti', instructions='Buka layar High & Low dalam game, lalu klik “Mulai”.', coins='Koin hari ini: {coins:,} / 20.000', profit='Laba bersih: {profit:+,}', counts='Menang: {wins}    Kalah: {fails}', unknown_profit='Laba bersih belum diketahui: catatan lama tanpa jumlah kemenangan.', capture='Tekan pintasan…', duplicate='Pintasan mulai dan berhenti harus berbeda.', hotkey_error='Tidak dapat mendaftarkan {key}; mungkin dipakai aplikasi lain.', error='Gagal berjalan', credit='{amount:,} Koin dicatat', failed='Ronde kalah; biaya masuk 50 Koin dicatat.', NO_WINDOW='Menunggu jendela game', UNKNOWN='Menunggu layar yang dikenali', START_BET='Memulai ronde', HOLD_CARDS='Memilih kartu untuk disimpan', TAP_TO_PROCEED='Melanjutkan', ASK_CHALLENGE='Mempertimbangkan Double Up', HIGH_LOW='Bermain High & Low', FAIL='Ronde kalah', RESULT='Memeriksa hasil'),
+}
+
+STRATEGY_TEXT = {
+ 'tw': dict(legacy='穩健', phased='激進', strategy_help='策略說明', close='關閉',
+     legacy_help='依下一輪勝率、目前可領取獎金及今日累計，判斷是否繼續翻倍。先以累計 19,800 為界調整領取時機；達到此累計後，繼續翻倍至單局可領取至少 10,000。',
+     phased_help='依序完成三個階段：第 1、3 階段持續翻倍，直到遊戲自動結算；第 2 階段依起手獎金設定翻倍成功次數，目標接近 6,400，並保留第 3 階段的額度。失敗時重試目前階段，第三次成功結算後停止。'),
+ 'zh': dict(legacy='稳健', phased='激进', strategy_help='策略说明', close='关闭',
+     legacy_help='根据下一轮胜率、当前可领取奖金及今日累计，判断是否继续翻倍。先以累计 19,800 为界调整领取时机；达到此累计后，继续翻倍至单局可领取至少 10,000。',
+     phased_help='依次完成三个阶段：第 1、3 阶段持续翻倍，直到游戏自动结算；第 2 阶段根据起手奖金设定翻倍成功次数，目标接近 6,400，并保留第 3 阶段的额度。失败时重试当前阶段，第三次成功结算后停止。'),
+ 'en': dict(legacy='Conservative', phased='Aggressive', strategy_help='Strategy guide', close='Close',
+     legacy_help='Decides whether to double up based on the next round’s win probability, the available payout and today’s total. Uses 19,800 as the daily payout threshold; after reaching it, keeps doubling until the available payout is at least 10,000.',
+     phased_help='Completes three stages in order. Stages 1 and 3 keep doubling until the game settles automatically. Stage 2 sets a number of successful doubles from the initial reward, aiming near 6,400 while leaving room for stage 3. A loss retries the current stage. Stops after the third successful settlement.'),
+ 'ja': dict(legacy='慎重', phased='積極', strategy_help='戦略の説明', close='閉じる',
+     legacy_help='次の勝率、受け取れる報酬、今日の合計に応じてダブルアップを続けるか判断します。合計 19,800 を基準に報酬を受け取るタイミングを調整し、到達後は1回の報酬が 10,000 以上になるまで続けます。',
+     phased_help='3段階を順番に進めます。第1・第3段階はゲームが自動精算するまでダブルアップを続けます。第2段階は最初の報酬から成功回数を決め、6,400 に近い報酬を目指しながら第3段階の余地を残します。負けた場合は同じ段階を再挑戦し、3回目の精算成功後に停止します。'),
+ 'ko': dict(legacy='신중', phased='공격적', strategy_help='전략 설명', close='닫기',
+     legacy_help='다음 판의 승률, 현재 받을 수 있는 보상과 오늘의 합계에 따라 더블 업을 계속할지 결정합니다. 합계 19,800을 기준으로 보상을 받는 시점을 조절하며, 도달한 뒤에는 한 판의 보상이 10,000 이상이 될 때까지 계속합니다.',
+     phased_help='세 단계를 순서대로 진행합니다. 1·3단계는 게임이 자동으로 정산할 때까지 더블 업을 계속합니다. 2단계는 첫 보상에 따라 성공 횟수를 정해 6,400에 가까운 보상을 목표로 하며 3단계 진행 여유를 남깁니다. 패배하면 현재 단계를 다시 시도하고, 세 번째 정산 성공 후 중지합니다.'),
+ 'id': dict(legacy='Konservatif', phased='Agresif', strategy_help='Panduan strategi', close='Tutup',
+     legacy_help='Memutuskan apakah akan melanjutkan Double Up berdasarkan peluang menang berikutnya, hadiah yang dapat diambil, dan total hari ini. Menggunakan total 19.800 sebagai acuan pengambilan hadiah; setelah tercapai, terus menggandakan hingga hadiah satu ronde setidaknya 10.000.',
+     phased_help='Menyelesaikan tiga tahap secara berurutan. Tahap 1 dan 3 terus menggandakan hingga game menyelesaikan ronde secara otomatis. Tahap 2 menentukan jumlah keberhasilan berdasarkan hadiah awal, dengan target mendekati 6.400 sambil menyisakan ruang untuk tahap 3. Jika kalah, ulangi tahap saat ini. Berhenti setelah penyelesaian ketiga yang berhasil.'),
+}
+for language, labels in STRATEGY_TEXT.items():
+    TEXT[language].update(labels)
+
+STORAGE_TEXT = {
+ 'en': 'Cannot open or migrate program data. The existing records have been retained.\n{detail}',
+ 'tw': '無法開啟或搬移程式資料，既有記錄已保留。\n{detail}',
+ 'ja': 'プログラムのデータを開くか移行することができません。既存の記録は保持されています。\n{detail}',
+ 'ko': '프로그램 데이터를 열거나 이전할 수 없습니다. 기존 기록은 보존되었습니다.\n{detail}',
+ 'id': 'Tidak dapat membuka atau memindahkan data program. Catatan yang ada tetap disimpan.\n{detail}',
+ 'zh': '无法打开或迁移程序数据，已有记录已保留。\n{detail}',
+}
+for language, message in STORAGE_TEXT.items():
+    TEXT[language]['error_storage'] = message
+
+ERROR_TEXT = {
+ 'tw': ('無法確認挑戰獎金，已停止。請核對遊戲畫面。', '無法確認結算金額，已停止且未入帳。請核對畫面與今日累計。', '本局資料不完整，無法安全計數或入帳。請核對後從新一局開始。', '保存的策略進度無效，請檢查入帳檔。', '本局獎金已無法保留第三階段，請手動處理。'),
+ 'zh': ('无法确认挑战奖金，已停止。请核对游戏画面。', '无法确认结算金额，已停止且未入账。请核对画面与今日累计。', '本局数据不完整，无法安全计数或入账。请核对后从新一局开始。', '保存的策略进度无效，请检查入账文件。', '本局奖金已无法保留第三阶段，请手动处理。'),
+ 'en': ('Challenge reward unconfirmed; stopped. Check the game screen.', 'Settlement unconfirmed; stopped without crediting it. Check the result and daily total.', 'Round data incomplete. Check the result and begin a new round before continuing.', 'Saved strategy progress is invalid. Check the daily ledger.', 'This reward leaves no room for the third stage. Handle this round manually.'),
+ 'ja': ('挑戦報酬を確認できず停止しました。ゲーム画面を確認してください。', '結果金額を確認できず、入帳せず停止しました。画面と今日の合計を確認してください。', 'このラウンドの記録が不完全です。結果を確認し、新しいラウンドから開始してください。', '保存した戦略の進行状況が無効です。記録ファイルを確認してください。', 'この報酬では第3段階を残せません。このラウンドを手動で処理してください。'),
+ 'ko': ('도전 보상을 확인할 수 없어 중지했습니다. 게임 화면을 확인하세요.', '정산 금액을 확인할 수 없어 기록하지 않고 중지했습니다. 결과와 오늘의 합계를 확인하세요.', '라운드 기록이 불완전합니다. 결과를 확인한 뒤 새 라운드부터 시작하세요.', '저장된 전략 진행 상태가 잘못되었습니다. 기록 파일을 확인하세요.', '이 보상으로는 3단계를 남길 수 없습니다. 이번 라운드는 수동으로 처리하세요.'),
+ 'id': ('Hadiah tantangan belum terkonfirmasi; berhenti. Periksa layar game.', 'Hasil belum terkonfirmasi; berhenti tanpa mencatat hadiah. Periksa hasil dan total harian.', 'Data ronde belum lengkap. Periksa hasil, lalu mulai dari ronde baru.', 'Progres strategi tersimpan tidak valid. Periksa catatan harian.', 'Hadiah ini tidak menyisakan ruang untuk tahap ketiga. Tangani ronde ini secara manual.'),
+}
+for language, messages in ERROR_TEXT.items():
+    TEXT[language].update(dict(zip(('error_reward','error_settlement','error_round','error_stage','error_target'),messages)))
+    TEXT[language]['error_detail'] = TEXT[language]['error'] + ': {detail}'
+
+def error_message(detail):
+    if '挑战奖金无法确认' in detail: return 'error_reward', {}
+    if '结算金额未能稳定确认' in detail: return 'error_settlement', {}
+    if any(term in detail for term in ('无法恢复本局','缺少本局','尚未确认','Unconfirmed initial')): return 'error_round', {}
+    if '策略阶段无效' in detail or 'Invalid saved strategy stage' in detail: return 'error_stage', {}
+    if '无法保留第三阶段' in detail: return 'error_target', {}
+    return 'error_detail', {'detail':detail}
+
+def text(language, message_key, **values):
+    return TEXT[language][message_key].format(**values)

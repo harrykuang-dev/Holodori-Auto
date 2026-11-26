@@ -16,11 +16,10 @@ class Module:
     accent: str
     icon: str
     fields: tuple[str, ...]
-    bundled: bool = False
 
     @property
     def path(self):
-        return ROOT / ('components' if self.bundled else 'upstream') / self.id
+        return ROOT / 'components' / self.id
 
 
 MODULES = (
@@ -35,6 +34,6 @@ MODULES = (
     Module('cooking', 'gui', 'CookingApp', '#F15B60', 'assets/cooking-icon.png',
            ('language', 'model', 'games', 'developer_mode', 'start_key', 'stop_key',
             'start_display', 'stop_display')),
-    Module('puka_puka', 'puka_ui', 'PukaPukaApp', '#117D85', 'tiles.png', ('rounds', 'auto_refill'), bundled=True),
+    Module('puka_puka', 'puka_ui', 'PukaPukaApp', '#117D85', 'tiles.png', ('rounds', 'auto_refill')),
 )
 BY_ID = {module.id: module for module in MODULES}

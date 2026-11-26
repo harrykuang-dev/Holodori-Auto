@@ -1,6 +1,6 @@
 # Reward OCR
 
-> Source reference / 來源參考 [upstream/high_low/docs/OCR.md](https://github.com/harrykuang-dev/Hololive-Dreams-High-low-Auto-Personal/blob/9253c94c3945ad11125ab4b0ff9efc60e8308bea/docs/OCR.md). Paths and standalone commands below refer to that source tree. Holodori-Auto builds and runs from the repository root. See [program architecture](../ARCHITECTURE.md).
+> Current source / 目前原始碼 [components/high_low](../../components/high_low/). [Original reference / 原始文件](https://github.com/harrykuang-dev/Hololive-Dreams-High-low-Auto-Personal/blob/9253c94c3945ad11125ab4b0ff9efc60e8308bea/docs/OCR.md) describes the historical standalone layout and commands. For the current program, use the [shared build and validation instructions](../ARCHITECTURE.md).
 
 The yellow challenge amount describes the reward after the next successful double. The cyan result amount describes the reward to be credited. These amounts are read separately; the result amount is not divided by two.
 

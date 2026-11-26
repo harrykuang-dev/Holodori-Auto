@@ -6,11 +6,11 @@ Holodori-Auto adalah program Windows untuk mengotomatiskan minigame **High & Low
 
 ## Unduh
 
-Unduh `Holodori-Auto-v1.2.10-windows.7z` dari [Releases](https://github.com/harrykuang-dev/Holodori-Auto/releases/latest), ekstrak dengan 7-Zip, lalu jalankan `Holodori-Auto.exe`. Simpan seluruh isi folder bersama. Python dan CUDA Toolkit tidak perlu dipasang secara terpisah.
+Unduh `Holodori-Auto-v1.3.0-windows.7z` dari [Releases](https://github.com/harrykuang-dev/Holodori-Auto/releases/latest), ekstrak dengan 7-Zip, lalu jalankan `Holodori-Auto.exe`. Simpan seluruh isi folder bersama. Python dan CUDA Toolkit tidak perlu dipasang secara terpisah.
 
-Lompat Tali dan Memasak berbagi TensorRT 10.13, pustaka runtime CUDA, dan DirectML dalam satu paket. GPU NVIDIA yang kompatibel otomatis memakai TensorRT; GPU lain yang didukung memakai DirectML. Lompat Tali memerlukan GPU yang kompatibel; Memasak juga dapat beralih ke CPU. Model dan cache engine khusus perangkat tetap terpisah.
+Paket standar menyertakan DirectML untuk Lompat Tali dan Memasak. Lompat Tali memerlukan GPU yang mendukung DirectML atau TensorRT. Memasak dapat beralih ke CPU.
 
-> **Tips penggunaan pertama:** Pada GPU NVIDIA RTX seri 20 dan yang lebih baru yang kompatibel, penggunaan pertama Lompat Tali atau Memasak mengompilasi engine TensorRT untuk GPU tersebut. Perkiraan waktunya **1–2 menit**, tergantung perangkat keras dan beban sistem. Tunggu hingga kompilasi selesai; engine disimpan dalam cache untuk penggunaan berikutnya.
+Untuk memakai TensorRT pada GPU NVIDIA yang kompatibel, unduh `Holodori-Auto-v1.3.0-tensorrt.7z` dari [Releases](https://github.com/harrykuang-dev/Holodori-Auto/releases/latest). Tutup program, lalu ekstrak arsip ke folder tempat `Holodori-Auto.exe` berada. Pastikan `accelerators/tensorrt/` berada di samping berkas program, lalu jalankan ulang. TensorRT membuat engine khusus GPU saat pertama digunakan dan menyimpannya untuk penggunaan berikutnya.
 
 ## Penggunaan
 
@@ -35,10 +35,10 @@ Buka layar solo Puka Puka Fight di game, lalu pilih **Catur Rakit** di Holodori-
 
 ## Menjalankan dari kode sumber
 
-Gunakan Windows x64 dan Python 3.13. Klon repositori beserta submodulnya; ZIP kode sumber dari GitHub tidak menyertakan isi submodul.
+Gunakan Windows x64 dan Python 3.13. Klon repositori seperti biasa untuk mendapatkan kode sumber kelima fitur.
 
 ```powershell
-git clone --recurse-submodules https://github.com/harrykuang-dev/Holodori-Auto.git
+git clone https://github.com/harrykuang-dev/Holodori-Auto.git
 cd Holodori-Auto
 py -3.13 -m venv .venv
 .\.venv\Scripts\Activate.ps1
@@ -48,7 +48,7 @@ python tools/fetch_models.py
 python main.py
 ```
 
-Dependensi mencakup runtime TensorRT 10.13 dan DirectML bersama; PyTorch tidak lagi diperlukan.
+Langkah berikut menggunakan DirectML. Lihat [dokumentasi arsitektur dan build](document/ARCHITECTURE.md) untuk komponen TensorRT opsional.
 
 Perintah pemasangan model mengunduh `models.zip` dari rilis Memasak yang sesuai, memeriksa ukuran berkas dan SHA-256 yang telah ditetapkan, lalu memverifikasi setiap model sebelum pemasangan. Hanya model yang belum ada yang dipasang; berkas yang sudah ada dipertahankan. Jika isi model yang sudah ada berbeda, pindahkan berkas tersebut ke lokasi cadangan sebelum mencoba lagi. Memasak otomatis memuat model yang dipilih saat Mulai ditekan.
 
@@ -62,11 +62,11 @@ Setelah dependensi dan model Memasak terpasang, jalankan:
 python tools/build_release.py --output dist/Holodori-Auto
 ```
 
-Pertahankan seluruh isi folder portabel yang dihasilkan saat menjalankan atau mendistribusikan program. Hasil build mencakup dependensi, sumber daya asli, dan model Memasak.
+Build standar Windows menyertakan sumber daya tiap fitur serta model Memasak. Simpan seluruh folder portabel hasil build saat menjalankan atau mendistribusikannya.
 
 ## Pengembangan dan pemeliharaan
 
-Kelima fitur dapat dijalankan melalui `main.py`. Navigasi, bahasa, pintasan, dan paket portabel Windows digunakan bersama.
+Holodori-Auto dijalankan melalui `main.py`. Kode kelima fitur berada di `components/` dan menggunakan navigasi, bahasa, pintasan, serta build Windows yang sama. Program menjalankan satu fitur pada satu waktu dalam proses terpisah.
 
 | Fitur | Referensi teknis |
 | --- | --- |
@@ -76,8 +76,8 @@ Kelima fitur dapat dijalankan melalui `main.py`. Navigasi, bahasa, pintasan, dan
 | Memasak | [Pengembangan dan diagnostik](document/cooking/DEVELOPMENT.md) · [Inferensi](document/cooking/INFERENCE.md) |
 | Catur Rakit | [Pengenalan papan dan pelacakan langkah](document/raft-chess.md) |
 
-[Indeks dokumentasi teknis](document/README.md) memuat [arsitektur dan prosedur validasi](document/ARCHITECTURE.md) serta [pemeliharaan versi kode sumber](document/UPDATING.md). GitHub Actions memeriksa versi sumber, menjalankan pengujian, dan memverifikasi paket portabel.
+[Indeks dokumentasi teknis](document/README.md) memuat [arsitektur dan prosedur validasi](document/ARCHITECTURE.md) serta [alur pengembangan dan pemeliharaan](document/UPDATING.md). GitHub Actions menguji kode sumber dan memverifikasi build portabel.
 
 ## Hak dan lisensi
 
-Lompat Tali 1.3.3 dan bobot turunan YOLO memakai **AGPL-3.0-only**; Memancing memakai **MIT**. Pemberitahuan MIT yang ada untuk komponen yang dirujuk High & Low dan Memasak tetap disertakan. Runtime NVIDIA, dependensi lain, dan gambar game mempertahankan ketentuannya masing-masing. Lihat [lisensi dan kode sumber terkait](LICENSES.md). Release menyediakan `Holodori-Auto-v1.2.10-source.zip` dengan sumber keempat submodul pada commit yang ditetapkan; arsip sumber otomatis GitHub tidak menyertakan submodul.
+Lompat Tali 1.3.3 dan bobot turunan YOLO memakai **AGPL-3.0-only**; Memancing memakai **MIT**. Pemberitahuan MIT yang ada untuk komponen yang dirujuk High & Low dan Memasak tetap disertakan. Runtime NVIDIA, dependensi lain, dan gambar game mempertahankan ketentuannya masing-masing. Lihat [lisensi dan kode sumber terkait](LICENSES.md). [Arsip kode sumber v1.3.0](https://github.com/harrykuang-dev/Holodori-Auto/archive/refs/tags/v1.3.0.zip) memuat kode kelima fitur. [Catatan asal kode](document/SOURCE-ORIGINS.json) mencantumkan repositori dan commit asal.

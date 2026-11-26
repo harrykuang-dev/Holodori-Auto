@@ -31,17 +31,17 @@ class BuildAssetTests(unittest.TestCase):
         self.root = self.directory / "project"
         self.root.mkdir()
         self.contents = {
-            "upstream/high_low/main_ui.py": b"# original high-low interface\n",
-            "upstream/high_low/auto_bot.py": b"# original recognition and strategy\n",
-            "upstream/high_low/assets/high-low-title.png": b"original title bitmap\x00\xff",
-            "upstream/high_low/assets/nested/icon.png": b"original nested bitmap\x00\xfe",
-            "upstream/high_low/templates/icons/tw/start_tw.png": b"original Traditional Chinese template\x00\xfd",
-            "upstream/high_low/templates/ranks/a.png": b"original rank template\x00\xfc",
-            "upstream/high_low/icon.ico": b"original Windows icon\x00\xfb",
-            "upstream/high_low/icon_transparent.png": b"original transparent icon\x00\xfa",
-            "upstream/high_low/licenses/NOTICE.txt": b"Original required notice\n",
-            "upstream/fishing/gui.py": b"# independent fishing interface\n",
-            "upstream/fishing/assets/fishing-hook.png": b"fishing icon\x00\xf9",
+            "components/high_low/main_ui.py": b"# original high-low interface\n",
+            "components/high_low/auto_bot.py": b"# original recognition and strategy\n",
+            "components/high_low/assets/high-low-title.png": b"original title bitmap\x00\xff",
+            "components/high_low/assets/nested/icon.png": b"original nested bitmap\x00\xfe",
+            "components/high_low/templates/icons/tw/start_tw.png": b"original Traditional Chinese template\x00\xfd",
+            "components/high_low/templates/ranks/a.png": b"original rank template\x00\xfc",
+            "components/high_low/icon.ico": b"original Windows icon\x00\xfb",
+            "components/high_low/icon_transparent.png": b"original transparent icon\x00\xfa",
+            "components/high_low/licenses/NOTICE.txt": b"Original required notice\n",
+            "components/fishing/gui.py": b"# independent fishing interface\n",
+            "components/fishing/assets/fishing-hook.png": b"fishing icon\x00\xf9",
         }
         self.sources = []
         for relative, content in self.contents.items():
@@ -63,7 +63,7 @@ class BuildAssetTests(unittest.TestCase):
         )
         for alias in aliases:
             with self.subTest(alias=alias):
-                self.assertEqual((stage / alias).read_bytes(), self.contents["upstream/high_low/" + alias])
+                self.assertEqual((stage / alias).read_bytes(), self.contents["components/high_low/" + alias])
                 self.assertIn((str(stage / alias), Path(alias).parent.as_posix()), data)
         # Python namespaces and unrelated component artwork stay isolated.
         for flattened in ("main_ui.py", "auto_bot.py", "gui.py", "assets/fishing-hook.png"):
@@ -79,7 +79,7 @@ class BuildAssetTests(unittest.TestCase):
 
     def test_current_high_low_assets_and_sources_match_staged_bytes(self):
         sources = [(source, relative) for source, relative in build_release.runtime_sources()
-                   if relative.parts[:2] == ("upstream", "high_low")]
+                   if relative.parts[:2] == ("components", "high_low")]
         self.assertTrue(sources, "The checked-out High & Low source is required")
         before = {source: (build_release.sha256(source), source.stat().st_mtime_ns)
                   for source, _ in sources}
@@ -98,7 +98,7 @@ class BuildAssetTests(unittest.TestCase):
         self.assertGreater(alias_count, 2, "Original templates and artwork need bundle-root aliases")
 
     def test_high_low_activation_preserves_frozen_import_root(self):
-        source = self.root / "upstream/high_low"
+        source = self.root / "components/high_low"
         module = SimpleNamespace(path=source, entry="main_ui")
         bundle_root = str(self.directory / "frozen-runtime")
         with (

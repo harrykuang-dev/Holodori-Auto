@@ -1,4 +1,4 @@
-"""Verify frozen host code, unchanged upstream files and shared GPU libraries."""
+"""Verify the portable base, its feature files, and DirectML."""
 from __future__ import annotations
 import argparse
 import hashlib
@@ -31,28 +31,24 @@ def verify(executable: Path) -> dict:
     for source, relative in sources:
         if sha256(source) != sha256(internal/relative):
             raise ValueError('Bundled runtime file differs: '+str(relative))
-    if (ROOT/'upstream-lock.json').read_bytes() != (internal/'upstream-lock.json').read_bytes():
-        raise ValueError('Bundled source pins differ')
-    shared = {}
-    for name in ('nvinfer_10.dll', 'nvinfer_builder_resource_10.dll', 'cudart64_12.dll'):
-        matches = list(internal.rglob(name))
-        if len(matches) != 1:
-            raise ValueError(f'Expected one shared {name}, found {len(matches)}')
-        shared[name] = {'path': matches[0].relative_to(internal).as_posix(), 'sha256': sha256(matches[0])}
-    if not (internal/'onnxruntime/capi/DirectML.dll').is_file():
+    if (ROOT/'document/SOURCE-ORIGINS.json').read_bytes() != (internal/'SOURCE-ORIGINS.json').read_bytes():
+        raise ValueError('Bundled source provenance differs')
+    directml = internal/'onnxruntime/capi/DirectML.dll'
+    if not directml.is_file():
         raise ValueError('Shared DirectML library missing')
-    for path in ('torch', 'torchvision', 'upstream/jump_rope/accelerators', 'upstream/cooking/annotations'):
+    if not (internal/'ddddocr/common_old.onnx').is_file():
+        raise ValueError('The High & Low OCR model is missing')
+    for path in ('torch', 'torchvision', 'scipy', 'scipy.libs', 'moderngl', 'tensorrt_libs',
+                 'tensorrt_bindings', 'ddddocr/common.onnx', 'ddddocr/common_det.onnx',
+                 'components/jump_rope/accelerators', 'components/cooking/annotations'):
         if (internal/path).exists():
-            raise ValueError('Unexpected development/runtime copy: '+path)
-    if list(internal.rglob('nvcuda.dll')):
-        raise ValueError('System NVIDIA driver must not be bundled')
-    for pattern in ('tensorrt_cu12_libs-*.dist-info/LICENSE.txt', 'nvidia_cuda_runtime_cu12-*.dist-info/licenses/*'):
-        if not list(internal.glob(pattern)):
-            raise ValueError('Missing dependency license: '+pattern)
+            raise ValueError('Unexpected development or optional runtime: '+path)
+    for pattern in ('nvinfer*.dll', 'cudart64*.dll', 'nvcuda.dll'):
+        if next(internal.rglob(pattern), None) is not None:
+            raise ValueError('Unexpected NVIDIA library in the standard package: '+pattern)
     return dict(passed=True, host_modules=verified,
-                unchanged_upstream_files=sum(path.parts[0] == 'upstream' for _, path in sources),
                 bundled_runtime_files=sum(path.parts[0] == 'components' for _, path in sources),
-                shared_libraries=shared, executable_sha256=sha256(executable), game_inputs_sent=0)
+                directml_sha256=sha256(directml), executable_sha256=sha256(executable), game_inputs_sent=0)
 
 
 if __name__ == '__main__':
@@ -63,4 +59,4 @@ if __name__ == '__main__':
     result = verify(args.executable.resolve())
     args.report.parent.mkdir(parents=True, exist_ok=True)
     args.report.write_text(json.dumps(result, indent=2), encoding='utf-8')
-    print('Verified frozen host, upstream resources and one shared GPU runtime')
+    print('Verified the standard package, feature resources and DirectML')
