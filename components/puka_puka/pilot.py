@@ -4,7 +4,7 @@ from collections import Counter
 import time
 
 from solver import BLUE, ORANGE, NAMES, full_inventory, moves, recommend, solve, square, table_code, terminal
-from stages import CHALLENGES, CLICK, MENU_STATES, REFILL_STATES, RESULT_STATES, classify_screen
+from stages import CLICK, MENU_STATES, REFILL_STATES, RESULT_STATES, classify_screen
 from vision import (VisionError, hand_read, highlighted, is_ready, match_position,
                     point, read_position, selected_piece, source_arrow)
 
@@ -120,13 +120,13 @@ def wait_menu(game, allowed, seconds=30, *, stable_for=0):
 
 
 def prepare(game, notify, *, auto_refill=False):
-    entries = {"hub", "level_next", *CHALLENGES}
+    entries = {"hub", "stage_start"}
     allowed = {"tutorial", "board", "team_auto", "team_start", *entries} | POST_MATCH_OVERLAYS
-    selected_stage = None
+    clicked_stage = False
     refilled = False
     notify("waiting_entry")
     while True:
-        state = wait_menu(game, allowed | REFILL_STATES, 50)
+        state = wait_menu(game, allowed | REFILL_STATES, 50, stable_for=.55)
         if state in REFILL_STATES:
             if not auto_refill:
                 raise StopPlay('能量不足。可手動補充，或開啟「自動補充能量」後再開始。')
@@ -139,19 +139,19 @@ def prepare(game, notify, *, auto_refill=False):
             notify("refilling")
             game.click(*CLICK["refill"])
             refilled = True
-            if selected_stage is not None:
-                allowed.add(selected_stage)
+            if clicked_stage:
+                allowed.add("stage_start")
             state = wait_menu(game, allowed, stable_for=.55)
         if state == "board":
             return wait_for(game, read_position, 8, stable_for=.4)
         game.click(*CLICK[state])
         allowed.remove(state)
-        if state in (*CHALLENGES, 'tutorial', 'team_auto', 'team_start'):
+        if state in ("stage_start", "tutorial", "team_auto", "team_start"):
             allowed -= entries
         if state == 'team_start':
             allowed.discard('team_auto')
-        if state in CHALLENGES:
-            selected_stage = state
+        if state == "stage_start":
+            clicked_stage = True
             notify("waiting_board")
 
 

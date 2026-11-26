@@ -10,10 +10,7 @@ from vision import bgr, is_ready
 
 CLICK = {
     "hub": (1412, 830),
-    "challenge": (812, 737),
-    "challenge_left": (298, 737),
-    "challenge_right": (1326, 737),
-    "level_next": (1569, 457),
+    "stage_start": (812, 737),
     "team_auto": (1345, 56),
     "team_start": (1405, 824),
     "tutorial": (1324, 132),
@@ -24,8 +21,7 @@ CLICK = {
     "reward": (812, 807),
     "refill": (1362, 838),
 }
-CHALLENGES = ("challenge_left", "challenge", "challenge_right")
-MENU_STATES = {"level_menu", "level_next", "hub", *CHALLENGES}
+MENU_STATES = {"level_menu", "stage_start", "hub"}
 RESULT_STATES = {"result", "result_details", "win_details"}
 REFILL_STATES = {"refill", "refill_panel"}
 
@@ -57,6 +53,12 @@ def reward_ring():
 
 
 def cleared_card(frame, x):
+    # The completion badge can appear while the reward checkmarks are still animating.
+    b, g, r = bgr(frame[129:177, x-94:x+94])
+    gold = (b < 123) & (g > 156) & (r > 166) & (g-b > 53) & (r-b > 64)
+    outline = (b > 140) & (b-r > 77) & (b-g > 53) & (g < 150)
+    if gold.mean() > .06 and outline.mean() > .12:
+        return True
     rim, middle = reward_ring()
     checks = 0
     for offset in (-126, 0, 126):
@@ -74,36 +76,15 @@ def active_card(frame, x):
     return face and blue_button(frame[721:755, x-105:x+104])
 
 
-def normal_card(frame, x):
-    b, g, r = bgr(frame[189:204, x-72:x-55])
-    return ((g > 145) & (g-r > 45) & (g-b > 25)).mean() > .32
-
-
 def level_menu(frame):
     if not (hammer(frame) and white(frame[47:95, 1517:1597], .43)):
         return False
     cards = 0
-    for action in CHALLENGES:
-        x, _ = CLICK[action]
+    for x in (298, 812, 1326):
         b, g, r = bgr(frame[247:334, x-160:x-112])
         face = (b > 177) & (g > 146) & (r > 129) & (r < 240) & (b-g < 48) & (g-r < 48)
         cards += face.mean() > .72
     return cards >= 2
-
-
-def open_stage(frame):
-    available = []
-    for index, action in enumerate(CHALLENGES):
-        x, _ = CLICK[action]
-        if active_card(frame, x) and not cleared_card(frame, x):
-            available.append((not normal_card(frame, x), index, action))
-    return min(available)[2] if available else None
-
-
-def has_next_page(frame):
-    arrow = white(frame[441:473, 1562:1576], .46)
-    # A cleared card on the right can hide the next available stage.
-    return arrow and cleared_card(frame, CLICK["challenge_right"][0])
 
 
 def team_screen(frame):
@@ -180,8 +161,10 @@ def classify_screen(frame):
     if reward_popup(frame):
         return "reward"
     if level_menu(frame):
-        stage = open_stage(frame)
-        return stage or ('level_next' if has_next_page(frame) else 'level_menu')
+        x, _ = CLICK["stage_start"]
+        if active_card(frame, x) and not cleared_card(frame, x):
+            return "stage_start"
+        return "level_menu"
     if hub(frame):
         return "hub"
     team = team_screen(frame)
