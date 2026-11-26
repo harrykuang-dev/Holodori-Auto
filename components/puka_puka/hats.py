@@ -97,10 +97,11 @@ def pose_side(blue, orange):
     return BLUE if blue < orange else ORANGE
 
 
-def observe(patch, index, *, floor=None):
+def observe(patch, index, *, floor=None, tracking=False):
     """Return the admissible signed pieces, or (0,) for an empty square."""
     detected = []
     bank = references()
+    wider = None
     for hat in describe(patch, index // 4):
         if hat.kind == GOLD and hat.area < 850 and hat.saturation > 155:
             continue
@@ -113,7 +114,15 @@ def observe(patch, index, *, floor=None):
         else:
             maximum_cost = .008
         if min(blue, orange) > maximum_cost:
-            continue
+            if (hat.kind != WHALE or hat.area < MIN_AREAS[WHALE]
+                    or not floor or not any(abs(piece) == WHALE for piece in floor.compatible)):
+                continue
+            wider = next(describe(patch, index // 4, wide_whale=True), None)
+            if wider is None:
+                continue
+            blue, orange = pose_costs(wider.pose, references(wide_whale=True)[WHALE])
+            if min(blue, orange) > .065:
+                continue
         detected.append((hat.area, hat.kind, blue, orange))
     if not detected:
         if floor and floor.exact is not None and floor.painted >= 3 and floor.visible >= 6:
@@ -129,9 +138,13 @@ def observe(patch, index, *, floor=None):
     side = pose_side(blue, orange)
     if floor:
         matching = [piece for piece in floor.compatible if abs(piece) == kind]
-        if len(matching) == 1 and (side is None or (floor.painted >= 2 and not floor.mixed)):
+        enough_color = not floor.mixed or floor.painted >= 3
+        can_override = floor.painted >= 2 and not floor.mixed
+        if len(matching) == 1 and enough_color and (side is None or can_override):
             return (matching[0],)
-    if side is None and kind == WHALE:
+    if tracking:
+        return (kind, -kind)
+    if side is None and kind == WHALE and wider is None:
         wide = next(describe(patch, index // 4, wide_whale=True), None)
         if wide is not None:
             costs = pose_costs(wide.pose, references(wide_whale=True)[WHALE])

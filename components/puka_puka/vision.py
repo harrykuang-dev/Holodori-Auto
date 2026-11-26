@@ -114,7 +114,7 @@ def raft_evidence(markers):
     blue, orange = markers.count(BLUE), markers.count(ORANGE)
     visible = sum(mark is not None for mark in markers)
     painted, other = max(blue, orange), min(blue, orange)
-    if not painted or (other and (other != 1 or painted < 3)):
+    if not painted or (other and (other != 1 or painted < 2)):
         return None
     side = BLUE if blue > orange else ORANGE
     compatible = []
@@ -129,7 +129,9 @@ def raft_evidence(markers):
             opposite = 3 if side == BLUE else 4
             if kind != TURTLE or markers[opposite] != 0:
                 continue
-        if white_misses <= (0 if other else 1):
+        if white_misses <= (0 if other else 1) or (kind == KING and not other and painted >= 3):
+            # A crown's silhouette is nearly symmetric. Several same-color edge marks
+            # identify its team despite pale hair or reflections over the other edges.
             compatible.append(side * kind)
         if white_misses == 0:
             exact.append(side * kind)
@@ -137,13 +139,13 @@ def raft_evidence(markers):
     return TileEvidence(tuple(compatible), unique, painted, visible, mixed=bool(other))
 
 
-def observe_board(frame):
+def observe_board(frame, *, tracking=False):
     for index in range(12):
         row = index // 4
         x, _ = point(index)
         y = (100, 242, 404)[row]
         floor = raft_evidence(raft_markers(tile(frame, index)))
-        yield observe(frame[y-46:y+45, x-115:x+115], index, floor=floor)
+        yield observe(frame[y-46:y+45, x-115:x+115], index, floor=floor, tracking=tracking)
 
 
 def read_board(frame):
@@ -168,9 +170,24 @@ def match_position(frame, candidates, *, previous, hands):
     candidates = {pos for pos in candidates if (pos.blue, pos.orange) == hands}
     if not candidates:
         raise VisionError("預期狀態為空")
-    observations = tuple(observe_board(frame))
-    matching = [candidate for candidate in candidates
-                if all(piece in choices for piece, choices in zip(candidate.board, observations))]
+    observations = tuple(observe_board(frame, tracking=True))
+
+    def hidden_count(pos):
+        hidden = 0
+        for old, piece, choices in zip(previous.board, pos.board, observations):
+            if piece in choices:
+                continue
+            if not (piece and piece == old and choices == (0,)):
+                return None
+            hidden += 1
+            if hidden > 1:
+                return None
+        return hidden
+
+    ranked = [(hidden, candidate) for candidate in candidates
+              if (hidden := hidden_count(candidate)) is not None]
+    fewest_hidden = min((hidden for hidden, _ in ranked), default=0)
+    matching = [candidate for hidden, candidate in ranked if hidden == fewest_hidden]
     if len(matching) != 1:
         raise VisionError("暫時無法從棋帽確認唯一的合法局面")
     confirmed = matching[0]
