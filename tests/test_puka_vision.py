@@ -39,9 +39,16 @@ class PukaScreenTests(unittest.TestCase):
 
         self.frame[41:100, 1515:1595] = 245
         self.assertNotEqual(stages.classify_screen(self.frame), 'event_next')
-        self.frame[297:639, 793:1502] = 245
+        check = np.array([(1365, 825), (1371, 833), (1385, 819)], dtype=np.int32)
+        cv2.polylines(self.frame, [check], False, (245, 245, 245), 3)
+        self.assertNotEqual(stages.classify_screen(self.frame), 'event_next')
+        self.frame[805:854, 1280:1525] = (235, 174, 53)
+        arrow = np.array([(1313, 827), (1324, 827), (1324, 821), (1337, 831),
+                          (1324, 841), (1324, 835), (1313, 835)], dtype=np.int32)
+        cv2.fillPoly(self.frame, [arrow], (245, 245, 245))
         for artwork in ((20, 35, 91), (220, 37, 144)):
             self.frame[224:714, 170:775] = artwork
+            self.frame[300:639, 793:1502] = artwork
             self.assertEqual(stages.classify_screen(self.frame), 'event_next')
         self.frame[805:854, 1280:1525] = 130
         self.assertIsNone(stages.classify_screen(self.frame))
