@@ -37,11 +37,41 @@ class RaftHatTests(unittest.TestCase):
             self.frame[230:348, 780:960] = color
             self.assertEqual(tuple(vision.observe_board(self.frame)), ((0,),) * 12)
 
+    def test_aligned_corner_marks_resolve_whale_direction(self):
+        kind = solver.WHALE
+        hat = hats.Hat(kind, hats.references()[kind][0], 5921, 150)
+        floor = vision.raft_evidence((1, None, None, 0, None, 1, 0, None))
+        self.assertEqual(floor.exact, kind)
+        with (patch.object(hats, "describe", return_value=(hat,)),
+              patch.object(hats, "pose_costs", return_value=(.078, .082))):
+            self.assertEqual(hats.observe(self.frame, 7, floor=floor), (kind,))
+
+    def test_complete_tile_pattern_selects_between_plausible_hat_kinds(self):
+        whale, dolphin = solver.WHALE, solver.DOLPHIN
+        bank = hats.references()
+        candidates = (hats.Hat(whale, bank[whale][0], 3300, 150),
+                      hats.Hat(dolphin, bank[dolphin][0], 3800, 150))
+        floor = vision.raft_evidence((-1, 0, -1, 0, 0, -1, 0, -1))
+        with (patch.object(hats, "describe", return_value=candidates),
+              patch.object(hats, "pose_costs", side_effect=((.07, .021), (.019, .07)))):
+            self.assertEqual(hats.observe(self.frame, 7, floor=floor), (-whale,))
+
+    def test_single_stripe_needs_hat_support(self):
+        floor = vision.raft_evidence((0, 0, 0, 0, 1, 0, 0, 0))
+        self.assertEqual(floor.exact, solver.TURTLE)
+        with patch.object(hats, "describe", return_value=()):
+            self.assertEqual(hats.observe(self.frame, 0, floor=floor), (0,))
+
+    def test_well_exposed_unique_pattern_can_recover_a_hidden_hat(self):
+        floor = vision.raft_evidence((1, 0, 1, 0, 0, 1, 0, 1))
+        with patch.object(hats, "describe", return_value=()):
+            self.assertEqual(hats.observe(self.frame, 7, floor=floor), (solver.WHALE,))
+
     def test_d1_reads_any_hat_partly_covered_by_the_top_right_controls(self):
         for kind, poses in hats.references().items():
             with self.subTest(kind=kind):
                 clipped_hat = hats.Hat(kind, poses[0], hats.MIN_AREAS[kind] - 1, 137)
-                with (patch.object(hats, "describe", return_value=(clipped_hat,)),
+                with (patch.object(hats, "describe", side_effect=lambda *_args, **_kwargs: iter((clipped_hat,))),
                       patch.object(hats, "pose_costs", return_value=(.07, .021)) as costs):
                     self.assertEqual(hats.observe(self.frame, 3), (-kind,))
                     self.assertEqual(hats.observe(self.frame, 2), (0,))
@@ -58,6 +88,17 @@ class RaftHatTests(unittest.TestCase):
             observations[10] = (solver.KING, -solver.KING)
             with self.assertRaises(vision.VisionError):
                 vision.read_board(self.frame)
+
+    def test_ambiguous_whale_uses_the_direction_from_a_wider_profile(self):
+        kind = solver.WHALE
+        hat = hats.Hat(kind, hats.references()[kind][0], 5921, 150)
+        for wide_costs, expected in (((.034, .072), (kind,)), ((.072, .034), (-kind,)),
+                                     ((.035, .036), (kind, -kind)), ((.08, .16), (kind, -kind))):
+            with self.subTest(wide_costs=wide_costs):
+                with (patch.object(hats, "describe", side_effect=lambda *_args, **_kwargs: iter((hat,))) as describe,
+                      patch.object(hats, "pose_costs", side_effect=((.078, .082), wide_costs))):
+                    self.assertEqual(hats.observe(self.frame, 7), expected)
+                    self.assertTrue(describe.call_args.kwargs["wide_whale"])
 
     def test_reply_uses_legal_play_to_resolve_a_partly_hidden_hat(self):
         observed = [(p,) for p in self.expected.board]
