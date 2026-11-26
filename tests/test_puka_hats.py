@@ -37,6 +37,19 @@ class RaftHatTests(unittest.TestCase):
             self.frame[230:348, 780:960] = color
             self.assertEqual(tuple(vision.observe_board(self.frame)), ((0,),) * 12)
 
+    def test_d1_reads_any_hat_partly_covered_by_the_top_right_controls(self):
+        for kind, poses in hats.references().items():
+            with self.subTest(kind=kind):
+                clipped_hat = hats.Hat(kind, poses[0], hats.MIN_AREAS[kind] - 1, 137)
+                with (patch.object(hats, "describe", return_value=(clipped_hat,)),
+                      patch.object(hats, "pose_costs", return_value=(.07, .021)) as costs):
+                    self.assertEqual(hats.observe(self.frame, 3), (-kind,))
+                    self.assertEqual(hats.observe(self.frame, 2), (0,))
+                    costs.return_value = (.07, .035)
+                    self.assertEqual(hats.observe(self.frame, 3), (0,))
+                    costs.return_value = (.022, .021)
+                    self.assertEqual(hats.observe(self.frame, 3), (kind, -kind))
+
     def test_indeterminate_hats_use_both_crowns_or_wait(self):
         observations = [(p,) for p in self.before.board]
         observations[8] = (solver.KING, -solver.KING)
