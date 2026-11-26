@@ -1,11 +1,10 @@
 """Read a solo match, choose moves, and verify each click against the next frame."""
 
-from collections import Counter
 import time
 
-from solver import BLUE, ORANGE, NAMES, full_inventory, moves, recommend, solve, square, table_code, terminal
+from solver import BLUE, NAMES, moves, recommend, square, terminal
 from stages import CLICK, MENU_STATES, REFILL_STATES, RESULT_STATES, classify_screen
-from vision import (VisionError, hand_read, highlighted, is_ready, match_position,
+from vision import (VisionError, hand_inventory, hand_read, highlighted, is_ready, match_position,
                     point, read_position, selected_piece, source_arrow)
 
 
@@ -16,19 +15,15 @@ class StopPlay(RuntimeError):
     pass
 
 
-def hands_match(frame, pos):
-    return all(Counter(p for _, _, p in hand_read(frame, side)) == Counter(pos.hand(side))
-               for side in (BLUE, ORANGE))
-
-
 def next_player_position(frame, pos, move):
     if not is_ready(frame):
         raise VisionError("等待我方回合")
     after = pos.next(move)
+    hands = hand_inventory(frame)
     replies = (after.next(reply) for reply in moves(after))
-    candidates = [reply for reply in replies if terminal(reply) is None and hands_match(frame, reply)]
+    candidates = [reply for reply in replies if terminal(reply) is None and (reply.blue, reply.orange) == hands]
     # The game can show the blue legend before the opponent's move is visible.
-    if hands_match(frame, after):
+    if (after.blue, after.orange) == hands:
         candidates.append(after)
     observed = match_position(frame, candidates, previous=after.board)
     if observed == after:
@@ -41,7 +36,7 @@ def source_point(frame, pos, move):
         return point(move.source)
     capture_icons = hand_read(frame, BLUE)
     candidates = [(x, y) for x, y, p in capture_icons if p == -move.source]
-    if not hands_match(frame, pos) or not candidates:
+    if hand_inventory(frame) != (pos.blue, pos.orange) or not candidates:
         raise StopPlay("无法确认部署用的候补图标")
     return candidates[0]
 
@@ -72,18 +67,10 @@ def select_move(game, pos, move, read_current):
 
 
 def choose(pos, history, notify):
-    if full_inventory(pos):
-        try:
-            result, depth, ties, _ = recommend(pos, history, seconds=.5, online=True)
-        except (OSError, TypeError, ValueError, KeyError):
-            result, depth, ties = solve(pos, history, seconds=4)
-    else:
-        result, depth, ties = solve(pos, history, seconds=4)
-    if not ties:
-        raise StopPlay(f"尚無可證明的最佳走法，已停止落子 ({table_code(pos)})")
-    labels = "、".join(m.label() for m in ties)
-    notify("move", labels, result, depth)
-    return ties[0]
+    result, depth, choices, _ = recommend(pos, history, seconds=4, online=True)
+    move = choices[0]
+    notify("move", move.label(), result, depth)
+    return move
 
 
 def wait_for(game, read, seconds, *, stable_for=0):
@@ -155,7 +142,7 @@ def prepare(game, notify, *, auto_refill=False):
             notify("waiting_board")
 
 
-def settle(game, state, proven_win, notify):
+def settle(game, state, notify):
     notify("waiting_result")
     if state == "tutorial":
         game.click(*CLICK[state])
@@ -163,11 +150,6 @@ def settle(game, state, proven_win, notify):
     if state == "result":
         game.click(*CLICK[state])
         state = wait_menu(game, {"result_details", "win_details"})
-    if state == "result_details" and not proven_win:
-        try:
-            state = wait_menu(game, {"win_details"}, 4)
-        except StopPlay as error:
-            raise StopPlay("未確認獲勝，已停止推進。") from error
     game.click(*CLICK[state])
     # The stage carousel can appear briefly before the reward overlay opens.
     overlays = POST_MATCH_OVERLAYS.copy()
@@ -179,19 +161,13 @@ def settle(game, state, proven_win, notify):
         overlays.remove(state)
 
 
-def confirms_win(after, history):
-    outcome = terminal(after)
-    if outcome is not None:
-        return outcome == -1
-    replies = [after.next(move) for move in moves(after)]
-    return history.count(after) < 3 and bool(replies) and all(
-        terminal(reply) == 1 and history.count(reply) < 2 for reply in replies)
-
-
 def play_match(game, frame, pos, notify):
     history = []
     read_current = read_position
-    for _ in range(90):
+    endings = RESULT_STATES | {"tutorial"}
+    while True:
+        if terminal(pos) is not None or not any(moves(pos)):
+            return wait_menu(game, endings, 32, stable_for=.7)
         move = choose(pos, history, notify)
         select_move(game, pos, move, read_current)
         game.click(*point(move.target, selected=True))
@@ -203,7 +179,7 @@ def play_match(game, frame, pos, notify):
 
         def read_next(new_frame):
             scene = classify_screen(new_frame)
-            if scene in RESULT_STATES or scene == "tutorial":
+            if scene in endings:
                 return scene
             # Do not accept the old board or end-of-turn animation as the opponent's response.
             if after.turn not in after.board:
@@ -213,21 +189,23 @@ def play_match(game, frame, pos, notify):
         # The result splash can flash before the stage's tutorial overlay opens.
         frame, reply = wait_for(game, read_next, 32, stable_for=.7)
         if isinstance(reply, str):
-            return reply, confirms_win(after, history)
-        old = pos
+            return reply
         pos = reply
         read_current = read_reply
         changes = [f"{square(i)}={NAMES[abs(p)] or '空'}" for i, p in enumerate(pos.board)
                    if p != after.board[i]]
         notify("reply", move.label(), "，".join(changes))
-        if pos == old and history.count(pos) >= 2:
-            raise StopPlay("局面已重复，等待游戏结算")
-    raise StopPlay("达到本次运行的回合上限")
+        if history.count(pos) >= 2:
+            try:
+                return wait_menu(game, endings, 2.5, stable_for=.55)
+            except StopPlay:
+                # The game may still allow a move after a non-consecutive repetition.
+                pass
 
 
 def run(game, rounds, notify, *, auto_refill=False):
     for number in range(1, rounds + 1):
         frame, pos = prepare(game, notify, auto_refill=auto_refill)
-        result, proven_win = play_match(game, frame, pos, notify)
-        settle(game, result, proven_win, notify)
+        result = play_match(game, frame, pos, notify)
+        settle(game, result, notify)
         notify("completed", number, rounds)
