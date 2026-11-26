@@ -46,6 +46,17 @@ class RaftHatTests(unittest.TestCase):
               patch.object(hats, "pose_costs", return_value=(.078, .082))):
             self.assertEqual(hats.observe(self.frame, 7, floor=floor), (kind,))
 
+    def test_three_matching_corners_can_resolve_an_ambiguous_hat_with_one_outlier(self):
+        kind = solver.WHALE
+        hat = hats.Hat(kind, hats.references()[kind][0], 7290, 150)
+        floor = vision.raft_evidence((-1, None, -1, 0, None, 1, 0, -1))
+        self.assertEqual(floor.compatible, (-kind,))
+        self.assertIsNone(floor.exact)
+        with (patch.object(hats, "describe", side_effect=lambda *_args, **_kwargs: iter((hat,))),
+              patch.object(hats, "pose_costs", return_value=(.110, .080))):
+            self.assertEqual(hats.observe(self.frame, 8, floor=floor), (-kind,))
+        self.assertIsNone(vision.raft_evidence((1, None, -1, 0, None, 1, 0, -1)))
+
     def test_complete_tile_pattern_selects_between_plausible_hat_kinds(self):
         whale, dolphin = solver.WHALE, solver.DOLPHIN
         bank = hats.references()
@@ -104,12 +115,33 @@ class RaftHatTests(unittest.TestCase):
         observed = [(p,) for p in self.expected.board]
         observed[5] = (solver.TURTLE, -solver.TURTLE)
         candidates = [self.expected, self.alternative, self.before]
+        hands = self.expected.blue, self.expected.orange
         with patch.object(vision, "observe_board", return_value=observed):
-            self.assertEqual(vision.match_position(self.frame, candidates, previous=self.before.board),
+            self.assertEqual(vision.match_position(self.frame, candidates, previous=self.before, hands=hands),
                              self.expected)
             observed[5] = (solver.TURTLE,)
             with self.assertRaises(vision.VisionError):
-                vision.match_position(self.frame, candidates, previous=self.before.board)
+                vision.match_position(self.frame, candidates, previous=self.before, hands=hands)
+
+    def test_deployment_needs_a_visible_hat_and_a_matching_removed_reserve(self):
+        kind = solver.WHALE
+        previous = solver.Position((0, -1, 0, 0, 3, -kind, 0, 3, 0, 1, 0, 0),
+                                   (4, 4), (kind,), solver.ORANGE)
+        expected = previous.next(solver.Move(-kind, 8))
+        alternative = previous.next(solver.Move(-kind, 10))
+        candidates = [previous, expected, alternative]
+        observed = [(piece,) for piece in expected.board]
+        observed[8] = (kind, -kind)
+        with patch.object(vision, "observe_board", return_value=observed):
+            self.assertEqual(vision.match_position(self.frame, candidates, previous=previous,
+                                                   hands=(expected.blue, expected.orange)), expected)
+            with self.assertRaises(vision.VisionError):
+                vision.match_position(self.frame, candidates, previous=previous,
+                                      hands=(previous.blue, previous.orange))
+            observed[8] = (0,)
+            with self.assertRaises(vision.VisionError):
+                vision.match_position(self.frame, candidates, previous=previous,
+                                      hands=(expected.blue, expected.orange))
 
     def test_initial_read_accepts_an_endgame_without_reserves(self):
         board = (0, 0, solver.DOLPHIN, 0, 0, solver.KING, 0, -solver.KING,
