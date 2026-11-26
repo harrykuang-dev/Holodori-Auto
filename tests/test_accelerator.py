@@ -14,7 +14,7 @@ class TensorRTComponentTests(unittest.TestCase):
     def setUp(self):
         directory = self.enterContext(tempfile.TemporaryDirectory())
         base = Path(directory)
-        self.folder = base / accelerator.TENSORRT_COMPONENT
+        self.folder = base.resolve() / accelerator.TENSORRT_COMPONENT
         self.enterContext(patch.object(sys, 'executable', str(base / 'Holodori-Auto.exe')))
         self.enterContext(patch.object(sys, 'frozen', True, create=True))
         self.enterContext(patch.object(sys, 'path', sys.path.copy()))
