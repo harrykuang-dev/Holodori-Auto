@@ -45,9 +45,10 @@ The standard folder contains the executable, `_internal/`, feature resources and
 ```powershell
 python -m pip install -r requirements-nvidia.txt
 python tools/build_tensorrt_component.py --output dist/nvidia/accelerators/tensorrt
+python tools/build_tensorrt_component.py --output dist/nvidia/accelerators/tensorrt --verify
 ```
 
-The optional archive supplies `accelerators/tensorrt/` next to `Holodori-Auto.exe`. Jump Rope and Cooking share this component on supported NVIDIA hardware. They use different models and keep separate device-specific engine caches. Jump Rope requires a hardware GPU backend. Cooking can fall back to CPU.
+The builder verifies the component format, Python ABI, architecture, dependency versions and sizes of required files. The optional archive supplies `accelerators/tensorrt/` next to `Holodori-Auto.exe`. Jump Rope and Cooking share this component on supported NVIDIA hardware. They use different models and keep separate device-specific engine caches. Jump Rope requires a hardware GPU backend. Cooking can fall back to CPU.
 
 ## Verification
 
