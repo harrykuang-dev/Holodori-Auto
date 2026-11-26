@@ -57,10 +57,10 @@ class RaftHatTests(unittest.TestCase):
             with self.assertRaises(vision.VisionError):
                 vision.match_position(self.frame, candidates, previous=self.before.board)
 
-    def test_initial_read_waits_for_all_pieces(self):
-        missing_whale = self.before.board[:2] + (0,) + self.before.board[3:]
+    def test_initial_read_accepts_an_endgame_without_reserves(self):
+        board = (0, 0, solver.DOLPHIN, 0, 0, solver.KING, 0, -solver.KING,
+                 0, solver.DOLPHIN, -solver.TURTLE, 0)
         with (patch.object(vision, "is_ready", return_value=True),
               patch.object(vision, "hand_read", return_value=[]),
-              patch.object(vision, "read_board", return_value=missing_whale)):
-            with self.assertRaises(vision.VisionError):
-                vision.read_position(self.frame)
+              patch.object(vision, "observe_board", return_value=[(piece,) for piece in board])):
+            self.assertEqual(vision.read_position(self.frame), solver.Position(board))
