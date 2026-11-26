@@ -22,6 +22,7 @@ class TileEvidence(NamedTuple):
     exact: int | None
     painted: int
     visible: int
+    mixed: bool = False
 
 
 @lru_cache(maxsize=2)
@@ -128,7 +129,7 @@ def observe(patch, index, *, floor=None):
     side = pose_side(blue, orange)
     if floor:
         matching = [piece for piece in floor.compatible if abs(piece) == kind]
-        if len(matching) == 1 and (side is None or floor.painted >= 2):
+        if len(matching) == 1 and (side is None or (floor.painted >= 2 and not floor.mixed)):
             return (matching[0],)
     if side is None and kind == WHALE:
         wide = next(describe(patch, index // 4, wide_whale=True), None)

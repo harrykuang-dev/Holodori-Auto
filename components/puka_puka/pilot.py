@@ -21,11 +21,10 @@ def next_player_position(frame, pos, move):
     after = pos.next(move)
     hands = hand_inventory(frame)
     replies = (after.next(reply) for reply in moves(after))
-    candidates = [reply for reply in replies if terminal(reply) is None and (reply.blue, reply.orange) == hands]
+    candidates = [reply for reply in replies if terminal(reply) is None]
     # The game can show the blue legend before the opponent's move is visible.
-    if (after.blue, after.orange) == hands:
-        candidates.append(after)
-    observed = match_position(frame, candidates, previous=after.board)
+    candidates.append(after)
+    observed = match_position(frame, candidates, previous=after, hands=hands)
     if observed == after:
         raise VisionError("等待對方完成落子")
     return observed

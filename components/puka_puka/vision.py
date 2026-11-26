@@ -6,7 +6,7 @@ import cv2
 import numpy as np
 
 from hats import TileEvidence, observe
-from solver import BLUE, DOLPHIN, GOLD, KING, ORANGE, TURTLE, WHALE, Position, square
+from solver import BLUE, DOLPHIN, GOLD, KING, ORANGE, TURTLE, WHALE, Move, Position, square
 
 
 WIDTH, HEIGHT = 1626, 915
@@ -111,29 +111,30 @@ def raft_markers(raster):
 
 
 def raft_evidence(markers):
-    painted = [mark for mark in markers if mark]
+    blue, orange = markers.count(BLUE), markers.count(ORANGE)
     visible = sum(mark is not None for mark in markers)
-    if not painted or len(set(painted)) > 1:
+    painted, other = max(blue, orange), min(blue, orange)
+    if not painted or (other and (other != 1 or painted < 3)):
         return None
-    side = painted[0]
+    side = BLUE if blue > orange else ORANGE
     compatible = []
     exact = []
     for kind, pattern in MOVE_DIAGRAMS.items():
         if side == ORANGE:
             pattern = tuple(pattern[i] for i in MIRROR_EDGES)
-        if any(mark and not edge for mark, edge in zip(markers, pattern)):
+        if any(mark == side and not edge for mark, edge in zip(markers, pattern)):
             continue
         white_misses = sum(mark == 0 and edge for mark, edge in zip(markers, pattern))
-        if len(painted) == 1:
+        if painted == 1:
             opposite = 3 if side == BLUE else 4
             if kind != TURTLE or markers[opposite] != 0:
                 continue
-        if white_misses <= 1:
+        if white_misses <= (0 if other else 1):
             compatible.append(side * kind)
         if white_misses == 0:
             exact.append(side * kind)
-    unique = exact[0] if len(exact) == 1 and visible >= 4 else None
-    return TileEvidence(tuple(compatible), unique, len(painted), visible)
+    unique = exact[0] if not other and len(exact) == 1 and visible >= 4 else None
+    return TileEvidence(tuple(compatible), unique, painted, visible, mixed=bool(other))
 
 
 def observe_board(frame):
@@ -163,8 +164,8 @@ def read_board(frame):
     return tuple(choices[0] for choices in observations)
 
 
-def match_position(frame, candidates, *, previous):
-    candidates = set(candidates)
+def match_position(frame, candidates, *, previous, hands):
+    candidates = {pos for pos in candidates if (pos.blue, pos.orange) == hands}
     if not candidates:
         raise VisionError("預期狀態為空")
     observations = tuple(observe_board(frame))
@@ -173,9 +174,15 @@ def match_position(frame, candidates, *, previous):
     if len(matching) != 1:
         raise VisionError("暫時無法從棋帽確認唯一的合法局面")
     confirmed = matching[0]
-    changes = [(piece, choices) for before, piece, choices in zip(previous, confirmed.board, observations)
-               if before != piece]
-    if changes and not any(choices == (piece,) for piece, choices in changes):
+    changes = [i for i, (before, piece) in enumerate(zip(previous.board, confirmed.board)) if before != piece]
+    if changes and all(len(observations[i]) > 1 for i in changes):
+        if len(changes) == 1:
+            target = changes[0]
+            kind = abs(confirmed.board[target])
+            if (not previous.board[target] and kind in previous.hand(previous.turn)
+                    and previous.next(Move(-kind, target)) == confirmed):
+                # The matching reserve disappeared and its hat is visible at this unique destination.
+                return confirmed
         raise VisionError("暫時看不清有變動的棋帽")
     return confirmed
 
