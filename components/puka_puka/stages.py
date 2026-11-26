@@ -2,6 +2,7 @@
 
 from functools import cache
 
+import cv2
 import numpy as np
 
 from vision import bgr, is_ready
@@ -19,6 +20,7 @@ CLICK = {
     "result": (1368, 828),
     "result_details": (1368, 828),
     "win_details": (1368, 828),
+    "event_next": (1368, 828),
     "reward": (812, 807),
     "refill": (1362, 838),
 }
@@ -134,6 +136,18 @@ def refill_screen(frame):
     return "refill" if one_item and ready else "refill_panel"
 
 
+def event_next(frame):
+    if not (hammer(frame) and white(frame[41:100, 1515:1595], .43)
+            and blue_button(frame[805:854, 1280:1525], .60)):
+        return False
+    # Next has a filled arrow; the lobby's check mark is a thinner component.
+    # The search area leaves room for the arrow to shift with the label length.
+    glyphs = (frame[810:848, 1250:1385].min(axis=2) > 215).astype(np.uint8)
+    _, _, components, _ = cv2.connectedComponentsWithStats(glyphs)
+    return any(18 <= w <= 31 and 14 <= h <= 26 and .42 <= area/(w*h) <= .72
+               for _, _, w, h, area in components[1:])
+
+
 def result_screen(frame):
     if not hammer(frame) or not blue_button(frame[805:854, 1280:1525], .60):
         return None
@@ -170,4 +184,7 @@ def classify_screen(frame):
         return stage or ('level_next' if has_next_page(frame) else 'level_menu')
     if hub(frame):
         return "hub"
-    return team_screen(frame) or result_screen(frame)
+    team = team_screen(frame)
+    if team:
+        return team
+    return "event_next" if event_next(frame) else result_screen(frame)

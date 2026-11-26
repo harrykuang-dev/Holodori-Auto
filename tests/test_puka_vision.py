@@ -32,6 +32,27 @@ class PukaScreenTests(unittest.TestCase):
         self.frame[755:775, 1365:1384] = 0
         self.assertIsNone(stages.classify_screen(self.frame))
 
+    def test_event_next_uses_shared_settlement_controls(self):
+        self.frame[29:72, 46:106] = 245
+        self.frame[805:854, 1280:1525] = (235, 174, 53)
+        self.assertEqual(stages.classify_screen(self.frame), 'result')
+
+        self.frame[41:100, 1515:1595] = 245
+        self.assertNotEqual(stages.classify_screen(self.frame), 'event_next')
+        check = np.array([(1365, 825), (1371, 833), (1385, 819)], dtype=np.int32)
+        cv2.polylines(self.frame, [check], False, (245, 245, 245), 3)
+        self.assertNotEqual(stages.classify_screen(self.frame), 'event_next')
+        self.frame[805:854, 1280:1525] = (235, 174, 53)
+        arrow = np.array([(1313, 827), (1324, 827), (1324, 821), (1337, 831),
+                          (1324, 841), (1324, 835), (1313, 835)], dtype=np.int32)
+        cv2.fillPoly(self.frame, [arrow], (245, 245, 245))
+        for artwork in ((20, 35, 91), (220, 37, 144)):
+            self.frame[224:714, 170:775] = artwork
+            self.frame[300:639, 793:1502] = artwork
+            self.assertEqual(stages.classify_screen(self.frame), 'event_next')
+        self.frame[805:854, 1280:1525] = 130
+        self.assertIsNone(stages.classify_screen(self.frame))
+
     def test_refill_requires_the_item_dialog_and_default_quantity(self):
         self.frame[143:193, 931:1045] = 245
         self.frame[700:757, 930:1085] = (250, 150, 40)
@@ -129,6 +150,12 @@ class PukaRefillTests(unittest.TestCase):
         game.click = Mock(side_effect=lambda *_: setattr(game, 'scene', next(scenes)))
         return game
 
+    def test_start_on_event_page_passes_through_remaining_rewards(self):
+        game = self.game('event_next', 'reward', 'challenge', 'board')
+        self.assertEqual(pilot.prepare(game, Mock()), ('board', 'ready position'))
+        self.assertEqual(game.click.call_args_list, [call(*stages.CLICK[state])
+            for state in ('event_next', 'reward', 'challenge')])
+
     def test_refill_is_off_by_default(self):
         game = self.game('refill')
         with self.assertRaisesRegex(pilot.StopPlay, '能量不足'):
@@ -151,6 +178,27 @@ class PukaRefillTests(unittest.TestCase):
         with self.assertRaisesRegex(pilot.StopPlay, '補充後仍然需要能量'):
             pilot.prepare(repeated, Mock(), auto_refill=True)
         self.assertEqual(repeated.click.call_args_list.count(call(*stages.CLICK['refill'])), 1)
+
+
+class PukaSettlementTests(unittest.TestCase):
+    def test_event_and_rewards_are_acknowledged_once_before_next_round(self):
+        game = Mock()
+        states = iter(('result_details', 'event_next', 'reward', 'challenge'))
+        waits = []
+
+        def wait(_game, allowed, **kwargs):
+            state = next(states)
+            self.assertIn(state, allowed)
+            waits.append(set(allowed))
+            return state
+
+        with patch.object(pilot, 'wait_menu', side_effect=wait):
+            pilot.settle(game, 'result', True, Mock())
+
+        self.assertEqual(game.click.call_args_list, [call(*stages.CLICK[state])
+            for state in ('result', 'result_details', 'event_next', 'reward')])
+        self.assertNotIn('event_next', waits[2])
+        self.assertNotIn('reward', waits[3])
 
 
 class PukaTrackingTests(unittest.TestCase):

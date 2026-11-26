@@ -7,6 +7,7 @@ from tkinter import ttk
 import traceback
 
 from holodori.app import family_theme
+from holodori.global_hotkey import GlobalHotkey
 from holodori.modules import BY_ID
 from holodori.settings import parse_stop_hotkey
 from pilot import StopPlay, run
@@ -26,47 +27,47 @@ COPY = {
         '遊玩中', '正在停止', '已停止', '已達局數上限', '請輸入 1 至 9999 局。',
         '等待單人入口或關卡選單…', '等待棋盤…', '等待結算與領獎…',
         '落子 {moves}（{plies} 手）', '依照遊戲流程前進，兩種模式合計局數。', '關閉',
-        '自動補充能量', '正在補充能量…'),
+        '自動補充能量', '正在補充能量…', '無法註冊 {key}，請更換開始快捷鍵或點擊「開始」。'),
     'English': (
         'Open {game}, then click Start.',
         'Match limit', 'Completed this run', 'Start', 'Stop', 'Ready', 'Switching to the game…',
         'Playing', 'Stopping', 'Stopped', 'Match limit reached', 'Enter 1 to 9999 matches.',
         'Waiting for the solo lobby or stage menu…', 'Waiting for the board…', 'Waiting for results and rewards…',
         'Move {moves} ({plies} plies)', 'The match limit applies across both modes.', 'Close',
-        'Automatically refill energy', 'Refilling energy…'),
+        'Automatically refill energy', 'Refilling energy…', 'Could not register {key}. Choose another shortcut or click Start.'),
     '日本語': (
         '「{game}」を開いてから「開始」をクリックしてください。',
         '対局数の上限', '今回のクリア数', '開始', '停止', '待機中', 'ゲームに切り替え中…',
         '対局中', '停止中', '停止しました', '設定した対局数に到達', '1〜9999の対局数を入力してください。',
         'ソロ画面またはステージ選択を待機中…', '盤面を待機中…', '結果と報酬を待機中…',
         '着手 {moves}（{plies}手）', '対局数の上限は両モードの合計です。', '閉じる',
-        'エネルギーを自動回復', 'エネルギーを回復中…'),
+        'エネルギーを自動回復', 'エネルギーを回復中…', '{key} を登録できません。別のキーか開始ボタンを使ってください。'),
     '한국어': (
         '{game}에 입장한 뒤 ‘시작’을 클릭하세요.',
         '대국 수 제한', '이번 실행 완료', '시작', '중지', '준비', '게임으로 전환 중…',
         '진행 중', '중지 중', '중지됨', '대국 수 제한에 도달', '1~9999 사이의 대국 수를 입력하세요.',
         '솔로 화면 또는 스테이지 선택 대기 중…', '게임판 대기 중…', '결과 및 보상 대기 중…',
         '착수 {moves} ({plies}수)', '두 모드의 대국 수를 합산합니다.', '닫기',
-        '에너지 자동 충전', '에너지 충전 중…'),
+        '에너지 자동 충전', '에너지 충전 중…', '{key} 등록 실패. 다른 단축키나 시작 버튼을 사용하세요.'),
     'Indonesian': (
         'Buka {game}, lalu klik Mulai.',
         'Batas pertandingan', 'Selesai sesi ini', 'Mulai', 'Berhenti', 'Siap', 'Beralih ke game…',
         'Sedang bermain', 'Menghentikan', 'Berhenti', 'Batas pertandingan tercapai', 'Masukkan 1 hingga 9999 pertandingan.',
         'Menunggu lobi solo atau menu level…', 'Menunggu papan…', 'Menunggu hasil dan hadiah…',
         'Langkah {moves} ({plies} giliran)', 'Batas dihitung untuk kedua mode.', 'Tutup',
-        'Isi ulang energi otomatis', 'Mengisi ulang energi…'),
+        'Isi ulang energi otomatis', 'Mengisi ulang energi…', 'Tidak dapat mendaftarkan {key}. Gunakan pintasan lain atau klik Mulai.'),
     '简体中文': (
         '先进入{game}，再点击「开始」',
         '局数上限', '本次完成', '开始', '停止', '等待开始', '正在切换到游戏…',
         '游玩中', '正在停止', '已停止', '已达局数上限', '请输入 1 至 9999 局。',
         '等待单人入口或关卡菜单…', '等待棋盘…', '等待结算和领奖…',
         '落子 {moves}（{plies} 手）', '按游戏进度推进，两种模式合计局数。', '关闭',
-        '自动补充能量', '正在补充能量…'),
+        '自动补充能量', '正在补充能量…', '无法注册 {key}，请更换开始快捷键或点击「开始」。'),
 }
 TEXT_FIELDS = ('instructions', 'limit', 'progress', 'start', 'stop', 'ready', 'starting',
                'playing', 'stopping', 'stopped', 'finished', 'invalid',
                'waiting_entry', 'waiting_board', 'waiting_result', 'move', 'help', 'close',
-               'auto_refill', 'refilling')
+               'auto_refill', 'refilling', 'shortcut_unavailable')
 
 
 def match_limit(value):
@@ -139,8 +140,10 @@ class PukaPukaApp:
         self.target = None
         self.state = 'ready'
         self.detail_event = None
-        self.shortcuts = None
-        self.held = (False, False)
+        self.stop_shortcut = None
+        self.stop_held = False
+        self.start_generation = 0
+        self.start_listener = None
         self.language = tk.StringVar(root, '繁體中文')
         self.start_key = tk.StringVar(root, 'F8')
         self.stop_key = tk.StringVar(root, 'INSERT')
@@ -211,6 +214,14 @@ class PukaPukaApp:
         self.rounds.trace_add('write', lambda *_: self.refresh())
         self.translate()
         root.protocol('WM_DELETE_WINDOW', self.close)
+        if not self.smoke:
+            self.start_listener = GlobalHotkey(
+                lambda: self.messages.put(('start_shortcut', self.start_generation)),
+                lambda value, ok, _error: self.messages.put(
+                    ('shortcut_status', self.start_generation, value, ok)),
+            )
+            self.start_listener.configure(enabled=False)
+            self.start_listener.start()
         root.after(50, self.poll)
 
     def translate(self):
@@ -232,6 +243,8 @@ class PukaPukaApp:
                 detail = args[0]
             elif event == 'move':
                 detail = self.text[event].format(moves=args[0], plies=args[2])
+            elif event == 'shortcut_status':
+                detail = self.text['shortcut_unavailable'].format(key=args[0])
             else:
                 detail = self.text[event]
         self.detail.configure(text=detail)
@@ -248,16 +261,24 @@ class PukaPukaApp:
         self.start_button.configure(state='disabled' if active or self.smoke else 'normal')
         self.stop_button.configure(state='normal' if active and not self.stop_event.is_set() else 'disabled')
 
+    def configure_start_shortcut(self):
+        if self.start_listener is not None:
+            enabled = not (self.closing or self.capturing or self.help_dialog or self.worker)
+            self.start_listener.configure(value=self.start_key.get(), enabled=enabled)
+
     def begin_capture(self):
         self.capturing = True
+        self.start_generation += 1
+        self.configure_start_shortcut()
 
     def end_capture(self):
-        self.shortcuts = tuple(parse_stop_hotkey(var.get()) for var in (self.start_key, self.stop_key))
+        self.stop_shortcut = parse_stop_hotkey(self.stop_key.get())
         if not self.smoke:
-            self.held = tuple(shortcut_down(shortcut) for shortcut in self.shortcuts)
+            self.stop_held = shortcut_down(self.stop_shortcut)
         self.capturing = False
+        self.configure_start_shortcut()
 
-    def start(self, *, from_shortcut=False):
+    def start(self):
         if self.worker is not None or self.smoke or self.closing or self.capturing or self.help_dialog:
             return
         try:
@@ -271,17 +292,18 @@ class PukaPukaApp:
         self.stop_event.clear()
         self.state = 'starting'
         self.worker = Thread(target=self.play, args=(target,),
-                             kwargs={'activate': not from_shortcut, 'auto_refill': self.auto_refill.get()},
-                             name='puka-puka-play')
+                             kwargs={'auto_refill': self.auto_refill.get()}, name='puka-puka-play')
+        self.start_generation += 1
+        self.configure_start_shortcut()
         self.worker.start()
         self.refresh()
 
-    def play(self, target, *, activate, auto_refill):
+    def play(self, target, *, auto_refill):
         def notify(kind, *args):
             self.messages.put((kind, *args))
 
         try:
-            game = GameWindow(self.stop_event.is_set, activate=activate)
+            game = GameWindow(self.stop_event.is_set)
             notify('playing')
             run(game, target, notify, auto_refill=auto_refill)
         except InterruptedError:
@@ -301,10 +323,21 @@ class PukaPukaApp:
             self.refresh()
 
     def poll(self):
+        start_requested = False
         try:
             while True:
                 event, *args = self.messages.get_nowait()
-                if event in ('finished', 'stopped', 'playing'):
+                if event == 'start_shortcut':
+                    start_requested |= args[0] == self.start_generation
+                    continue
+                if event == 'shortcut_status':
+                    generation, value, ok = args
+                    if generation == self.start_generation and value == self.start_key.get():
+                        if not ok and not (self.capturing or self.help_dialog or self.closing or self.worker):
+                            self.detail_event = (event, value)
+                        elif ok and self.detail_event and self.detail_event[0] == event:
+                            self.detail_event = None
+                elif event in ('finished', 'stopped', 'playing'):
                     self.state = event
                 elif event == 'completed':
                     self.completed = args[0]
@@ -317,19 +350,20 @@ class PukaPukaApp:
             pass
         if self.worker is not None and not self.worker.is_alive():
             self.worker = None
+            self.configure_start_shortcut()
             self.refresh()
         if self.closing and self.worker is None:
             self.root.destroy()
             return
-        if not self.smoke and self.shortcuts:
-            pressed = tuple(shortcut_down(shortcut) for shortcut in self.shortcuts)
-            start, stop = (now and not before for now, before in zip(pressed, self.held))
-            self.held = pressed
-            if not self.capturing and not self.help_dialog and not self.closing:
-                if stop:
+        if not self.smoke and self.stop_shortcut:
+            pressed = shortcut_down(self.stop_shortcut)
+            stop_requested = pressed and not self.stop_held
+            self.stop_held = pressed
+            if not (self.capturing or self.help_dialog or self.closing):
+                if stop_requested:
                     self.stop()
-                elif start:
-                    self.start(from_shortcut=True)
+                elif start_requested:
+                    self.start()
         self.root.after(50, self.poll)
 
     def show_help(self):
@@ -337,6 +371,8 @@ class PukaPukaApp:
             self.help_dialog.lift()
             return
         dialog = self.help_dialog = tk.Toplevel(self.root)
+        self.start_generation += 1
+        self.configure_start_shortcut()
         dialog.title(self.text['limit'])
         panel = ttk.Frame(dialog, padding=self.px(16))
         panel.pack(fill='both', expand=True)
@@ -349,8 +385,11 @@ class PukaPukaApp:
         if self.help_dialog is not None:
             self.help_dialog.destroy()
             self.help_dialog = None
+            self.configure_start_shortcut()
 
     def close(self):
         self.closing = True
+        if self.start_listener is not None:
+            self.start_listener.close()
         self.close_help()
         self.stop()

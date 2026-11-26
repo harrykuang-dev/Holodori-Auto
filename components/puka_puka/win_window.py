@@ -26,6 +26,7 @@ def bind(dll, name, restype, *argtypes):
 
 foreground = bind(user, "GetForegroundWindow", wintypes.HWND)
 set_foreground = bind(user, "SetForegroundWindow", wintypes.BOOL, wintypes.HWND)
+show_async = bind(user, "ShowWindowAsync", wintypes.BOOL, wintypes.HWND, ctypes.c_int)
 is_visible = bind(user, "IsWindowVisible", wintypes.BOOL, wintypes.HWND)
 is_iconic = bind(user, "IsIconic", wintypes.BOOL, wintypes.HWND)
 get_rect = bind(user, "GetClientRect", wintypes.BOOL, wintypes.HWND, ctypes.POINTER(wintypes.RECT))
@@ -114,32 +115,45 @@ def find_game_window():
         return visible[0]
     if len(visible) > 1:
         raise OSError('找到多個遊戲視窗，請先切到要使用的視窗，再按開始快捷鍵。')
+    if len(candidates) == 1:
+        return candidates[0]
     if candidates:
-        raise OSError('遊戲視窗已最小化，請先手動開啟。')
+        raise OSError('找到多個遊戲視窗，請先開啟要使用的視窗。')
     raise OSError('找不到 hololive Dreams 遊戲視窗。')
 
 
 class GameWindow:
-    def __init__(self, stop_requested, *, activate=False):
+    def __init__(self, stop_requested):
         set_dpi(ctypes.c_void_p(-4))
         self.stop_requested = stop_requested
-        self.hwnd = foreground()
         self.check_stop()
-        if is_game_window(self.hwnd):
+        current = foreground()
+        if is_game_window(current) and not is_iconic(current):
+            self.hwnd = current
             self.bounds = self.rect()
             return
-        if not activate:
-            raise OSError('前景視窗不是 hololive Dreams。')
         self.hwnd = find_game_window()
-        self.bounds = visible_client_bounds(self.hwnd)
+        minimized = is_iconic(self.hwnd)
+        original = None if minimized else visible_client_bounds(self.hwnd)
         self.check_stop()
-        if not set_foreground(self.hwnd) and foreground() != self.hwnd:
-            raise OSError('Windows 未切換到遊戲，請手動切回後按開始快捷鍵。')
         deadline = time.monotonic() + 1
-        while foreground() != self.hwnd and time.monotonic() < deadline:
+        if minimized:
+            show_async(self.hwnd, 9)  # SW_RESTORE
+            while is_iconic(self.hwnd):
+                self.check_stop()
+                if time.monotonic() >= deadline:
+                    raise OSError("無法恢復最小化的遊戲視窗。")
+                time.sleep(.02)
+        if foreground() != self.hwnd:
+            set_foreground(self.hwnd)
+        while foreground() != self.hwnd:
             self.check_stop()
+            if time.monotonic() >= deadline:
+                raise OSError('Windows 未切換到遊戲，請手動切回後按開始快捷鍵。')
             time.sleep(.02)
-        self.verify_rect()
+        self.bounds = self.rect()
+        if original is not None and self.bounds != original:
+            raise OSError("游戏窗口位置或大小已变化")
 
     def check_stop(self):
         if self.stop_requested() or key(0x1B) & 0x8000:
