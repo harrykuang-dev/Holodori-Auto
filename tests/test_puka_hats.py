@@ -73,6 +73,25 @@ class RaftHatTests(unittest.TestCase):
         with patch.object(hats, "describe", return_value=()):
             self.assertEqual(hats.observe(self.frame, 0, floor=floor), (0,))
 
+    def test_same_color_raft_marks_correct_a_crown_facing_error(self):
+        kind = solver.KING
+        hat = hats.Hat(kind, hats.references()[kind][0], 943, 150)
+        floor = vision.raft_evidence((0, None, -1, None, -1, 0, 0, -1))
+        self.assertIn(-kind, floor.compatible)
+        with (patch.object(hats, "describe", return_value=(hat,)),
+              patch.object(hats, "pose_costs", return_value=(.0106, .0542))):
+            self.assertEqual(hats.observe(self.frame, 0, floor=floor), (-kind,))
+
+    def test_wide_whale_profile_recovers_occupancy_with_matching_raft(self):
+        kind = solver.WHALE
+        hat = hats.Hat(kind, hats.references()[kind][0], 7588, 150)
+        for first_corner, expected in ((-1, (-kind,)), (None, (kind, -kind))):
+            with self.subTest(first_corner=first_corner):
+                floor = vision.raft_evidence((first_corner, None, -1, 0, None, 1, 0, -1))
+                with (patch.object(hats, "describe", side_effect=lambda *_args, **_kwargs: iter((hat,))),
+                      patch.object(hats, "pose_costs", side_effect=((.1125, .0943), (.0916, .0612)))):
+                    self.assertEqual(hats.observe(self.frame, 8, floor=floor), expected)
+
     def test_well_exposed_unique_pattern_can_recover_a_hidden_hat(self):
         floor = vision.raft_evidence((1, 0, 1, 0, 0, 1, 0, 1))
         with patch.object(hats, "describe", return_value=()):
@@ -142,6 +161,25 @@ class RaftHatTests(unittest.TestCase):
             with self.assertRaises(vision.VisionError):
                 vision.match_position(self.frame, candidates, previous=previous,
                                       hands=(expected.blue, expected.orange))
+
+    def test_verified_reply_can_retain_one_hidden_unchanged_piece(self):
+        previous = solver.from_table_code("G/---/eG-/l-L/CGe/C")
+        expected = previous.next(solver.Move(1, 0))
+        observations = [(piece,) for piece in expected.board]
+        observations[0] = (solver.KING, -solver.KING)
+        observations[8] = (0,)
+        hands = expected.blue, expected.orange
+        with patch.object(vision, "observe_board", return_value=observations):
+            self.assertEqual(vision.match_position(self.frame, [expected], previous=previous, hands=hands), expected)
+            with self.subTest("two hidden pieces"):
+                observations[2] = (0,)
+                with self.assertRaises(vision.VisionError):
+                    vision.match_position(self.frame, [expected], previous=previous, hands=hands)
+            with self.subTest("hidden destination"):
+                observations[2] = (-solver.WHALE,)
+                observations[0] = (0,)
+                with self.assertRaises(vision.VisionError):
+                    vision.match_position(self.frame, [expected], previous=previous, hands=hands)
 
     def test_initial_read_accepts_an_endgame_without_reserves(self):
         board = (0, 0, solver.DOLPHIN, 0, 0, solver.KING, 0, -solver.KING,
