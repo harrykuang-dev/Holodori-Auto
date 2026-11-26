@@ -5,7 +5,7 @@ from functools import lru_cache
 import cv2
 import numpy as np
 
-from hats import TileEvidence, observe
+from hats import TileEvidence, describe, observe, pose_costs, references
 from solver import BLUE, DOLPHIN, GOLD, KING, ORANGE, TURTLE, WHALE, Move, Position, square
 
 
@@ -18,6 +18,16 @@ QUADS_LEFT = (
     ((237, 577), (452, 577), (424, 733), (185, 733)),
     ((549, 577), (764, 577), (758, 733), (525, 733)),
 )
+FOUR_ROW_LEFT = (
+    ((378, 255), (540, 255), (516, 322), (349, 322)),
+    ((608, 257), (778, 257), (776, 322), (592, 322)),
+    ((324, 343), (509, 343), (481, 425), (280, 425)),
+    ((591, 344), (775, 344), (771, 425), (567, 425)),
+    ((268, 450), (476, 450), (436, 552), (215, 552)),
+    ((566, 450), (769, 450), (761, 552), (534, 552)),
+    ((198, 584), (433, 584), (384, 718), (125, 718)),
+    ((523, 585), (766, 585), (749, 719), (493, 719)),
+)
 SELECTED_LEFT = (
     ((460, 266), (594, 266), (585, 373), (448, 373)),
     ((652, 266), (785, 266), (783, 373), (646, 373)),
@@ -26,7 +36,19 @@ SELECTED_LEFT = (
     ((419, 553), (569, 553), (555, 685), (401, 685)),
     ((630, 553), (782, 553), (778, 685), (624, 685)),
 )
+FOUR_ROW_SELECTED_LEFT = (
+    ((470, 165), (603, 165), (597, 265), (456, 265)),
+    ((652, 165), (787, 165), (784, 265), (646, 265)),
+    ((452, 292), (591, 292), (581, 404), (436, 404)),
+    ((645, 291), (789, 291), (786, 403), (639, 403)),
+    ((427, 435), (581, 435), (573, 561), (414, 561)),
+    ((634, 434), (787, 434), (786, 561), (627, 561)),
+    ((405, 593), (564, 593), (554, 733), (386, 733)),
+    ((626, 593), (786, 593), (787, 734), (614, 734)),
+)
 DEST = np.float32(((0, 0), (99, 0), (99, 99), (0, 99)))
+HAT_ROWS = {3: (100, 242, 404), 4: (84, 172, 270, 392)}
+ARROW_ROWS = {3: (108, 263, 434), 4: (52, 175, 325, 512)}
 RAFT_EDGES = ((7, 7), (50, 7), (92, 7), (7, 50), (92, 50), (7, 92), (50, 92), (92, 92))
 MIRROR_EDGES = (2, 1, 0, 4, 3, 7, 6, 5)
 MOVE_DIAGRAMS = {
@@ -51,22 +73,30 @@ def quads(left):
             yield tuple((WIDTH - quad[j][0], quad[j][1]) for j in (1, 0, 3, 2))
 
 
-@lru_cache(maxsize=2)
-def transforms(selected):
+@lru_cache(maxsize=4)
+def board_quads(rows, selected):
+    if rows == 4:
+        return tuple(quads(FOUR_ROW_SELECTED_LEFT if selected else FOUR_ROW_LEFT))
+    if rows != 3:
+        raise VisionError("尚未確認這個棋盤的浮台位置")
     left = SELECTED_LEFT if selected else QUADS_LEFT
-    return tuple(cv2.getPerspectiveTransform(np.float32([(x, y - 30) for x, y in quad]), DEST)
-                 for quad in quads(left))
+    return tuple(tuple((x, y - 30) for x, y in quad) for quad in quads(left))
 
 
-def tile(frame, index, selected=False):
-    return cv2.warpPerspective(frame, transforms(selected)[index], (100, 100))
+@lru_cache(maxsize=4)
+def transforms(selected, rows=3):
+    return tuple(cv2.getPerspectiveTransform(np.float32(quad), DEST)
+                 for quad in board_quads(rows, selected))
 
 
-def point(index, selected=False):
-    fields = tuple(quads(SELECTED_LEFT if selected else QUADS_LEFT))
-    tl, tr, br, bl = fields[index]
+def tile(frame, index, selected=False, *, rows=3):
+    return cv2.warpPerspective(frame, transforms(selected, rows)[index], (100, 100))
+
+
+def point(index, selected=False, *, rows=3):
+    tl, tr, br, bl = board_quads(rows, selected)[index]
     return (round((tl[0] + tr[0] + 2 * br[0] + 2 * bl[0]) / 6),
-            round((tl[1] + tr[1] + 2 * br[1] + 2 * bl[1]) / 6) - 30)
+            round((tl[1] + tr[1] + 2 * br[1] + 2 * bl[1]) / 6))
 
 
 def canonical(frame):
@@ -87,6 +117,49 @@ def split_frame(frame):
 
 def bgr(area):
     return np.moveaxis(area.astype(np.int16), -1, 0)
+
+
+def raft_rim(frame, quad):
+    _, _, right, left = quad
+    x, y = ((a + b) // 2 for a, b in zip(left, right))
+    b, g, r = bgr(frame[y+5:y+16, x-52:x+52])
+    rim = (b > 183) & (b-r > 100) & (b-g > 70)
+    b, g, r = bgr(frame[y-20:y-8, x-52:x+52])
+    deck = ((b > 163) & (g > 133) & (r > 116)
+            | (b > 180) & (g > 105) & (r < 90)
+            | (r > 185) & (g > 65) & (g < 160) & (b < 100))
+    return rim.mean() > .22 and deck.mean() > .40
+
+
+def board_rows(frame):
+    matches = {}
+    for rows in HAT_ROWS:
+        rims = [raft_rim(frame, quad) for quad in board_quads(rows, False)]
+        matches[rows] = tuple(sum(rims[i:i+4]) for i in range(0, len(rims), 4))
+    # The bottom rows overlap in the two projections, so use higher rows to tell them apart.
+    three = matches[3][1] >= 2 and matches[3][2] >= 2
+    four = sum(hit >= 2 for hit in matches[4][:3]) >= 2 and matches[4][3] >= 2
+    if three == four:
+        raise VisionError("尚未確認棋盤的浮台排數")
+    return 3 if three else 4
+
+
+def selected_layout_visible(frame, rows):
+    if rows == 3:
+        return True
+    rims = [raft_rim(frame, quad) for quad in board_quads(rows, True)]
+    return all(sum(rims[i:i+4]) >= 2 for i in range(0, len(rims), 4))
+
+
+def back_row_obscured(frame):
+    # The danger banner covers back-row hats while leaving the turn legend visible.
+    for left, right in ((510, 675), (1000, 1135)):
+        b, g, r = bgr(frame[88:116, left:right])
+        band = ((b >= 96) & (b <= 143) & (g >= 43) & (g <= 94)
+                & (b-g >= 40) & (abs(r-g) < 12))
+        if band.mean() <= .32:
+            return False
+    return True
 
 
 def raft_markers(raster):
@@ -139,13 +212,54 @@ def raft_evidence(markers):
     return TileEvidence(tuple(compatible), unique, painted, visible, mixed=bool(other))
 
 
-def observe_board(frame, *, tracking=False):
-    for index in range(12):
+def single_mark_hat(patch, row, markers, choices):
+    # An occluded deck can still confirm the side when its visible mark agrees with the hat.
+    painted = [(i, mark) for i, mark in enumerate(markers) if mark in (BLUE, ORANGE)]
+    if len(painted) != 1:
+        return None
+    edge, side = painted[0]
+    # The undo control can cover the back-row turtle's shell and the opposite raft edge.
+    clipped = choices == (0,) and row == 0 and markers.count(0) >= 3
+    kind = TURTLE if clipped else abs(choices[0])
+    if not kind or not MOVE_DIAGRAMS[kind][edge if side == BLUE else MIRROR_EDGES[edge]]:
+        return None
+    hat = next((candidate for candidate in describe(patch, row) if candidate.kind == kind), None)
+    if hat is None or (clipped and hat.area < 900):
+        return None
+    blue, orange = pose_costs(hat.pose, references()[kind])
+    cost, reverse = (blue, orange) if side == BLUE else (orange, blue)
+    maximum, difference = (.12, .025) if clipped else (.09, .018)
+    return side * kind if cost < maximum and reverse - cost > difference else None
+
+
+def observe_board(frame, *, tracking=False, rows=None):
+    if rows is None:
+        rows = board_rows(frame) if is_ready(frame) else 3
+    if back_row_obscured(frame):
+        raise VisionError("等待提示移開後排棋帽")
+    for index in range(rows * 4):
         row = index // 4
-        x, _ = point(index)
-        y = (100, 242, 404)[row]
-        floor = raft_evidence(raft_markers(tile(frame, index)))
-        yield observe(frame[y-46:y+45, x-115:x+115], index, floor=floor, tracking=tracking)
+        x, _ = point(index, rows=rows)
+        y = HAT_ROWS[rows][row]
+        markers = raft_markers(tile(frame, index, rows=rows))
+        floor = raft_evidence(markers)
+        if rows == 4 and row == 0:
+            # The extra row is farther from the camera. Match its hats at the normal scale.
+            patch = cv2.resize(frame[y-39:y+39, x-98:x+98], (230, 91))
+        else:
+            patch = frame[y-46:y+45, x-115:x+115]
+        choices = observe(patch, index, floor=floor, tracking=tracking)
+        if rows == 4 and floor and floor.painted == 1 and (len(choices) > 1 or choices == (0,)):
+            if (marked := single_mark_hat(patch, row, markers, choices)) is not None:
+                choices = (marked,)
+        if rows == 4 and len(choices) > 1 and markers.count(0) >= 7 and floor is None:
+            # A nearly unmarked deck excludes a neighboring hat leaking into this crop.
+            if abs(choices[0]) != TURTLE or (markers[3] == markers[4] == 0):
+                choices = (0,)
+        if rows == 4 and not tracking and choices == (0,) and floor and (
+                floor.painted >= 2 or markers[3] == ORANGE or markers[4] == BLUE):
+            raise VisionError(f"尚未確認 {square(index)} 的棋帽")
+        yield choices
 
 
 def read_board(frame):
@@ -171,6 +285,8 @@ def match_position(frame, candidates, *, previous, hands):
     if not candidates:
         raise VisionError("預期狀態為空")
     observations = tuple(observe_board(frame, tracking=True))
+    if len(observations) != len(previous.board):
+        raise VisionError("棋盤排數已變化")
 
     def hidden_count(pos):
         hidden = 0
@@ -204,14 +320,14 @@ def match_position(frame, candidates, *, previous, hands):
     return confirmed
 
 
-def highlighted(frame, target):
-    blue, green, red = bgr(tile(frame, target, True)[19:82, 18:83])
+def highlighted(frame, target, *, rows=3):
+    blue, green, red = bgr(tile(frame, target, True, rows=rows)[19:82, 18:83])
     return ((blue > 185) & (green > 145) & (blue - green > 10) & (green - red > 45)).mean() > .21
 
 
-def source_arrow(frame, origin):
-    x, _ = point(origin, selected=True)
-    y = (138, 293, 464)[origin // 4] - 30
+def source_arrow(frame, origin, *, rows=3):
+    x, _ = point(origin, selected=True, rows=rows)
+    y = ARROW_ROWS[rows][origin // 4]
     area = frame[y-34:y+35, x-54:x+55]
     blue, green, red = bgr(area)
     interior = ((blue > 200) & (green > 130) & (green < 221) & (red < 52)).astype(np.uint8)

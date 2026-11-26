@@ -49,3 +49,44 @@ class RaftSolverTests(unittest.TestCase):
         result = solver.rank_tablebase(self.position, (next_position, next_position),
                                         {self.winning_move: (1, 11), another: (-1, 2)})
         self.assertEqual(result, (0, 0, [self.winning_move]))
+
+    def test_only_the_four_row_board_allows_entering_its_fourth_row(self):
+        three_rows = (0, 0, 0, -solver.KING, solver.KING, 0, 0, 0,
+                      0, 0, solver.DOLPHIN, 0)
+        normal = solver.Position(three_rows)
+        challenge = solver.Position(three_rows + (0, 0, 0, 0))
+        fourth_row_move = solver.Move(10, 14)
+
+        self.assertNotIn(fourth_row_move, solver.moves(normal))
+        self.assertIn(fourth_row_move, solver.moves(challenge))
+        self.assertEqual(challenge.next(fourth_row_move).board[14], solver.DOLPHIN)
+        self.assertNotIn(fourth_row_move, solver.moves(normal))
+
+    def test_fourth_row_uses_the_same_promotion_and_goal_columns(self):
+        board = (0, 0, -solver.KING, 0,
+                 0, 0, 0, 0,
+                 0, 0, 0, 0,
+                 0, 0, solver.TURTLE, 0)
+        turtle = solver.Position(board, (solver.TURTLE,))
+        self.assertEqual(turtle.next(solver.Move(14, 15)).board[15], solver.GOLD)
+        self.assertEqual(turtle.next(solver.Move(-solver.TURTLE, 15)).board[15], solver.TURTLE)
+
+        leader = solver.Position(board[:14] + (solver.KING, 0))
+        reached = leader.next(solver.Move(14, 15))
+        self.assertIsNone(solver.terminal(reached))
+        self.assertEqual(solver.terminal(reached.next(solver.Move(2, 1))), 1)
+
+    def test_four_row_challenge_recommends_a_local_move_with_full_inventory(self):
+        board = (0, solver.DOLPHIN, 0, 0,
+                 0, solver.WHALE, 0, -solver.KING,
+                 solver.KING, -solver.TURTLE, -solver.WHALE, 0,
+                 0, solver.TURTLE, solver.DOLPHIN, 0)
+        position = solver.Position(board)
+        self.assertTrue(solver.full_inventory(position))
+        with patch.object(solver, "probe") as probe:
+            _, _, choices, _ = solver.recommend(position, seconds=0, online=True)
+        probe.assert_not_called()
+        self.assertTrue(choices)
+        self.assertTrue(set(choices) <= set(solver.moves(position)))
+        with self.assertRaises(ValueError):
+            solver.table_code(position)

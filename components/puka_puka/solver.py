@@ -1,4 +1,4 @@
-"""Game positions and a shortest-forced-result search for the 3×4 board."""
+"""Raft Chess positions and search for three- and four-row boards."""
 
 from collections import Counter
 from dataclasses import dataclass
@@ -19,6 +19,7 @@ DIAGONAL = ((-1, -1), (-1, 1), (1, -1), (1, 1))
 VELOCITY = ((), ORTHOGONAL + DIAGONAL, DIAGONAL, ORTHOGONAL, ((0, 1),),
             ORTHOGONAL + ((-1, 1), (1, 1)))
 TABLEBASE = "https://dobutsu.brianhliou.com/api"
+TABLEBASE_ROWS = 3
 MATE = 100_000
 MATERIAL = (0, 0, 190, 230, 100, 340)
 KING_ADVANCE = (0, 12, 55, 230)
@@ -44,6 +45,10 @@ class Position:
     blue: tuple[int, ...] = ()
     orange: tuple[int, ...] = ()
     turn: int = BLUE
+
+    @property
+    def rows(self):
+        return len(self.board) // 4
 
     def hand(self, side):
         return self.blue if side == BLUE else self.orange
@@ -74,16 +79,17 @@ def goal(side):
 
 
 @cache
-def destinations(index, piece, side):
+def destinations(index, piece, side, rows):
     row, col = divmod(index, 4)
     return tuple((row + dr) * 4 + col + side * dc for dr, dc in VELOCITY[piece]
-                 if 0 <= row + dr < 3 and 0 <= col + side * dc < 4)
+                 if 0 <= row + dr < rows and 0 <= col + side * dc < 4)
 
 
 def moves(pos):
+    rows = pos.rows
     for origin, val in enumerate(pos.board):
         if val * pos.turn > 0:
-            for target in destinations(origin, abs(val), pos.turn):
+            for target in destinations(origin, abs(val), pos.turn, rows):
                 if pos.board[target] * pos.turn <= 0:
                     yield Move(origin, target)
     for piece in sorted(set(pos.hand(pos.turn))):
@@ -164,12 +170,13 @@ def evaluate(pos):
     """Estimate the side-to-move advantage and detect an immediate king capture."""
     score = 0
     attacks = {BLUE: set(), ORANGE: set()}
+    rows = pos.rows
     for index, piece in enumerate(pos.board):
         if not piece:
             continue
         side = BLUE if piece > 0 else ORANGE
         kind = abs(piece)
-        destinations_from_piece = destinations(index, kind, side)
+        destinations_from_piece = destinations(index, kind, side, rows)
         attacks[side].update(destinations_from_piece)
         advance = 3 - abs(goal(side) - index % 4)
         if kind == KING:
@@ -264,10 +271,13 @@ def search_moves(pos, history, seconds, max_depth=16):
 
 
 def table_code(pos):
+    if pos.rows != TABLEBASE_ROWS:
+        raise ValueError("动物将棋棋谱库只支持三行四列棋盘")
+
     def letter(p):
         return LETTERS[p] if p > 0 else LETTERS[-p].lower() if p < 0 else "-"
 
-    ranks = ["".join(letter(pos.board[row * 4 + col]) for row in range(3))
+    ranks = ["".join(letter(pos.board[row * 4 + col]) for row in range(TABLEBASE_ROWS))
              for col in range(3, -1, -1)]
     hands = "".join(map(letter, pos.blue)) + "".join(letter(-p) for p in pos.orange)
     return "/".join(["S" if pos.turn == BLUE else "G", *ranks, hands or "-"])
@@ -275,10 +285,10 @@ def table_code(pos):
 
 def from_table_code(code):
     side, *rows, hands = code.split("/")
-    if side not in {"S", "G"} or len(rows) != 4 or any(len(row) != 3 for row in rows):
+    if side not in {"S", "G"} or len(rows) != 4 or any(len(row) != TABLEBASE_ROWS for row in rows):
         raise ValueError(f"无效盘面 {code}")
     signed = {**dict(zip("-LEGCR", range(6))), **dict(zip("legcr", range(-1, -6, -1)))}
-    board = tuple(signed[rows[col][row]] for row in range(3) for col in range(3, -1, -1))
+    board = tuple(signed[rows[col][row]] for row in range(TABLEBASE_ROWS) for col in range(3, -1, -1))
     reserves = [signed[p] for p in hands]
     return Position(board, tuple(sorted(p for p in reserves if p > 0)),
                     tuple(sorted(-p for p in reserves if p < 0)), BLUE if side == "S" else ORANGE)
@@ -291,9 +301,9 @@ def full_inventory(pos):
 
 @cache
 def probe(pos):
+    code = table_code(pos)
     if not full_inventory(pos):
         raise ValueError("完整开局棋谱库需要双方合计八枚棋子")
-    code = table_code(pos)
     with urlopen(f"{TABLEBASE}?{urlencode({'pos': code})}", timeout=2.5) as response:
         reply = json.load(response)
     if reply.get("pos") != code:
@@ -314,7 +324,7 @@ def recommend(pos, history=(), seconds=2.0, online=False):
     remaining = max(0., seconds - (time.monotonic() - started))
     if proven or terminal(pos) is not None:
         return outcome, depth, proven, "本地证明"
-    if online and full_inventory(pos):
+    if online and pos.rows == TABLEBASE_ROWS and full_inventory(pos):
         try:
             scores = probe(pos)
             if scores:
