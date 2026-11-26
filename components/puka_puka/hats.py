@@ -82,7 +82,7 @@ def observe(patch, index):
         # A small component can be a hat clipped by the HUD or part of a hammer.
         if hat.area >= MIN_AREAS[hat.kind]:
             maximum_cost = .09
-        elif index == 3 and hat.kind in (WHALE, DOLPHIN):
+        elif index == 3:
             maximum_cost = .03  # The top-right controls can cover most of D1.
         else:
             maximum_cost = .008
