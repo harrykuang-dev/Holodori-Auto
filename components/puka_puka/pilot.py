@@ -143,7 +143,7 @@ def prepare(game, notify, *, auto_refill=False):
                 allowed.add(selected_stage)
             state = wait_menu(game, allowed, stable_for=.55)
         if state == "board":
-            return wait_for(game, read_position, 8)
+            return wait_for(game, read_position, 8, stable_for=.4)
         game.click(*CLICK[state])
         allowed.remove(state)
         if state in (*CHALLENGES, 'tutorial', 'team_auto', 'team_start'):
