@@ -18,7 +18,7 @@ from PIL import Image, ImageTk
 from fluent_theme import FluentTheme, Tooltip, BG, TEXT, MUTED, ACCENT
 from app_locale import APP_VERSION, LANGUAGES, text, error_message
 from daily_accounting import net_profit, record_day
-from global_hotkey import GlobalHotkey
+from holodori.global_hotkey import GlobalHotkey
 from hotkey_settings import captured_hotkey, parse_stop_hotkey
 from user_storage import USER_DATA_DIR, prepare_user_data
 import auto_bot

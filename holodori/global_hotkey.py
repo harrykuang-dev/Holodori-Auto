@@ -2,7 +2,7 @@
 import ctypes
 from ctypes import wintypes
 import threading
-from hotkey_settings import parse_stop_hotkey
+from .physical_keys import parse_stop_hotkey
 
 WM_HOTKEY = 0x0312
 MOD_NOREPEAT = 0x4000

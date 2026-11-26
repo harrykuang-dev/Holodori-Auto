@@ -5,7 +5,7 @@ import queue
 import sys
 import threading
 from hotkey_settings import captured_hotkey, parse_stop_hotkey
-from global_hotkey import GlobalHotkey, WM_HOTKEY, windows_hotkey, matches_hotkey
+from holodori.global_hotkey import GlobalHotkey, WM_HOTKEY, windows_hotkey, matches_hotkey
 
 
 class ShortcutTests(unittest.TestCase):
