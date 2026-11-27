@@ -6,6 +6,7 @@ import sys
 import unittest
 from unittest.mock import patch
 
+import cv2
 import numpy as np
 
 
@@ -72,6 +73,27 @@ class RaftHatTests(unittest.TestCase):
         self.assertEqual(floor.exact, solver.TURTLE)
         with patch.object(hats, "describe", return_value=()):
             self.assertEqual(hats.observe(self.frame, 0, floor=floor), (0,))
+
+    def test_nameplate_colors_do_not_conflict_with_a_turtles_direction(self):
+        kind = solver.TURTLE
+        hat = hats.Hat(kind, hats.references()[kind][0], 6200, 150)
+        blue, orange = (255, 167, 49), (35, 112, 241)
+        for rows in (3, 4):
+            for column, side, stripe_x, plate_x, paint, plate, costs in (
+                    (0, solver.ORANGE, 7, 7, orange, blue, (.088, .059)),
+                    (3, solver.BLUE, 92, 92, blue, orange, (.059, .088))):
+                with self.subTest(rows=rows, column=column):
+                    index = 4 * (rows - 1) + column
+                    raster = np.full((100, 100, 3), 128, dtype=np.uint8)
+                    raster[45:56, stripe_x-5:stripe_x+6] = paint
+                    raster[87:98, plate_x-5:plate_x+6] = plate
+                    inverse = np.linalg.inv(vision.transforms(False, rows)[index])
+                    frame = cv2.warpPerspective(raster, inverse, (vision.WIDTH, vision.HEIGHT))
+                    with (patch.object(vision, "observe", return_value=(kind, -kind)),
+                          patch.object(vision, "describe", return_value=(hat,)),
+                          patch.object(vision, "pose_costs", return_value=costs)):
+                        observations = tuple(vision.observe_board(frame, rows=rows))
+                    self.assertEqual(observations[index], (side * kind,))
 
     def test_same_color_raft_marks_correct_a_crown_facing_error(self):
         kind = solver.KING
