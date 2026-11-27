@@ -78,6 +78,18 @@ class PukaScreenTests(unittest.TestCase):
         self.frame[805:854, 1280:1525] = 130
         self.assertIsNone(stages.classify_screen(self.frame))
 
+    def test_result_confirmation_uses_the_checkmark_with_a_reward_card(self):
+        self.frame[29:72, 46:106] = 245
+        self.frame[805:854, 1280:1525] = (235, 174, 53)
+        self.frame[395:425, 1060:1495] = 245
+        self.frame[440:550, 1430:1495] = 245
+        self.assertEqual(stages.classify_screen(self.frame), 'result')
+        check = np.array([(1320, 826), (1326, 832), (1340, 818)], dtype=np.int32)
+        cv2.polylines(self.frame, [check], False, (245, 245, 245), 3)
+        self.assertEqual(stages.classify_screen(self.frame), 'result_ok')
+        self.frame[440:550, 1430:1495] = 0
+        self.assertEqual(stages.classify_screen(self.frame), 'result')
+
     def test_refill_requires_the_item_dialog_and_default_quantity(self):
         self.frame[143:193, 931:1045] = 245
         self.frame[700:757, 930:1085] = (250, 150, 40)
@@ -178,6 +190,12 @@ class PukaEntryTests(unittest.TestCase):
         self.assertEqual(game.click.call_args_list, [call(*stages.CLICK[state])
             for state in ('event_next', 'reward', 'stage_start')])
 
+    def test_start_from_a_pending_result_confirmation(self):
+        game = self.game('result_ok', 'challenge_continue', 'board')
+        self.assertEqual(pilot.prepare(game, Mock()), ('board', 'ready position'))
+        self.assertEqual(game.click.call_args_list, [call(*stages.CLICK[state])
+            for state in ('result_ok', 'challenge_continue')])
+
     def test_waits_for_the_game_to_center_the_next_stage(self):
         frames = iter(('level_menu', 'stage_start', 'level_menu', *('stage_start',) * 5))
         game = self.game('level_menu', 'board')
@@ -266,6 +284,22 @@ class PukaSettlementTests(unittest.TestCase):
             pilot.settle(game, 'result_details', Mock())
         game.click.assert_called_once_with(*stages.CLICK['result_details'])
 
+    def test_ok_remains_available_after_event_settlement(self):
+        game = Mock()
+        states = iter(('event_next', 'result_ok', 'challenge_continue'))
+
+        def wait(_game, allowed, **kwargs):
+            state = next(states)
+            self.assertIn(state, allowed)
+            if state == 'challenge_continue':
+                self.assertNotIn('result_ok', allowed)
+            return state
+
+        with patch.object(pilot, 'wait_menu', side_effect=wait):
+            pilot.settle(game, 'win_details', Mock())
+        self.assertEqual(game.click.call_args_list, [call(*stages.CLICK[state])
+            for state in ('win_details', 'event_next', 'result_ok')])
+
     def test_challenge_leaves_the_continue_card_unclicked_at_the_round_limit(self):
         for card in ('challenge_continue', 'challenge_low_energy'):
             with self.subTest(card=card):
@@ -335,8 +369,9 @@ class PukaTrackingTests(unittest.TestCase):
                 raise NextSelection
             game.scene = 'selection' if game.scene == 'initial' else 'reply'
 
-        def read_position(frame):
+        def read_position(frame, *, rows):
             if frame == 'initial':
+                self.assertEqual(rows, prior.rows)
                 return prior
             raise vision.VisionError('key raft obscured')
 
