@@ -22,6 +22,6 @@ The standard Windows package contains [ONNX Runtime](https://github.com/microsof
 
 標準 Windows 發行包包含 ONNX Runtime、DirectML 與 `requirements.txt` 所列的 Python 相依套件，並保留適用的授權與聲明。PyInstaller 的啟動載入器適用其發布的授權與例外條款。
 
-The optional GPU add-on contains NVIDIA [TensorRT](https://github.com/NVIDIA/TensorRT), its Python bindings and NVIDIA CUDA runtime libraries. The [retained NVIDIA notices](components/jump_rope/third_party/) and package metadata accompany the distributed libraries. See the [TensorRT license](https://docs.nvidia.com/deeplearning/tensorrt/latest/reference/sla.html) and [CUDA license](https://docs.nvidia.com/cuda/eula/index.html).
+The optional GPU add-on contains NVIDIA [TensorRT](https://github.com/NVIDIA/TensorRT), its Python bindings and NVIDIA CUDA runtime libraries. Package metadata and license files accompany the distributed libraries. See the retained licenses for the [TensorRT libraries](components/cooking/third-party/tensorrt_cu12_libs/LICENSE.txt), [TensorRT bindings](components/cooking/third-party/tensorrt_cu12_bindings/LICENSE.txt), and [CUDA runtime](components/cooking/third-party/nvidia-cuda-runtime-cu12/License.txt).
 
 選用的 GPU 組件包含 NVIDIA TensorRT、其 Python 繫結與 NVIDIA CUDA 執行庫，並保留上方連結所列的 NVIDIA 授權及套件資訊。
