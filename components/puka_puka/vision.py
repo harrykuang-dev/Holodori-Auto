@@ -286,7 +286,7 @@ def observe_board(frame, *, tracking=False, rows=None):
         if (rows == 4 or covered) and floor and floor.painted == 1 and (len(choices) > 1 or choices == (0,)):
             if (marked := single_mark_hat(patch, row, markers, choices)) is not None:
                 choices = (marked,)
-        if rows == 4 and len(choices) > 1 and markers.count(0) >= 7 and floor is None:
+        if len(choices) > 1 and markers.count(0) >= 7 and floor is None:
             # A nearly unmarked deck excludes a neighboring hat leaking into this crop.
             if abs(choices[0]) != TURTLE or (markers[3] == markers[4] == 0):
                 choices = (0,)

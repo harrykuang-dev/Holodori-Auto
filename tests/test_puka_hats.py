@@ -38,6 +38,24 @@ class RaftHatTests(unittest.TestCase):
             self.frame[230:348, 780:960] = color
             self.assertEqual(tuple(vision.observe_board(self.frame)), ((0,),) * 12)
 
+    def test_empty_raft_rejects_a_hat_from_the_row_behind(self):
+        for rows in (3, 4):
+            for tracking in (False, True):
+                with self.subTest(rows=rows, tracking=tracking):
+                    # In the recorded 3-row case, a foreground nameplate hides
+                    # one corner but the rest of the border is still white.
+                    empty = (0, 0, 0, 0, 0, 0, 0, None)
+                    possibly_turtle = (0, 0, 0, 0, None, 0, 0, 0)
+                    with (patch.object(vision, "raft_markers",
+                                       side_effect=[empty, possibly_turtle] + [empty] * (4*rows - 2)),
+                          patch.object(vision, "observe", side_effect=[
+                              (solver.KING, -solver.KING), (solver.TURTLE, -solver.TURTLE),
+                              *[(0,)] * (4*rows - 2)]),
+                          patch.object(vision, "resolve_hat_side", return_value=None)):
+                        observed = tuple(vision.observe_board(self.frame, rows=rows, tracking=tracking))
+                    self.assertEqual(observed[0], (0,))
+                    self.assertEqual(observed[1], (solver.TURTLE, -solver.TURTLE))
+
     def test_aligned_corner_marks_resolve_whale_direction(self):
         kind = solver.WHALE
         hat = hats.Hat(kind, hats.references()[kind][0], 5921, 150)
