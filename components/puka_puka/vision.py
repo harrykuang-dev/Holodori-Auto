@@ -5,6 +5,7 @@ from functools import lru_cache
 import cv2
 import numpy as np
 
+from hat_side_model import pick_side
 from hats import TileEvidence, describe, observe, pose_costs, references
 from solver import BLUE, DOLPHIN, GOLD, KING, ORANGE, TURTLE, WHALE, Move, Position, square
 
@@ -266,6 +267,9 @@ def observe_board(frame, *, tracking=False, rows=None):
         if rows == 4 and not tracking and choices == (0,) and floor and (
                 floor.painted >= 2 or markers[3] == ORANGE or markers[4] == BLUE):
             raise VisionError(f"尚未確認 {square(index)} 的棋帽")
+        if not tracking and len(choices) == 2 and abs(choices[0]) != KING:
+            if (side := pick_side(patch, choices)) is not None:
+                choices = (side,)
         yield choices
 
 

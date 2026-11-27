@@ -141,6 +141,19 @@ class RaftHatTests(unittest.TestCase):
             with self.assertRaises(vision.VisionError):
                 vision.read_board(self.frame)
 
+    def test_model_only_breaks_an_uncertain_nonleader_side_on_direct_reads(self):
+        candidates = (solver.TURTLE, -solver.TURTLE)
+        observed = [candidates, (solver.DOLPHIN,), (solver.KING, -solver.KING)] + [(0,)] * 9
+        with patch.object(vision, "pick_side", return_value=-solver.TURTLE) as pick:
+            with patch.object(vision, "observe", side_effect=observed):
+                resolved = tuple(vision.observe_board(self.frame, rows=3))
+            self.assertEqual(resolved, ((-solver.TURTLE,), *observed[1:]))
+            pick.assert_called_once()
+            with patch.object(vision, "observe", side_effect=observed):
+                tracked = tuple(vision.observe_board(self.frame, rows=3, tracking=True))
+            self.assertEqual(tracked, tuple(observed))
+            pick.assert_called_once()
+
     def test_ambiguous_whale_uses_the_direction_from_a_wider_profile(self):
         kind = solver.WHALE
         hat = hats.Hat(kind, hats.references()[kind][0], 5921, 150)
