@@ -2,7 +2,7 @@
 
 [English](README.md) · [繁體中文](README.zh-TW.md) · [简体中文](README.zh-CN.md) · [日本語](README.ja.md) · [한국어](README.ko.md) · [Indonesian](README.id.md)
 
-Holodori-Auto is a Windows automation program for *hololive Dreams*. It supports **High & Low**, **Fishing**, **Hoppin' Rope**, **Collect Cooking**, and **Puka Puka Fight**.
+Holodori-Auto is a Windows automation program for *hololive Dreams* that uses visual recognition of the game screen. It supports **High & Low**, **Fishing**, **Hoppin' Rope**, **Collect Cooking**, and **Puka Puka Fight**.
 All five features share the language setting and Start/Stop shortcuts.
 
 ## Download and use

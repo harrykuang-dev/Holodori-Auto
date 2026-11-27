@@ -2,7 +2,7 @@
 
 [English](README.md) · [繁體中文](README.zh-TW.md) · [简体中文](README.zh-CN.md) · [日本語](README.ja.md) · [한국어](README.ko.md) · [Indonesian](README.id.md)
 
-Holodori-Auto는 *hololive Dreams*용 Windows 자동화 프로그램입니다. **하이&로**, **물고기 낚시**, **줄넘기**, **모아 쿠킹**, **둥실둥실 파이트**를 지원합니다.
+Holodori-Auto는 게임 화면 인식을 기반으로 하는 *hololive Dreams*용 Windows 자동화 프로그램입니다. **하이&로**, **물고기 낚시**, **줄넘기**, **모아 쿠킹**, **둥실둥실 파이트**를 지원합니다.
 언어 설정과 시작 및 정지 단축키는 다섯 가지 기능에서 공통으로 사용됩니다.
 
 ## 다운로드 및 사용

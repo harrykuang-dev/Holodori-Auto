@@ -2,7 +2,7 @@
 
 [English](README.md) · [繁體中文](README.zh-TW.md) · [简体中文](README.zh-CN.md) · [日本語](README.ja.md) · [한국어](README.ko.md) · [Indonesian](README.id.md)
 
-Holodori-Auto 是 *hololive Dreams* 的 Windows 自動化程式，支援**比大小**、**釣魚**、**蹦蹦大跳繩**、**食材妙廚房**與**漂漂大亂鬥**。
+Holodori-Auto 是一款以畫面辨識為基礎的 *hololive Dreams* Windows 自動化程式，支援**比大小**、**釣魚**、**蹦蹦大跳繩**、**食材妙廚房**與**漂漂大亂鬥**。
 五個功能共用語言設定及開始與停止快捷鍵。
 
 ## 下載與使用

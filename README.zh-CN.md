@@ -2,7 +2,7 @@
 
 [English](README.md) · [繁體中文](README.zh-TW.md) · [简体中文](README.zh-CN.md) · [日本語](README.ja.md) · [한국어](README.ko.md) · [Indonesian](README.id.md)
 
-Holodori-Auto 是 *hololive Dreams* 的 Windows 自动化程序，支持**猜高低**、**钓鱼**、**跳跳大绳**、**拼配厨房**和**浮排大战**。
+Holodori-Auto 是一款基于画面识别的 *hololive Dreams* Windows 自动化程序，支持**猜高低**、**钓鱼**、**跳跳大绳**、**拼配厨房**和**浮排大战**。
 五个功能共用语言设置和开始、停止快捷键。
 
 ## 下载和使用
