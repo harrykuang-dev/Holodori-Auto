@@ -50,6 +50,8 @@ DEST = np.float32(((0, 0), (99, 0), (99, 99), (0, 99)))
 HAT_ROWS = {3: (100, 242, 404), 4: (84, 172, 270, 392)}
 ARROW_ROWS = {3: (108, 263, 434), 4: (52, 175, 325, 512)}
 RAFT_EDGES = ((7, 7), (50, 7), (92, 7), (7, 50), (92, 50), (7, 92), (50, 92), (92, 92))
+# The nameplates cover these probes on the front row, in column order.
+NAMEPLATE_EDGES = {3: ((5,), (), (), (7,)), 4: ((5, 6), (), (), (6, 7))}
 MIRROR_EDGES = (2, 1, 0, 4, 3, 7, 6, 5)
 MOVE_DIAGRAMS = {
     KING: (1, 1, 1, 1, 1, 1, 1, 1),
@@ -163,10 +165,13 @@ def back_row_obscured(frame):
     return True
 
 
-def raft_markers(raster):
+def raft_markers(raster, *, covered=()):
     markers = []
     weak_orange = []
-    for x, y in RAFT_EDGES:
+    for edge, (x, y) in enumerate(RAFT_EDGES):
+        if edge in covered:
+            markers.append(None)
+            continue
         b, g, r = bgr(raster[y-4:y+5, x-4:x+5])
         orange = (r > 200) & (g > 65) & (g < 153) & (b < 90)
         strengths = (((b > 170) & (g > 120) & (g < 185) & (r < 80)).mean(),
@@ -242,7 +247,8 @@ def observe_board(frame, *, tracking=False, rows=None):
         row = index // 4
         x, _ = point(index, rows=rows)
         y = HAT_ROWS[rows][row]
-        markers = raft_markers(tile(frame, index, rows=rows))
+        covered = NAMEPLATE_EDGES[rows][index % 4] if row == rows - 1 else ()
+        markers = raft_markers(tile(frame, index, rows=rows), covered=covered)
         floor = raft_evidence(markers)
         if rows == 4 and row == 0:
             # The extra row is farther from the camera. Match its hats at the normal scale.
@@ -250,7 +256,7 @@ def observe_board(frame, *, tracking=False, rows=None):
         else:
             patch = frame[y-46:y+45, x-115:x+115]
         choices = observe(patch, index, floor=floor, tracking=tracking)
-        if rows == 4 and floor and floor.painted == 1 and (len(choices) > 1 or choices == (0,)):
+        if (rows == 4 or covered) and floor and floor.painted == 1 and (len(choices) > 1 or choices == (0,)):
             if (marked := single_mark_hat(patch, row, markers, choices)) is not None:
                 choices = (marked,)
         if rows == 4 and len(choices) > 1 and markers.count(0) >= 7 and floor is None:
