@@ -1,40 +1,25 @@
-# Licensing and corresponding source
+# Licensing and corresponding source / 授權與對應原始碼
 
-Holodori-Auto distributes source, models and dependencies with their respective licenses and notices.
+## Project license / 專案授權
 
-| Feature | Source origin | License and notices |
-| --- | --- | --- |
-| High & Low | 1.1.4 | [Poker core MIT notice](components/high_low/licenses/poker-core-MIT.txt) (Totarou Oriki) and [Jump Rope MIT notice](components/high_low/licenses/jump-rope-MIT.txt) (harrykuang-dev) apply to the referenced components. The source repository declares no separate project-wide license. |
-| Fishing | 1.1.2 | [MIT](components/fishing/LICENSE), copyright 2026 harrykuang-dev. The [artwork notice](components/fishing/assets/NOTICE.md) describes the excluded artwork. |
-| Jump Rope and YOLO-derived weights | 1.3.3 | [AGPL-3.0-only](components/jump_rope/LICENSE). See the [source notice](components/jump_rope/NOTICE.md) and [model license](components/jump_rope/models/AGPL-3.0.txt). The model derives from Ultralytics YOLO26. |
-| Cooking | 1.1.2 | [Third-party notices](components/cooking/third-party/README.md) and [MIT notice for the copied Fishing shortcut components](components/cooking/third-party/Hololive-Dreams-Fishing-Auto-LICENSE.txt). These grants apply to the specified third-party material. |
+The original code and documentation maintained in Holodori-Auto use the [MIT License](LICENSE), except for the implementation and related material covered by the AGPL notice below.
 
-The original Holodori-Auto integration code has no separate project-wide license grant declared in this repository. This index records the existing grants for the material included here.
+Holodori-Auto 自行維護的原創程式碼與文件採用 [MIT 授權](LICENSE)。下述實作及相關資料適用各自的 AGPL 授權。
 
-## Obtain the source
+## AGPL-covered material / 適用 AGPL 的項目
 
-The [v1.3.1 source archive](https://github.com/harrykuang-dev/Holodori-Auto/archive/refs/tags/v1.3.1.zip) includes the five feature implementations, Jump Rope's model checkpoint and training and export tools, and the build scripts. The same source is available from Git.
+The Hoppin' Rope program and controller, training and export tools, and YOLO-derived weights retain [AGPL-3.0-only](components/jump_rope/LICENSE). See the [component notice](components/jump_rope/NOTICE.md), [model license](components/jump_rope/models/AGPL-3.0.txt), [source checkpoint](components/jump_rope/models/rope.pt), and [training and export source](components/jump_rope/training/).
 
-```sh
-git clone --branch v1.3.1 https://github.com/harrykuang-dev/Holodori-Auto.git
-```
+蹦蹦大跳繩的程式與控制器、訓練及匯出工具，以及衍生自 YOLO 的權重，沿用 [AGPL-3.0-only](components/jump_rope/LICENSE)。上方連結提供授權聲明、原始模型檢查點和訓練及匯出原始碼。
 
-[Source origins](document/SOURCE-ORIGINS.json) records the original repositories and commits used for the unified source tree. See [build instructions](document/ARCHITECTURE.md) for installing the separately distributed Cooking ONNX models from the Cooking release. The [Cooking manifest](components/cooking/models-manifest.json) identifies the exact archive and checkpoints.
+## Third-party terms / 第三方授權
 
-## Historical material
+External code, models, dependencies, and game material follow their respective licenses and rights. The separate dataset's [human annotation coordinates and masks](https://github.com/harrykuang-dev/Hololive-Dreams-Jump-Rope-Auto/blob/6cd4610b6370fac1b98a17d27562a2d9bb658b3c/annotations/NOTICE.md) use CC BY 4.0. Game names, images, characters, and artwork remain with their respective rights holders, including COVER and QualiArts. See the [official game credits](https://hololive.hololivepro.com/en/news/20260723-01-401/). Holodori-Auto is an independent project. See the [third-party notices](THIRD_PARTY_NOTICES.md) for credits and retained notices.
 
-- The [Jump Rope v1.2.1 archive](https://github.com/harrykuang-dev/Hololive-Dreams-Jump-Rope-Auto/tree/6cd4610b6370fac1b98a17d27562a2d9bb658b3c/archive/v1.2.1) retains its original MIT License.
-- Jump Rope's human annotation coordinates and masks use CC BY 4.0 under the [dataset notice](https://github.com/harrykuang-dev/Hololive-Dreams-Jump-Rope-Auto/blob/6cd4610b6370fac1b98a17d27562a2d9bb658b3c/annotations/NOTICE.md). Cooking annotation material remains in its [original repository](https://github.com/harrykuang-dev/Hololive-Dreams-Collect-Cooking-Auto/tree/90c09a242fe335284588d895482a25efe17c3ba6/annotations).
-- Underlying screenshots, game names, characters and artwork remain the property of their respective rights holders, including COVER and QualiArts.
+外部程式碼、模型、相依套件及遊戲素材均沿用各自的授權與權利聲明。另行提供的[人工標註座標和遮罩](https://github.com/harrykuang-dev/Hololive-Dreams-Jump-Rope-Auto/blob/6cd4610b6370fac1b98a17d27562a2d9bb658b3c/annotations/NOTICE.md)採用 CC BY 4.0。遊戲名稱、影像、角色及美術權利由 COVER、QualiArts 等各權利人保有。Holodori-Auto 為獨立專案。外部來源與保留聲明列在[第三方來源與聲明](THIRD_PARTY_NOTICES.md)。
 
-## Runtime dependencies
+## Source for release builds / 發行版對應原始碼
 
-The standard portable build includes ONNX Runtime and DirectML. The optional TensorRT component includes NVIDIA's TensorRT and CUDA runtime libraries. Each distribution retains its own license and notices. NVIDIA's display driver is supplied by the system. See the [third-party notices index](THIRD_PARTY_NOTICES.md).
+Use the source archive listed with the matching version on [GitHub Releases](https://github.com/harrykuang-dev/Holodori-Auto/releases), or check out the corresponding Git tag. The [build instructions](README.md#run-and-build-from-source) and [model manifest](components/cooking/models-manifest.json) document the separately downloaded ONNX assets.
 
-## 繁體中文
-
-跳繩與 YOLO 衍生權重沿用 AGPL-3.0-only，釣魚沿用 MIT。比大小與料理保留所引用元件的既有 MIT 聲明。各授權適用範圍見上表。本倉庫尚未另行宣告 Holodori-Auto 原創整合碼的整體授權。
-
-[v1.3.1 原始碼壓縮包](https://github.com/harrykuang-dev/Holodori-Auto/archive/refs/tags/v1.3.1.zip)包含五個功能的原始碼、跳繩模型檢查點、訓練及匯出工具和建置程式。也可用上方命令取得。[來源紀錄](document/SOURCE-ORIGINS.json)保留各原始倉庫與提交。料理模型由原始料理 Release 提供，版本由模型 manifest 固定。
-
-歷史版跳繩保留原有 MIT 授權。跳繩人工標註坐標和遮罩的 CC BY 4.0 授權範圍見原始資料集聲明。遊戲截圖、名稱、角色及美術的權利由各權利人保有。標準版的 ONNX Runtime 和 DirectML，以及選用 TensorRT 元件包含的 NVIDIA 函式庫，都沿用各自的授權及聲明。
+請從 [GitHub Releases](https://github.com/harrykuang-dev/Holodori-Auto/releases) 下載與執行檔版本相同的原始碼壓縮檔，或切換至對應的 Git 標籤。需另外下載的 ONNX 檔案見[建置說明](README.zh-TW.md#從原始碼執行與建置)及[模型清單](components/cooking/models-manifest.json)。

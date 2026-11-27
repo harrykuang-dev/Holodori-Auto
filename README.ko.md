@@ -1,85 +1,49 @@
 # Holodori-Auto
 
-[English](README.md) · [繁體中文](README.zh-TW.md) · [日本語](README.ja.md) · [한국어](README.ko.md) · [Indonesian](README.id.md) · [简体中文](README.zh-CN.md)
+[English](README.md) · [繁體中文](README.zh-TW.md) · [简体中文](README.zh-CN.md) · [日本語](README.ja.md) · [한국어](README.ko.md) · [Indonesian](README.id.md)
 
-Holodori-Auto는 *hololive Dreams*의 **하이&로**, **낚시**, **줄넘기**, **요리**, **뗏목 장기** 미니게임을 자동화하는 Windows 프로그램입니다. 탐색 영역에서 모드를 선택하면 해당 모드의 조작과 통계 기능을 사용할 수 있습니다. 언어 설정과 시작·중지 단축키는 모든 모드에 공통으로 적용됩니다.
+Holodori-Auto는 *hololive Dreams*용 Windows 자동화 프로그램입니다. **하이&로**, **물고기 낚시**, **줄넘기**, **모아 쿠킹**, **둥실둥실 파이트**를 지원합니다.
+언어 설정과 시작 및 정지 단축키는 다섯 가지 기능에서 공통으로 사용됩니다.
 
-## 다운로드
+## 다운로드 및 사용
 
-[Releases](https://github.com/harrykuang-dev/Holodori-Auto/releases/latest)에서 `Holodori-Auto-v1.3.1-windows.7z`를 다운로드하고 7-Zip으로 압축을 푼 뒤 `Holodori-Auto.exe`를 실행하세요. 전체 폴더를 함께 보관하세요. Python이나 CUDA Toolkit을 별도로 설치할 필요는 없습니다.
+Windows 10 또는 11(x64)과 Windows용 게임 클라이언트를 사용하세요. **게임 창은 16:9 비율만 지원합니다.** 게임 창이 화면에 보이도록 유지하세요.
 
-표준 패키지에는 줄넘기와 요리에서 사용하는 DirectML이 포함됩니다. 줄넘기에는 DirectML 또는 TensorRT를 지원하는 GPU가 필요합니다. 요리는 CPU로도 전환할 수 있습니다.
+1. [릴리스](https://github.com/harrykuang-dev/Holodori-Auto/releases/latest)에서 `Holodori-Auto-v1.3.1-windows.7z`를 다운로드하고 7-Zip으로 압축을 푼 뒤, 해당 폴더에서 `Holodori-Auto.exe`를 실행합니다.
+2. *hololive Dreams*에서 미니게임에 들어간 뒤 Holodori-Auto에서 해당 기능을 선택합니다. **시작**을 클릭하거나 공통 시작 단축키를 누릅니다. 기능을 전환하기 전에 **중지**를 클릭하세요.
 
-호환되는 NVIDIA GPU에서 TensorRT를 사용하려면 [Releases](https://github.com/harrykuang-dev/Holodori-Auto/releases/latest)에서 `Holodori-Auto-v1.3.1-tensorrt.7z`를 다운로드하세요. 프로그램을 종료한 다음 `Holodori-Auto.exe`가 있는 폴더에 압축을 풉니다. 실행 파일 옆에 `accelerators/tensorrt/` 폴더가 있는지 확인하고 프로그램을 다시 실행하세요. TensorRT를 처음 사용하면 해당 GPU의 엔진을 만들고 이후 실행을 위해 캐시에 저장합니다.
+표준 패키지에는 DirectML이 포함되어 있습니다. **줄넘기**에는 DirectML 또는 TensorRT를 지원하는 GPU가 필요하며, **모아 쿠킹**은 CPU로도 실행할 수 있습니다. 호환되는 NVIDIA GPU에서 TensorRT를 사용하려면 릴리스에서 `Holodori-Auto-v1.3.1-tensorrt.7z`를 다운로드합니다. 프로그램을 종료하고 `accelerators/tensorrt/`가 `Holodori-Auto.exe` 옆에 오도록 압축을 푼 뒤 다시 실행하세요. TensorRT를 처음 사용하면 해당 GPU용 엔진을 만들어 이후 실행에서 재사용합니다.
 
-## 사용 방법
+## 소스 코드에서 실행 및 빌드
 
-1. 게임을 실행하고 사용할 미니게임 화면으로 이동합니다.
-2. Holodori-Auto를 실행하고 탐색 영역에서 해당 기능을 선택합니다.
-3. 공통 언어와 시작·중지 단축키를 설정한 뒤 선택한 기능을 조작합니다. 요리는 **시작**을 누르면 선택한 모델을 자동으로 불러오고 준비가 끝나면 시작합니다. 로딩 중에는 **중지**로 취소할 수 있습니다.
-4. 기능을 전환하기 전에 실행을 중지합니다. 현재 기능이 완전히 종료된 후 같은 창에서 선택한 기능을 엽니다.
-
-선택한 기능 하나만 실행됩니다. 공통 언어와 단축키 설정은 현재 기능에 적용되며 기능을 전환해도 유지됩니다. 각 화면에서 중복되는 설정 행은 숨겨집니다. 새 단축키를 입력하는 동안 현재 기능의 단축키 감지를 일시 중지하고, 입력이 끝나면 다시 시작합니다.
-
-공통 설정은 `%LOCALAPPDATA%\HolodoriAuto\settings.json`에 저장됩니다. 처음 실행할 때 기존 High & Low의 언어와 단축키 설정이 있으면 우선 적용합니다. 기존 설정이 없으면 번체 중국어, 시작 **F8**, 중지 **INSERT**가 기본값입니다. 통계, 게임 기록, 기능별 옵션은 원본 프로그램의 데이터 위치를 계속 사용합니다.
-
-Windows 10/11 x64와 Windows용 게임 클라이언트가 필요합니다. 실행 중에는 게임 화면이 보이도록 유지하고, 선택한 모드의 해상도, 화면 캡처, 전경 실행 요구 사항을 따르세요.
-
-실행 시 선택한 모드의 기본 창 크기가 화면 DPI에 맞게 조정됩니다. 창 크기를 변경하거나 최대화한 뒤 모드를 전환해도 현재 창 상태가 유지됩니다. 왼쪽 아래 버전 표시를 클릭하면 Holodori-Auto 저장소가 열립니다.
-
-### 뗏목 장기
-
-게임에서 「둥실둥실 파이트」의 솔로 화면을 열고 Holodori-Auto의 **뗏목 장기**를 선택합니다. 대국 수 제한을 1~9999로 설정한 뒤 **시작** 버튼이나 공통 시작 단축키를 누르면 게임이 전면으로 전환되고 자동 플레이가 시작됩니다. Normal을 진행하고 게임에서 Normal 30을 완료해 Challenge가 열리면 이어서 진행합니다.
-
-**완료**에는 승리, 무승부, 패배 모두 결과 확인 후 포함됩니다. **시작**과 **중지** 아래의 실행 기록을 스크롤하면 착수, 결과, 오류를 확인할 수 있습니다. 기록은 메모리에만 저장되며 뗏목 장기 화면을 벗어나면 지워집니다.
-
-**에너지 자동 충전**은 기본적으로 꺼져 있습니다. 켜면 회복 아이템 한 개 사용을 확인한 뒤 계속합니다. 클릭 전에 전면에 있는 16:9 게임 창과 유효한 착수 위치를 확인합니다. 표준 8개 말의 국면은 보드, 보유 말과 차례 정보로 [동물 장기 데이터베이스](https://dobutsu.brianhliou.com/)를 조회할 수 있습니다.
-
-## 소스에서 실행
-
-Windows x64와 Python 3.13을 사용합니다. 일반적인 복제 명령으로 다섯 기능의 소스를 모두 받을 수 있습니다.
+Windows x64와 Python 3.13을 사용합니다. 모델 다운로드 명령은 지정된 **모아 쿠킹** 모델을 검증한 뒤 설치합니다.
 
 ```powershell
 git clone https://github.com/harrykuang-dev/Holodori-Auto.git
 cd Holodori-Auto
 py -3.13 -m venv .venv
-.\.venv\Scripts\Activate.ps1
-python -m pip install -r requirements.txt -r requirements-build.txt
-python -m pip install --force-reinstall --no-deps onnxruntime-directml==1.24.4
-python tools/fetch_models.py
-python main.py
+$python = ".\.venv\Scripts\python.exe"
+& $python -m pip install -r requirements.txt -r requirements-build.txt
+& $python -m pip install --force-reinstall --no-deps onnxruntime-directml==1.24.4
+& $python tools/fetch_models.py
+& $python main.py
 ```
 
-아래 절차는 DirectML을 사용합니다. 선택 사항인 TensorRT 구성 요소는 [구조 및 빌드 문서](document/ARCHITECTURE.md)를 참조하세요.
-
-모델 설치 명령은 요리의 해당 릴리스에서 `models.zip`을 다운로드하고, 고정된 파일 크기와 SHA-256을 대조합니다. 각 모델도 검증한 후 누락된 모델만 설치합니다. 기존 파일은 유지합니다. 기존 모델의 내용이 다르면 해당 파일을 백업 위치로 이동한 후 다시 실행하세요. 요리는 시작을 누르면 선택한 모델을 자동으로 불러옵니다.
-
-요리 릴리스에서 이미 다운로드한 압축 파일을 사용하려면 `python tools/fetch_models.py --archive C:\path\models.zip`을 실행합니다. 설치된 모델을 오프라인으로 검증하려면 `python tools/fetch_models.py --check`를 실행합니다.
-
-## 빌드
-
-의존성과 요리 모델을 설치한 후 실행합니다.
+같은 체크아웃에서 다음 명령을 실행해 DirectML 포터블 패키지를 빌드하고 검증합니다. 빌드마다 새 출력 폴더를 지정하세요.
 
 ```powershell
-python tools/build_release.py --output dist/Holodori-Auto
+& $python tools/build_release.py --output dist/Holodori-Auto
+& $python tools/verify_bundle.py dist/Holodori-Auto/Holodori-Auto.exe --report work/packaged-contents.json
 ```
-
-표준 Windows 빌드에는 각 기능의 리소스와 요리 모델이 포함됩니다. 실행하거나 배포할 때 생성된 포터블 폴더 전체를 함께 보관하세요.
 
 ## 개발 및 유지보수
 
-Holodori-Auto는 `main.py`로 시작합니다. 다섯 기능의 소스는 `components/`에 있으며 탐색, 언어, 단축키, Windows 빌드를 공유합니다. 한 번에 한 기능을 별도의 프로세스에서 실행합니다.
+다섯 기능의 소스는 `components/`에 있습니다. 공통 창, 언어, 단축키는 `holodori/`에서 관리하며 각 기능은 별도 프로세스에서 실행됩니다. GitHub Actions는 소스와 Windows 포터블 빌드를 검증합니다.
 
-| 기능 | 기술 자료 |
-| --- | --- |
-| 하이&로 | [OCR](document/high-low/OCR.md) · [전략](document/high-low/STRATEGY.md) |
-| 낚시 | [인식 및 진단](document/fishing/DEVELOPMENT.md) |
-| 줄넘기 | [캡처, 타이밍 및 모델](document/jump-rope/DEVELOPMENT.md) |
-| 요리 | [개발 및 진단](document/cooking/DEVELOPMENT.md) · [추론](document/cooking/INFERENCE.md) |
-| 뗏목 장기 | [보드 인식과 수 추적](document/raft-chess.md) |
+[기술 문서](document/README.md) · [빌드 및 검증](document/ARCHITECTURE.md) · [유지보수 절차](document/UPDATING.md) · [게임 용어](document/GAME-TERMS.md)
 
-[기술 문서 목록](document/README.md)에서 [구조 및 검증 절차](document/ARCHITECTURE.md)와 [개발 및 유지보수 절차](document/UPDATING.md)를 확인할 수 있습니다. GitHub Actions는 소스를 테스트하고 포터블 빌드를 검증합니다.
+## 고지 및 라이선스
 
-## 권리 및 라이선스
+Holodori-Auto는 독립 프로젝트입니다. 게임 이름, 스크린샷, 아트워크의 권리는 각 권리자에게 있습니다.
 
-줄넘기 1.3.3과 YOLO 파생 가중치는 **AGPL-3.0-only**, 낚시는 **MIT**를 사용합니다. 하이&로와 요리가 참조하는 구성 요소의 기존 MIT 고지는 유지됩니다. NVIDIA 런타임, 기타 의존성 및 게임 이미지에는 각각의 조건이 적용됩니다. [라이선스 및 대응 소스](LICENSES.md). [v1.3.1 소스 압축 파일](https://github.com/harrykuang-dev/Holodori-Auto/archive/refs/tags/v1.3.1.zip)에는 다섯 기능의 소스가 포함됩니다. [소스 출처](document/SOURCE-ORIGINS.json)에서 원본 저장소와 커밋을 확인할 수 있습니다.
+Holodori-Auto의 자체 코드와 문서에는 [MIT 라이선스](LICENSE)가 적용됩니다. **줄넘기** 구현과 YOLO 파생 모델 가중치에는 [AGPL-3.0-only](components/jump_rope/LICENSE)가 계속 적용됩니다. 제3자 자료에는 각각의 조건이 적용됩니다. [라이선스 및 대응 소스](LICENSES.md)와 [제3자 고지](THIRD_PARTY_NOTICES.md)를 참고하세요.

@@ -1,6 +1,6 @@
 # Holodori-Auto documentation / 技術文件
 
-[Program architecture and validation](ARCHITECTURE.md) · [Development and maintenance / 開發與維護](UPDATING.md) · [Source origins / 來源紀錄](SOURCE-ORIGINS.json) · [License and corresponding source](../LICENSES.md)
+[Program architecture and validation](ARCHITECTURE.md) · [Development and maintenance / 開發與維護](UPDATING.md) · [In-game terminology / 遊戲用詞](GAME-TERMS.md) · [Source origins / 來源紀錄](SOURCE-ORIGINS.json) · [License and corresponding source](../LICENSES.md)
 
 | Feature / 功能 | Technical reference / 技術參考 |
 | --- | --- |
