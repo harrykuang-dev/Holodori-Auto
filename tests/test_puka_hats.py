@@ -42,19 +42,20 @@ class RaftHatTests(unittest.TestCase):
         for rows in (3, 4):
             for tracking in (False, True):
                 with self.subTest(rows=rows, tracking=tracking):
-                    # In the recorded 3-row case, a foreground nameplate hides
-                    # one corner but the rest of the border is still white.
-                    empty = (0, 0, 0, 0, 0, 0, 0, None)
-                    possibly_turtle = (0, 0, 0, 0, None, 0, 0, 0)
-                    with (patch.object(vision, "raft_markers",
-                                       side_effect=[empty, possibly_turtle] + [empty] * (4*rows - 2)),
-                          patch.object(vision, "observe", side_effect=[
-                              (solver.KING, -solver.KING), (solver.TURTLE, -solver.TURTLE),
-                              *[(0,)] * (4*rows - 2)]),
+                    covered = vision.NAMEPLATE_EDGES[rows][0]
+                    blank = (0,) * 8
+                    markers = [blank] * (4 * rows)
+                    markers[-4] = tuple(None if edge in covered else 0 for edge in range(8))
+                    markers[-3] = (0, 0, 0, 0, None, 0, 0, 0)
+                    choices = [(0,)] * (4 * rows)
+                    choices[-4] = (solver.KING, -solver.KING)
+                    choices[-3] = (solver.TURTLE, -solver.TURTLE)
+                    with (patch.object(vision, "raft_markers", side_effect=markers),
+                          patch.object(vision, "observe", side_effect=choices),
                           patch.object(vision, "resolve_hat_side", return_value=None)):
                         observed = tuple(vision.observe_board(self.frame, rows=rows, tracking=tracking))
-                    self.assertEqual(observed[0], (0,))
-                    self.assertEqual(observed[1], (solver.TURTLE, -solver.TURTLE))
+                    self.assertEqual(observed[-4], (0,))
+                    self.assertEqual(observed[-3], choices[-3])
 
     def test_aligned_corner_marks_resolve_whale_direction(self):
         kind = solver.WHALE
@@ -149,6 +150,20 @@ class RaftHatTests(unittest.TestCase):
                     self.assertEqual(hats.observe(self.frame, 3), (0,))
                     costs.return_value = (.022, .021)
                     self.assertEqual(hats.observe(self.frame, 3), (kind, -kind))
+
+    def test_clipped_d1_hat_needs_matching_deck_marks_for_a_weaker_profile(self):
+        kind = solver.DOLPHIN
+        hat = hats.Hat(kind, hats.references()[kind][0], 1463, 150)
+        floor = vision.raft_evidence((0, 0, None, -1, -1, 0, -1, 0))
+        mixed = floor._replace(mixed=True)
+        with (patch.object(hats, "describe", return_value=(hat,)),
+              patch.object(hats, "pose_costs", return_value=(.0779, .071)) as costs):
+            self.assertEqual(hats.observe(self.frame, 3, floor=floor, tracking=True), (-kind,))
+            self.assertEqual(hats.observe(self.frame, 3, floor=mixed, tracking=True), (0,))
+            self.assertEqual(hats.observe(self.frame, 3, tracking=True), (0,))
+            self.assertEqual(hats.observe(self.frame, 2, floor=floor, tracking=True), (0,))
+            costs.return_value = (.0589, .0841)
+            self.assertEqual(hats.observe(self.frame, 3, floor=floor, tracking=True), (0,))
 
     def test_indeterminate_hats_use_both_crowns_or_wait(self):
         observations = [(p,) for p in self.before.board]

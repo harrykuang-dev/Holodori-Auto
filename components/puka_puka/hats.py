@@ -111,6 +111,13 @@ def observe(patch, index, *, floor=None, tracking=False):
             maximum_cost = .09
         elif index == 3:
             maximum_cost = .03  # The top-right controls can cover most of D1.
+            facing = hat.kind if blue < orange else -hat.kind
+            # An incomplete silhouette can still agree with several visible
+            # movement marks of the same piece and side.
+            if (floor and not floor.mixed and floor.painted >= 3
+                    and hat.area * 2 >= MIN_AREAS[hat.kind]
+                    and facing in floor.compatible and abs(blue - orange) >= .003):
+                maximum_cost = .09
         else:
             maximum_cost = .008
         if min(blue, orange) > maximum_cost:
