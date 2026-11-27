@@ -1,6 +1,7 @@
 """Read a solo match, choose moves, and verify each click against the next frame."""
 
 import time
+from functools import partial
 
 from solver import BLUE, NAMES, moves, recommend, square, terminal
 from stages import CHALLENGE_ENTRIES, CLICK, MENU_STATES, REFILL_STATES, RESULT_STATES, classify_screen
@@ -108,7 +109,7 @@ def wait_menu(game, allowed, seconds=30, *, stable_for=0):
 
 def prepare(game, notify, *, auto_refill=False):
     entries = {"hub", "stage_start"} | CHALLENGE_ENTRIES
-    allowed = {"tutorial", "board", "team_auto", "team_start", *entries} | POST_MATCH_OVERLAYS
+    allowed = {"tutorial", "board", "team_auto", "team_start", "result_ok", *entries} | POST_MATCH_OVERLAYS
     retry_entry = None
     refilled = False
     notify("waiting_entry")
@@ -156,14 +157,14 @@ def settle(game, state, notify):
     while state not in MENU_STATES:
         game.click(*CLICK[state])
         pending.discard(state)
-        if state in {"result_details", "win_details"} | POST_MATCH_OVERLAYS:
-            pending -= RESULT_STATES
+        if state in {"result_details", "win_details", "result_ok"} | POST_MATCH_OVERLAYS:
+            pending -= RESULT_STATES - {"result_ok"}
         state = wait_menu(game, MENU_STATES | pending, stable_for=1.2)
 
 
 def play_match(game, frame, pos, notify):
     history = []
-    read_current = read_position
+    read_current = partial(read_position, rows=pos.rows)
     endings = RESULT_STATES | CHALLENGE_ENTRIES | POST_MATCH_OVERLAYS | {"tutorial"}
     while True:
         if terminal(pos) is not None or not any(moves(pos)):

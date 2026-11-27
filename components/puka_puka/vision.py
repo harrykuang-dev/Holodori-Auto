@@ -137,7 +137,8 @@ def board_rows(frame):
         rims = [raft_rim(frame, quad) for quad in board_quads(rows, False)]
         matches[rows] = tuple(sum(rims[i:i+4]) for i in range(0, len(rims), 4))
     # The bottom rows overlap in the two projections, so use higher rows to tell them apart.
-    three = matches[3][1] >= 2 and matches[3][2] >= 2
+    back, middle, front = matches[3]
+    three = front >= 2 and (middle >= 2 or (back >= 3 and middle >= 1 and front >= 3))
     four = sum(hit >= 2 for hit in matches[4][:3]) >= 2 and matches[4][3] >= 2
     if three == four:
         raise VisionError("尚未確認棋盤的浮台排數")
@@ -262,8 +263,8 @@ def observe_board(frame, *, tracking=False, rows=None):
         yield choices
 
 
-def read_board(frame):
-    observations = list(observe_board(frame))
+def read_board(frame, *, rows=None):
+    observations = list(observe_board(frame, rows=rows))
     crowns = [(index, choices) for index, choices in enumerate(observations)
               if abs(choices[0]) == KING]
     if len(crowns) != 2:
@@ -284,9 +285,7 @@ def match_position(frame, candidates, *, previous, hands):
     candidates = {pos for pos in candidates if (pos.blue, pos.orange) == hands}
     if not candidates:
         raise VisionError("預期狀態為空")
-    observations = tuple(observe_board(frame, tracking=True))
-    if len(observations) != len(previous.board):
-        raise VisionError("棋盤排數已變化")
+    observations = tuple(observe_board(frame, tracking=True, rows=previous.rows))
 
     def hidden_count(pos):
         hidden = 0
@@ -413,8 +412,8 @@ def hand_inventory(frame):
                  for side in (BLUE, ORANGE))
 
 
-def read_position(frame):
+def read_position(frame, *, rows=None):
     if not is_ready(frame):
         raise VisionError("尚未確認藍方回合與單人棋盤。")
-    board = read_board(frame)
+    board = read_board(frame, rows=rows)
     return Position(board, *hand_inventory(frame))

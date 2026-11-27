@@ -18,13 +18,14 @@ CLICK = {
     "result": (1368, 828),
     "result_details": (1368, 828),
     "win_details": (1368, 828),
+    "result_ok": (1368, 828),
     "event_next": (1368, 828),
     "reward": (812, 807),
     "refill": (1362, 838),
 }
 CHALLENGE_ENTRIES = {"challenge_continue", "challenge_low_energy"}
 MENU_STATES = {"level_menu", "stage_start", "hub"} | CHALLENGE_ENTRIES
-RESULT_STATES = {"result", "result_details", "win_details"}
+RESULT_STATES = {"result", "result_details", "win_details", "result_ok"}
 REFILL_STATES = {"refill", "refill_panel"}
 
 
@@ -151,9 +152,29 @@ def event_next(frame):
                for _, _, w, h, area in components[1:])
 
 
+def result_confirmation(frame):
+    # Both the short reward card and the taller score card have these white margins.
+    if not (white(frame[395:425, 1060:1495], .90) and white(frame[440:550, 1430:1495], .90)):
+        return False
+    glyphs = (frame[808:852, 1230:1470].min(axis=2) > 220).astype(np.uint8)
+    _, labels, components, _ = cv2.connectedComponentsWithStats(glyphs)
+    for label, (x, y, w, h, area) in enumerate(components[1:], 1):
+        if not (18 <= w <= 31 and 13 <= h <= 25 and .18 <= area/(w*h) <= .44):
+            continue
+        shape = cv2.resize((labels[y:y+h, x:x+w] == label).astype(np.float32),
+                           (4, 3), interpolation=cv2.INTER_AREA)
+        if (shape[0, 0] < .15 and shape[0, 3] > .35
+                and shape[1, 0] > .24 and shape[1, 2] > .32
+                and shape[2, 1] > .40 and shape[2, 3] < .15):
+            return True
+    return False
+
+
 def result_screen(frame):
     if not hammer(frame) or not blue_button(frame[805:854, 1280:1525], .60):
         return None
+    if result_confirmation(frame):
+        return "result_ok"
     if not white(frame[297:639, 793:1502], .83):
         # Both victory and defeat can initially land on the stadium splash.
         return 'result'
