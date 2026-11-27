@@ -13,10 +13,10 @@ The original Holodori-Auto integration code has no separate project-wide license
 
 ## Obtain the source
 
-The [v1.3.0 source archive](https://github.com/harrykuang-dev/Holodori-Auto/archive/refs/tags/v1.3.0.zip) includes the five feature implementations, Jump Rope's model checkpoint and training and export tools, and the build scripts. The same source is available from Git.
+The [v1.3.1 source archive](https://github.com/harrykuang-dev/Holodori-Auto/archive/refs/tags/v1.3.1.zip) includes the five feature implementations, Jump Rope's model checkpoint and training and export tools, and the build scripts. The same source is available from Git.
 
 ```sh
-git clone --branch v1.3.0 https://github.com/harrykuang-dev/Holodori-Auto.git
+git clone --branch v1.3.1 https://github.com/harrykuang-dev/Holodori-Auto.git
 ```
 
 [Source origins](document/SOURCE-ORIGINS.json) records the original repositories and commits used for the unified source tree. See [build instructions](document/ARCHITECTURE.md) for installing the separately distributed Cooking ONNX models from the Cooking release. The [Cooking manifest](components/cooking/models-manifest.json) identifies the exact archive and checkpoints.
@@ -35,6 +35,6 @@ The standard portable build includes ONNX Runtime and DirectML. The optional Ten
 
 跳繩與 YOLO 衍生權重沿用 AGPL-3.0-only，釣魚沿用 MIT。比大小與料理保留所引用元件的既有 MIT 聲明。各授權適用範圍見上表。本倉庫尚未另行宣告 Holodori-Auto 原創整合碼的整體授權。
 
-[v1.3.0 原始碼壓縮包](https://github.com/harrykuang-dev/Holodori-Auto/archive/refs/tags/v1.3.0.zip)包含五個功能的原始碼、跳繩模型檢查點、訓練及匯出工具和建置程式。也可用上方命令取得。[來源紀錄](document/SOURCE-ORIGINS.json)保留各原始倉庫與提交。料理模型由原始料理 Release 提供，版本由模型 manifest 固定。
+[v1.3.1 原始碼壓縮包](https://github.com/harrykuang-dev/Holodori-Auto/archive/refs/tags/v1.3.1.zip)包含五個功能的原始碼、跳繩模型檢查點、訓練及匯出工具和建置程式。也可用上方命令取得。[來源紀錄](document/SOURCE-ORIGINS.json)保留各原始倉庫與提交。料理模型由原始料理 Release 提供，版本由模型 manifest 固定。
 
 歷史版跳繩保留原有 MIT 授權。跳繩人工標註坐標和遮罩的 CC BY 4.0 授權範圍見原始資料集聲明。遊戲截圖、名稱、角色及美術的權利由各權利人保有。標準版的 ONNX Runtime 和 DirectML，以及選用 TensorRT 元件包含的 NVIDIA 函式庫，都沿用各自的授權及聲明。

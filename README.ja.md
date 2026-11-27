@@ -6,11 +6,11 @@ Holodori-Auto は、*hololive Dreams* のミニゲーム **ハイ＆ロー**、*
 
 ## ダウンロード
 
-[Releases](https://github.com/harrykuang-dev/Holodori-Auto/releases/latest) から `Holodori-Auto-v1.3.0-windows.7z` をダウンロードし、7-Zip で展開して `Holodori-Auto.exe` を実行してください。フォルダー全体を保持してください。Python や CUDA Toolkit の別途インストールは不要です。
+[Releases](https://github.com/harrykuang-dev/Holodori-Auto/releases/latest) から `Holodori-Auto-v1.3.1-windows.7z` をダウンロードし、7-Zip で展開して `Holodori-Auto.exe` を実行してください。フォルダー全体を保持してください。Python や CUDA Toolkit の別途インストールは不要です。
 
 標準版には縄跳びと料理用の DirectML が含まれます。縄跳びには DirectML または TensorRT に対応する GPU が必要です。料理は CPU にも切り替えられます。
 
-対応する NVIDIA GPU で TensorRT を使用する場合は、[Releases](https://github.com/harrykuang-dev/Holodori-Auto/releases/latest) から `Holodori-Auto-v1.3.0-tensorrt.7z` をダウンロードします。プログラムを終了し、`Holodori-Auto.exe` と同じフォルダーに展開します。実行ファイルの隣に `accelerators/tensorrt/` ができたことを確認し、プログラムを起動し直してください。TensorRT の初回使用時に GPU 用のエンジンが作成され、次回以降に再利用されます。
+対応する NVIDIA GPU で TensorRT を使用する場合は、[Releases](https://github.com/harrykuang-dev/Holodori-Auto/releases/latest) から `Holodori-Auto-v1.3.1-tensorrt.7z` をダウンロードします。プログラムを終了し、`Holodori-Auto.exe` と同じフォルダーに展開します。実行ファイルの隣に `accelerators/tensorrt/` ができたことを確認し、プログラムを起動し直してください。TensorRT の初回使用時に GPU 用のエンジンが作成され、次回以降に再利用されます。
 
 ## 使い方
 
@@ -80,4 +80,4 @@ Holodori-Auto は `main.py` から起動します。五つの機能のソース�
 
 ## 権利とライセンス
 
-縄跳び 1.3.3 と YOLO 派生重みは **AGPL-3.0-only**、釣りは **MIT** です。ハイ＆ローと料理が参照するコンポーネントの既存 MIT 通知は保持されています。NVIDIA ランタイム、その他の依存関係、ゲーム画像にはそれぞれの条件が適用されます。[ライセンスと対応ソース](LICENSES.md). [v1.3.0 のソースアーカイブ](https://github.com/harrykuang-dev/Holodori-Auto/archive/refs/tags/v1.3.0.zip)には五つの機能のソースが含まれます。[ソースの由来](document/SOURCE-ORIGINS.json)に元のリポジトリとコミットを記録しています。
+縄跳び 1.3.3 と YOLO 派生重みは **AGPL-3.0-only**、釣りは **MIT** です。ハイ＆ローと料理が参照するコンポーネントの既存 MIT 通知は保持されています。NVIDIA ランタイム、その他の依存関係、ゲーム画像にはそれぞれの条件が適用されます。[ライセンスと対応ソース](LICENSES.md). [v1.3.1 のソースアーカイブ](https://github.com/harrykuang-dev/Holodori-Auto/archive/refs/tags/v1.3.1.zip)には五つの機能のソースが含まれます。[ソースの由来](document/SOURCE-ORIGINS.json)に元のリポジトリとコミットを記録しています。

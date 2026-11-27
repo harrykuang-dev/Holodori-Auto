@@ -6,11 +6,11 @@ Holodori-Auto adalah program Windows untuk mengotomatiskan minigame **High & Low
 
 ## Unduh
 
-Unduh `Holodori-Auto-v1.3.0-windows.7z` dari [Releases](https://github.com/harrykuang-dev/Holodori-Auto/releases/latest), ekstrak dengan 7-Zip, lalu jalankan `Holodori-Auto.exe`. Simpan seluruh isi folder bersama. Python dan CUDA Toolkit tidak perlu dipasang secara terpisah.
+Unduh `Holodori-Auto-v1.3.1-windows.7z` dari [Releases](https://github.com/harrykuang-dev/Holodori-Auto/releases/latest), ekstrak dengan 7-Zip, lalu jalankan `Holodori-Auto.exe`. Simpan seluruh isi folder bersama. Python dan CUDA Toolkit tidak perlu dipasang secara terpisah.
 
 Paket standar menyertakan DirectML untuk Lompat Tali dan Memasak. Lompat Tali memerlukan GPU yang mendukung DirectML atau TensorRT. Memasak dapat beralih ke CPU.
 
-Untuk memakai TensorRT pada GPU NVIDIA yang kompatibel, unduh `Holodori-Auto-v1.3.0-tensorrt.7z` dari [Releases](https://github.com/harrykuang-dev/Holodori-Auto/releases/latest). Tutup program, lalu ekstrak arsip ke folder tempat `Holodori-Auto.exe` berada. Pastikan `accelerators/tensorrt/` berada di samping berkas program, lalu jalankan ulang. TensorRT membuat engine khusus GPU saat pertama digunakan dan menyimpannya untuk penggunaan berikutnya.
+Untuk memakai TensorRT pada GPU NVIDIA yang kompatibel, unduh `Holodori-Auto-v1.3.1-tensorrt.7z` dari [Releases](https://github.com/harrykuang-dev/Holodori-Auto/releases/latest). Tutup program, lalu ekstrak arsip ke folder tempat `Holodori-Auto.exe` berada. Pastikan `accelerators/tensorrt/` berada di samping berkas program, lalu jalankan ulang. TensorRT membuat engine khusus GPU saat pertama digunakan dan menyimpannya untuk penggunaan berikutnya.
 
 ## Penggunaan
 
@@ -80,4 +80,4 @@ Holodori-Auto dijalankan melalui `main.py`. Kode kelima fitur berada di `compone
 
 ## Hak dan lisensi
 
-Lompat Tali 1.3.3 dan bobot turunan YOLO memakai **AGPL-3.0-only**; Memancing memakai **MIT**. Pemberitahuan MIT yang ada untuk komponen yang dirujuk High & Low dan Memasak tetap disertakan. Runtime NVIDIA, dependensi lain, dan gambar game mempertahankan ketentuannya masing-masing. Lihat [lisensi dan kode sumber terkait](LICENSES.md). [Arsip kode sumber v1.3.0](https://github.com/harrykuang-dev/Holodori-Auto/archive/refs/tags/v1.3.0.zip) memuat kode kelima fitur. [Catatan asal kode](document/SOURCE-ORIGINS.json) mencantumkan repositori dan commit asal.
+Lompat Tali 1.3.3 dan bobot turunan YOLO memakai **AGPL-3.0-only**; Memancing memakai **MIT**. Pemberitahuan MIT yang ada untuk komponen yang dirujuk High & Low dan Memasak tetap disertakan. Runtime NVIDIA, dependensi lain, dan gambar game mempertahankan ketentuannya masing-masing. Lihat [lisensi dan kode sumber terkait](LICENSES.md). [Arsip kode sumber v1.3.1](https://github.com/harrykuang-dev/Holodori-Auto/archive/refs/tags/v1.3.1.zip) memuat kode kelima fitur. [Catatan asal kode](document/SOURCE-ORIGINS.json) mencantumkan repositori dan commit asal.

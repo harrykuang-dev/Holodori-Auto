@@ -4,14 +4,12 @@ from queue import Empty, SimpleQueue
 from threading import Event, Thread
 import tkinter as tk
 from tkinter import ttk
-import traceback
 
 from holodori.app import family_theme
 from holodori.global_hotkey import GlobalHotkey
 from holodori.modules import BY_ID
 from holodori.settings import parse_stop_hotkey
-from pilot import StopPlay, run
-from vision import VisionError
+from pilot import run
 from win_window import GameWindow, key
 
 
@@ -23,57 +21,57 @@ GAME_NAMES = {
 COPY = {
     '繁體中文': (
         '先進入{game}，再點擊「開始」',
-        '局數上限', '本次完成', '開始', '停止', '等待開始', '正在切換到遊戲…',
+        '局數上限', '已完成：{done} / {target} 局', '開始', '停止', '等待開始', '正在切換到遊戲…',
         '遊玩中', '正在停止', '已停止', '已達局數上限', '請輸入 1 至 9999 局。',
         '等待單人入口或關卡選單…', '等待棋盤…', '等待結算與領獎…',
         '落子 {moves}（{plies} 手）', '依照遊戲流程前進，兩種模式合計局數。', '關閉',
         '自動補充能量', '正在補充能量…', '無法註冊 {key}，請更換開始快捷鍵或點擊「開始」。',
-        '估算走法 {moves}'),
+        '估算走法 {moves}', '已確認對手落子'),
     'English': (
         'Open {game}, then click Start.',
-        'Match limit', 'Completed this run', 'Start', 'Stop', 'Ready', 'Switching to the game…',
+        'Match limit', 'Completed: {done} / {target} rounds', 'Start', 'Stop', 'Ready', 'Switching to the game…',
         'Playing', 'Stopping', 'Stopped', 'Match limit reached', 'Enter 1 to 9999 matches.',
         'Waiting for the solo lobby or stage menu…', 'Waiting for the board…', 'Waiting for results and rewards…',
         'Move {moves} ({plies} plies)', 'The match limit applies across both modes.', 'Close',
         'Automatically refill energy', 'Refilling energy…', 'Could not register {key}. Choose another shortcut or click Start.',
-        'Estimated best move {moves}'),
+        'Estimated best move {moves}', 'Confirmed the opponent’s move'),
     '日本語': (
         '「{game}」を開いてから「開始」をクリックしてください。',
-        '対局数の上限', '今回のクリア数', '開始', '停止', '待機中', 'ゲームに切り替え中…',
+        '対局数の上限', '完了：{done} / {target} 回', '開始', '停止', '待機中', 'ゲームに切り替え中…',
         '対局中', '停止中', '停止しました', '設定した対局数に到達', '1〜9999の対局数を入力してください。',
         'ソロ画面またはステージ選択を待機中…', '盤面を待機中…', '結果と報酬を待機中…',
         '着手 {moves}（{plies}手）', '対局数の上限は両モードの合計です。', '閉じる',
         'エネルギーを自動回復', 'エネルギーを回復中…', '{key} を登録できません。別のキーか開始ボタンを使ってください。',
-        '探索で選んだ手 {moves}'),
+        '探索で選んだ手 {moves}', '相手の着手を確認しました'),
     '한국어': (
         '{game}에 입장한 뒤 ‘시작’을 클릭하세요.',
-        '대국 수 제한', '이번 실행 완료', '시작', '중지', '준비', '게임으로 전환 중…',
+        '대국 수 제한', '완료: {done} / {target} 라운드', '시작', '중지', '준비', '게임으로 전환 중…',
         '진행 중', '중지 중', '중지됨', '대국 수 제한에 도달', '1~9999 사이의 대국 수를 입력하세요.',
         '솔로 화면 또는 스테이지 선택 대기 중…', '게임판 대기 중…', '결과 및 보상 대기 중…',
         '착수 {moves} ({plies}수)', '두 모드의 대국 수를 합산합니다.', '닫기',
         '에너지 자동 충전', '에너지 충전 중…', '{key} 등록 실패. 다른 단축키나 시작 버튼을 사용하세요.',
-        '탐색으로 고른 수 {moves}'),
+        '탐색으로 고른 수 {moves}', '상대의 착수를 확인했습니다'),
     'Indonesian': (
         'Buka {game}, lalu klik Mulai.',
-        'Batas pertandingan', 'Selesai sesi ini', 'Mulai', 'Berhenti', 'Siap', 'Beralih ke game…',
+        'Batas pertandingan', 'Selesai: {done} / {target} ronde', 'Mulai', 'Berhenti', 'Siap', 'Beralih ke game…',
         'Sedang bermain', 'Menghentikan', 'Berhenti', 'Batas pertandingan tercapai', 'Masukkan 1 hingga 9999 pertandingan.',
         'Menunggu lobi solo atau menu level…', 'Menunggu papan…', 'Menunggu hasil dan hadiah…',
         'Langkah {moves} ({plies} giliran)', 'Batas dihitung untuk kedua mode.', 'Tutup',
         'Isi ulang energi otomatis', 'Mengisi ulang energi…', 'Tidak dapat mendaftarkan {key}. Gunakan pintasan lain atau klik Mulai.',
-        'Perkiraan langkah terbaik {moves}'),
+        'Perkiraan langkah terbaik {moves}', 'Langkah lawan terkonfirmasi'),
     '简体中文': (
         '先进入{game}，再点击「开始」',
-        '局数上限', '本次完成', '开始', '停止', '等待开始', '正在切换到游戏…',
+        '局数上限', '已完成：{done} / {target} 局', '开始', '停止', '等待开始', '正在切换到游戏…',
         '游玩中', '正在停止', '已停止', '已达局数上限', '请输入 1 至 9999 局。',
         '等待单人入口或关卡菜单…', '等待棋盘…', '等待结算和领奖…',
         '落子 {moves}（{plies} 手）', '按游戏进度推进，两种模式合计局数。', '关闭',
         '自动补充能量', '正在补充能量…', '无法注册 {key}，请更换开始快捷键或点击「开始」。',
-        '估算走法 {moves}'),
+        '估算走法 {moves}', '已确认对手落子'),
 }
 TEXT_FIELDS = ('instructions', 'limit', 'progress', 'start', 'stop', 'ready', 'starting',
                'playing', 'stopping', 'stopped', 'finished', 'invalid',
                'waiting_entry', 'waiting_board', 'waiting_result', 'move', 'help', 'close',
-               'auto_refill', 'refilling', 'shortcut_unavailable', 'estimated_move')
+               'auto_refill', 'refilling', 'shortcut_unavailable', 'estimated_move', 'reply')
 
 
 def match_limit(value):
@@ -145,7 +143,6 @@ class PukaPukaApp:
         self.completed = 0
         self.target = None
         self.state = 'ready'
-        self.detail_event = None
         self.stop_shortcut = None
         self.stop_held = False
         self.start_generation = 0
@@ -166,6 +163,7 @@ class PukaPukaApp:
         self.main = ttk.Frame(root, padding=(self.px(20), 0))
         self.main.grid(sticky='nsew')
         self.main.columnconfigure(0, weight=1)
+        self.main.rowconfigure(3, weight=1)
         self.instructions = ttk.Label(root)
         self.status = tk.Label(root, fg=ACCENT)
 
@@ -197,13 +195,10 @@ class PukaPukaApp:
         progress = ttk.Frame(self.main, style='Card.TFrame', padding=self.px(16))
         progress.grid(row=0, column=0, sticky='ew', pady=(0, self.px(12)))
         progress.columnconfigure(0, weight=1)
-        self.progress_label = ttk.Label(progress, style='CardMuted.TLabel')
-        self.progress_label.grid(row=0, column=0, sticky='w')
-        self.count_label = ttk.Label(progress, style='Count.TLabel')
-        self.count_label.grid(row=1, column=0, sticky='w')
-        self.detail = ttk.Label(progress, style='CardMuted.TLabel', justify='left')
-        self.detail.grid(row=2, column=0, sticky='ew', pady=(self.px(4), 0))
-        progress.bind('<Configure>', lambda event: self.detail.configure(wraplength=max(1, event.width-self.px(32))))
+        self.count_label = ttk.Label(progress, style='Count.TLabel', justify='left')
+        self.count_label.grid(row=0, column=0, sticky='ew')
+        progress.bind('<Configure>', lambda event: self.count_label.configure(
+            wraplength=max(1, event.width-self.px(32))))
 
         controls = ttk.Frame(self.main)
         controls.grid(row=2, column=0, sticky='ew')
@@ -217,6 +212,18 @@ class PukaPukaApp:
                                       image=(self.theme.stop_icons['normal'], 'disabled', self.theme.stop_icons['disabled']),
                                       compound='left')
         self.stop_button.grid(row=0, column=1, sticky='nsew', padx=(self.px(6), 0))
+
+        log_card = ttk.Frame(self.main, style='Card.TFrame', padding=self.px(12))
+        log_card.grid(row=3, column=0, sticky='nsew', pady=(self.px(12), 0))
+        self.log = tk.Text(log_card, height=1, width=1, wrap='word', state='disabled',
+                           bg='#FFFFFF', fg='#242424', font=('Segoe UI', 10), relief='flat',
+                           borderwidth=0, highlightthickness=0, padx=self.px(4), pady=self.px(4),
+                           spacing3=self.px(4))
+        scroll = ttk.Scrollbar(log_card, command=self.log.yview)
+        self.log.configure(yscrollcommand=scroll.set)
+        scroll.pack(side='right', fill='y', padx=(self.px(8), 0))
+        self.log.pack(fill='both', expand=True)
+
         self.rounds.trace_add('write', lambda *_: self.refresh())
         self.translate()
         root.protocol('WM_DELETE_WINDOW', self.close)
@@ -236,37 +243,41 @@ class PukaPukaApp:
         self.instructions.configure(text=self.text['instructions'].format(game=GAME_NAMES[language]))
         self.limit_label.configure(text=self.text['limit'])
         self.refill_checkbox.configure(text=self.text['auto_refill'])
-        self.progress_label.configure(text=self.text['progress'])
         self.start_button.configure(text=self.text['start'])
         self.stop_button.configure(text=self.text['stop'])
         self.refresh()
 
     def refresh(self):
-        detail = ''
-        if self.detail_event:
-            event, *args = self.detail_event
-            if event == 'error':
-                detail = args[0]
-            elif event == 'move':
-                template = 'estimated_move' if args[1] is None else 'move'
-                detail = self.text[template].format(moves=args[0], plies=args[2])
-            elif event == 'shortcut_status':
-                detail = self.text['shortcut_unavailable'].format(key=args[0])
-            else:
-                detail = self.text[event]
-        self.detail.configure(text=detail)
-        if detail:
-            self.detail.grid()
-        else:
-            self.detail.grid_remove()
         self.status.configure(text=self.text[self.state])
         goal = self.target if self.target is not None else self.rounds.get() or '–'
-        self.count_label.configure(text=f'{self.completed} / {goal}')
+        self.count_label.configure(text=self.text['progress'].format(done=self.completed, target=goal))
         active = self.worker is not None
         self.entry.configure(state='disabled' if active else 'normal')
         self.refill_checkbox.configure(state='disabled' if active else 'normal')
         self.start_button.configure(state='disabled' if active or self.smoke else 'normal')
         self.stop_button.configure(state='normal' if active and not self.stop_event.is_set() else 'disabled')
+
+    def log_event(self, event, *args):
+        if event == 'error':
+            message = args[0]
+        elif event == 'move':
+            template = 'estimated_move' if args[1] is None else 'move'
+            message = self.text[template].format(moves=args[0], plies=args[2])
+        elif event == 'shortcut_status':
+            message = self.text['shortcut_unavailable'].format(key=args[0])
+        elif event == 'completed':
+            message = self.text['progress'].format(done=args[0], target=args[1])
+        elif event == 'reply':
+            message = f"{self.text['reply']}  {args[1]}".rstrip()
+        else:
+            message = self.text[event]
+
+        self.log.configure(state='normal')
+        self.log.insert('end', message + '\n')
+        if int(self.log.index('end-1c').split('.')[0]) > 500:
+            self.log.delete('1.0', '101.0')
+        self.log.see('end')
+        self.log.configure(state='disabled')
 
     def configure_start_shortcut(self):
         if self.start_listener is not None:
@@ -291,13 +302,12 @@ class PukaPukaApp:
         try:
             target = match_limit(self.rounds.get().strip())
         except ValueError:
-            self.detail_event = ('invalid',)
-            self.refresh()
+            self.log_event('invalid')
             return
         self.completed, self.target = 0, target
-        self.detail_event = None
         self.stop_event.clear()
         self.state = 'starting'
+        self.log_event('starting')
         self.worker = Thread(target=self.play, args=(target,),
                              kwargs={'auto_refill': self.auto_refill.get()}, name='puka-puka-play')
         self.start_generation += 1
@@ -315,18 +325,16 @@ class PukaPukaApp:
             run(game, target, notify, auto_refill=auto_refill)
         except InterruptedError:
             notify('stopped')
-        except (OSError, StopPlay, VisionError) as error:
-            notify('error', str(error))
         except Exception as error:
-            traceback.print_exc()
-            notify('error', str(error))
+            notify('error', str(error) or type(error).__name__)
         else:
             notify('finished')
 
     def stop(self):
-        if self.worker is not None:
+        if self.worker is not None and not self.stop_event.is_set():
             self.stop_event.set()
             self.state = 'stopping'
+            self.log_event('stopping')
             self.refresh()
 
     def poll(self):
@@ -339,19 +347,17 @@ class PukaPukaApp:
                     continue
                 if event == 'shortcut_status':
                     generation, value, ok = args
-                    if generation == self.start_generation and value == self.start_key.get():
-                        if not ok and not (self.capturing or self.help_dialog or self.closing or self.worker):
-                            self.detail_event = (event, value)
-                        elif ok and self.detail_event and self.detail_event[0] == event:
-                            self.detail_event = None
-                elif event in ('finished', 'stopped', 'playing'):
+                    if (not ok and generation == self.start_generation and value == self.start_key.get()
+                            and not (self.capturing or self.help_dialog or self.closing or self.worker)):
+                        self.log_event(event, value)
+                    continue
+                if event in ('finished', 'stopped', 'playing'):
                     self.state = event
                 elif event == 'completed':
                     self.completed = args[0]
-                elif event in ('move', 'waiting_entry', 'waiting_board', 'waiting_result', 'refilling', 'error'):
-                    self.detail_event = (event, *args)
-                    if event == 'error':
-                        self.state = 'stopped'
+                elif event == 'error':
+                    self.state = 'stopped'
+                self.log_event(event, *args)
                 self.refresh()
         except Empty:
             pass
