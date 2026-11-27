@@ -154,6 +154,20 @@ class RaftHatTests(unittest.TestCase):
             self.assertEqual(tracked, tuple(observed))
             pick.assert_called_once()
 
+    def test_partial_dolphin_pattern_and_profile_outweigh_conflicting_model(self):
+        kind = solver.DOLPHIN
+        hat = hats.Hat(kind, hats.references()[kind][0], 3933, 150)
+        for markers, costs, expected in (
+                ((0, -1, None, 0, -1, 0, 0, 0), (.0834, .0714), -kind),
+                ((0, None, None, 0, -1, 0, None, 0), (.0806, .0653), -kind),
+                ((0, -1, None, 0, -1, 0, 0, 0), (.072, .071), None),
+                ((0, -1, None, 1, -1, 0, 0, 0), (.0834, .0714), kind)):
+            with self.subTest(markers=markers, costs=costs):
+                with (patch.object(vision, "pick_side", return_value=kind),
+                      patch.object(vision, "describe", return_value=(hat,)),
+                      patch.object(vision, "pose_costs", return_value=costs)):
+                    self.assertEqual(vision.resolve_hat_side(self.frame, 0, markers, kind), expected)
+
     def test_ambiguous_whale_uses_the_direction_from_a_wider_profile(self):
         kind = solver.WHALE
         hat = hats.Hat(kind, hats.references()[kind][0], 5921, 150)

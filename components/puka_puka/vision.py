@@ -239,6 +239,32 @@ def single_mark_hat(patch, row, markers, choices):
     return side * kind if cost < maximum and reverse - cost > difference else None
 
 
+def resolve_hat_side(patch, row, markers, kind):
+    predicted = pick_side(patch, (kind, -kind))
+    painted = [(edge, mark) for edge, mark in enumerate(markers) if mark in (BLUE, ORANGE)]
+    if not painted:
+        return predicted
+    side = painted[0][1]
+    pattern = MOVE_DIAGRAMS[kind]
+    if not all(mark == side and pattern[edge if side == BLUE else MIRROR_EDGES[edge]]
+               for edge, mark in painted):
+        return predicted
+
+    # Shadows and reflections can make a printed mark look white. Corroborate
+    # the colored marks with the hat profile before trusting a partial pattern.
+    hat = next((hat for hat in describe(patch, row) if hat.kind == kind), None)
+    if hat is not None:
+        blue, orange = pose_costs(hat.pose, references()[kind])
+        cost, reverse = (blue, orange) if side == BLUE else (orange, blue)
+        minimum_gap = .012 if len(painted) == 1 else .008
+        if cost <= .08 and reverse - cost >= minimum_gap:
+            return side * kind
+    if len(painted) >= 2 and predicted == -side * kind:
+        # Neither source is decisive once several aptly positioned marks contradict the model.
+        return None
+    return predicted
+
+
 def observe_board(frame, *, tracking=False, rows=None):
     if rows is None:
         rows = board_rows(frame) if is_ready(frame) else 3
@@ -268,8 +294,8 @@ def observe_board(frame, *, tracking=False, rows=None):
                 floor.painted >= 2 or markers[3] == ORANGE or markers[4] == BLUE):
             raise VisionError(f"尚未確認 {square(index)} 的棋帽")
         if not tracking and len(choices) == 2 and abs(choices[0]) != KING:
-            if (side := pick_side(patch, choices)) is not None:
-                choices = (side,)
+            if (piece := resolve_hat_side(patch, row, markers, abs(choices[0]))) is not None:
+                choices = (piece,)
         yield choices
 
 
