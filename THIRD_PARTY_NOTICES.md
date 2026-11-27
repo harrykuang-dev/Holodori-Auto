@@ -4,6 +4,7 @@
 
 | External source / 外部來源 | Use in Holodori-Auto / 用途及授權 |
 | --- | --- |
+| [mwty-0415/Hololive-Dreams-Auto-High-Low](https://github.com/mwty-0415/Hololive-Dreams-Auto-High-Low) | Source of parts of the High & Low implementation. The upstream repository does not specify a project-wide license. / 比大小功能的部分程式碼來自此倉庫。上游未列出專案整體授權。 |
 | [Oreki0504/hololive-dreams-helper](https://github.com/Oreki0504/hololive-dreams-helper) | Provides the poker hand evaluator and hold/discard optimizer in `components/high_low/poker_core.py`, the basis of `components/high_low/recognizer.py`, and card recognition templates. Retains Totarou Oriki's [MIT notice](components/high_low/licenses/poker-core-MIT.txt). The card artwork rights remain with the game's rights holders. / 提供撲克牌型評估、留牌與換牌策略、牌面辨識程式和模板。牌面圖像權利由遊戲權利人保有。 |
 | [brianhliou/dobutsu-shogi](https://github.com/brianhliou/dobutsu-shogi) | Its [public tablebase](https://dobutsu.brianhliou.com/) supplies exact results for eligible three-row board positions. The upstream repository uses the [MIT License](https://github.com/brianhliou/dobutsu-shogi/blob/main/LICENSE). Holodori-Auto queries the service and implements its own local solver. / 查詢適用的三排棋局精確解，本機求解器由 Holodori-Auto 維護。 |
 | [Ultralytics](https://github.com/ultralytics/ultralytics) | YOLO26 is the base for the distributed rope-detection weights. See the [AGPL notice and source](components/jump_rope/NOTICE.md). / 跳繩辨識權重衍生自 YOLO26，適用 AGPL 聲明。 |
