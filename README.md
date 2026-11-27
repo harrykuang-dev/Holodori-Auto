@@ -29,7 +29,9 @@ The window opens at the selected mode’s default size, scaled for your display.
 
 ### Raft Chess
 
-Enter the solo screen of Puka Puka Fight, then choose **Raft Chess** in Holodori-Auto. Set **Match limit** to 1–9999 and click **Start** or use the shared Start shortcut while the game is in the foreground. The limit counts completed wins. The program advances through available Normal stages and continues in Challenge once the game unlocks it after Normal 30.
+Enter the solo screen of Puka Puka Fight, then choose **Raft Chess** in Holodori-Auto. Set **Match limit** to 1–9999. Click **Start** or press the shared Start shortcut to bring the game forward and begin. The program advances through available Normal stages and continues in Challenge once the game unlocks it after Normal 30.
+
+**Completed** counts wins, draws and losses after settlement. The scrollable run log below **Start** and **Stop** shows moves, results and errors. The log clears when you leave Raft Chess and is kept only in memory.
 
 **Automatically refill energy** is off by default. When enabled, the program can confirm the game's one-item refill and continue. Raft Chess detects boards with four columns and three or four rows, then confirms legal destination highlights before clicking. Eligible eight-piece positions on a three-row board can use the public [Animal Shogi tablebase](https://dobutsu.brianhliou.com/) with the abstract board, reserves and side to move. Four-row positions use local search.
 

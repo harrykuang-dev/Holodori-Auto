@@ -29,7 +29,9 @@ Saat dibuka, ukuran awal jendela mengikuti ukuran bawaan mode yang dipilih dan d
 
 ### Catur Rakit
 
-Buka layar solo Puka Puka Fight di game, lalu pilih **Catur Rakit** di Holodori-Auto. Batas pertandingan adalah 1–9999 dan menghitung kemenangan yang sudah menyelesaikan layar hasil. Program melanjutkan level Normal dan masuk ke Challenge setelah game membukanya seusai Normal 30.
+Buka layar solo Puka Puka Fight di game, lalu pilih **Catur Rakit** di Holodori-Auto. Atur batas pertandingan ke 1–9999, lalu klik **Mulai** atau gunakan pintasan mulai untuk membawa game ke depan dan memulai otomatisasi. Program melanjutkan level Normal dan masuk ke Challenge setelah game membukanya seusai Normal 30.
+
+**Selesai** menghitung kemenangan, seri, dan kekalahan setelah layar hasil dikonfirmasi. Gulir log di bawah **Mulai** dan **Berhenti** untuk melihat langkah, hasil, dan kesalahan. Log hanya disimpan di memori dan dihapus saat keluar dari Catur Rakit.
 
 **Isi ulang energi otomatis** nonaktif secara bawaan. Saat aktif, program dapat mengonfirmasi satu item pemulihan dan melanjutkan. Program memeriksa jendela game 16:9 di latar depan dan sorotan sasaran sah sebelum mengeklik. Posisi standar delapan bidak dapat dikirim sebagai data papan, cadangan, dan giliran ke [basis data Animal Shogi](https://dobutsu.brianhliou.com/).
 
