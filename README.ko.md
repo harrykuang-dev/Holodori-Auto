@@ -6,11 +6,11 @@ Holodori-Auto는 *hololive Dreams*의 **하이&로**, **낚시**, **줄넘기**,
 
 ## 다운로드
 
-[Releases](https://github.com/harrykuang-dev/Holodori-Auto/releases/latest)에서 `Holodori-Auto-v1.3.0-windows.7z`를 다운로드하고 7-Zip으로 압축을 푼 뒤 `Holodori-Auto.exe`를 실행하세요. 전체 폴더를 함께 보관하세요. Python이나 CUDA Toolkit을 별도로 설치할 필요는 없습니다.
+[Releases](https://github.com/harrykuang-dev/Holodori-Auto/releases/latest)에서 `Holodori-Auto-v1.3.1-windows.7z`를 다운로드하고 7-Zip으로 압축을 푼 뒤 `Holodori-Auto.exe`를 실행하세요. 전체 폴더를 함께 보관하세요. Python이나 CUDA Toolkit을 별도로 설치할 필요는 없습니다.
 
 표준 패키지에는 줄넘기와 요리에서 사용하는 DirectML이 포함됩니다. 줄넘기에는 DirectML 또는 TensorRT를 지원하는 GPU가 필요합니다. 요리는 CPU로도 전환할 수 있습니다.
 
-호환되는 NVIDIA GPU에서 TensorRT를 사용하려면 [Releases](https://github.com/harrykuang-dev/Holodori-Auto/releases/latest)에서 `Holodori-Auto-v1.3.0-tensorrt.7z`를 다운로드하세요. 프로그램을 종료한 다음 `Holodori-Auto.exe`가 있는 폴더에 압축을 풉니다. 실행 파일 옆에 `accelerators/tensorrt/` 폴더가 있는지 확인하고 프로그램을 다시 실행하세요. TensorRT를 처음 사용하면 해당 GPU의 엔진을 만들고 이후 실행을 위해 캐시에 저장합니다.
+호환되는 NVIDIA GPU에서 TensorRT를 사용하려면 [Releases](https://github.com/harrykuang-dev/Holodori-Auto/releases/latest)에서 `Holodori-Auto-v1.3.1-tensorrt.7z`를 다운로드하세요. 프로그램을 종료한 다음 `Holodori-Auto.exe`가 있는 폴더에 압축을 풉니다. 실행 파일 옆에 `accelerators/tensorrt/` 폴더가 있는지 확인하고 프로그램을 다시 실행하세요. TensorRT를 처음 사용하면 해당 GPU의 엔진을 만들고 이후 실행을 위해 캐시에 저장합니다.
 
 ## 사용 방법
 
@@ -80,4 +80,4 @@ Holodori-Auto는 `main.py`로 시작합니다. 다섯 기능의 소스는 `compo
 
 ## 권리 및 라이선스
 
-줄넘기 1.3.3과 YOLO 파생 가중치는 **AGPL-3.0-only**, 낚시는 **MIT**를 사용합니다. 하이&로와 요리가 참조하는 구성 요소의 기존 MIT 고지는 유지됩니다. NVIDIA 런타임, 기타 의존성 및 게임 이미지에는 각각의 조건이 적용됩니다. [라이선스 및 대응 소스](LICENSES.md). [v1.3.0 소스 압축 파일](https://github.com/harrykuang-dev/Holodori-Auto/archive/refs/tags/v1.3.0.zip)에는 다섯 기능의 소스가 포함됩니다. [소스 출처](document/SOURCE-ORIGINS.json)에서 원본 저장소와 커밋을 확인할 수 있습니다.
+줄넘기 1.3.3과 YOLO 파생 가중치는 **AGPL-3.0-only**, 낚시는 **MIT**를 사용합니다. 하이&로와 요리가 참조하는 구성 요소의 기존 MIT 고지는 유지됩니다. NVIDIA 런타임, 기타 의존성 및 게임 이미지에는 각각의 조건이 적용됩니다. [라이선스 및 대응 소스](LICENSES.md). [v1.3.1 소스 압축 파일](https://github.com/harrykuang-dev/Holodori-Auto/archive/refs/tags/v1.3.1.zip)에는 다섯 기능의 소스가 포함됩니다. [소스 출처](document/SOURCE-ORIGINS.json)에서 원본 저장소와 커밋을 확인할 수 있습니다.

@@ -52,12 +52,12 @@ def selection_ready(frame, pos, move):
 def select_move(game, pos, move, read_current):
     def unchanged(frame):
         if read_current(frame) != pos:
-            raise StopPlay("求解期间棋盘已变化")
+            raise VisionError("求解期间棋盘已变化")
         return pos
 
     for _ in range(2):
         # Retry a source click only after confirming the same unselected board.
-        frame, _ = wait_for(game, unchanged, 4)
+        frame, _ = wait_for(game, unchanged, 4, stable_for=.3)
         game.click(*source_point(frame, pos, move))
         deadline = time.monotonic() + 4
         while time.monotonic() < deadline:

@@ -38,6 +38,25 @@ class RaftHatTests(unittest.TestCase):
             self.frame[230:348, 780:960] = color
             self.assertEqual(tuple(vision.observe_board(self.frame)), ((0,),) * 12)
 
+    def test_empty_raft_rejects_a_hat_from_the_row_behind(self):
+        for rows in (3, 4):
+            for tracking in (False, True):
+                with self.subTest(rows=rows, tracking=tracking):
+                    covered = vision.NAMEPLATE_EDGES[rows][0]
+                    blank = (0,) * 8
+                    markers = [blank] * (4 * rows)
+                    markers[-4] = tuple(None if edge in covered else 0 for edge in range(8))
+                    markers[-3] = (0, 0, 0, 0, None, 0, 0, 0)
+                    choices = [(0,)] * (4 * rows)
+                    choices[-4] = (solver.KING, -solver.KING)
+                    choices[-3] = (solver.TURTLE, -solver.TURTLE)
+                    with (patch.object(vision, "raft_markers", side_effect=markers),
+                          patch.object(vision, "observe", side_effect=choices),
+                          patch.object(vision, "resolve_hat_side", return_value=None)):
+                        observed = tuple(vision.observe_board(self.frame, rows=rows, tracking=tracking))
+                    self.assertEqual(observed[-4], (0,))
+                    self.assertEqual(observed[-3], choices[-3])
+
     def test_aligned_corner_marks_resolve_whale_direction(self):
         kind = solver.WHALE
         hat = hats.Hat(kind, hats.references()[kind][0], 5921, 150)
@@ -132,6 +151,20 @@ class RaftHatTests(unittest.TestCase):
                     costs.return_value = (.022, .021)
                     self.assertEqual(hats.observe(self.frame, 3), (kind, -kind))
 
+    def test_clipped_d1_hat_needs_matching_deck_marks_for_a_weaker_profile(self):
+        kind = solver.DOLPHIN
+        hat = hats.Hat(kind, hats.references()[kind][0], 1463, 150)
+        floor = vision.raft_evidence((0, 0, None, -1, -1, 0, -1, 0))
+        mixed = floor._replace(mixed=True)
+        with (patch.object(hats, "describe", return_value=(hat,)),
+              patch.object(hats, "pose_costs", return_value=(.0779, .071)) as costs):
+            self.assertEqual(hats.observe(self.frame, 3, floor=floor, tracking=True), (-kind,))
+            self.assertEqual(hats.observe(self.frame, 3, floor=mixed, tracking=True), (0,))
+            self.assertEqual(hats.observe(self.frame, 3, tracking=True), (0,))
+            self.assertEqual(hats.observe(self.frame, 2, floor=floor, tracking=True), (0,))
+            costs.return_value = (.0589, .0841)
+            self.assertEqual(hats.observe(self.frame, 3, floor=floor, tracking=True), (0,))
+
     def test_indeterminate_hats_use_both_crowns_or_wait(self):
         observations = [(p,) for p in self.before.board]
         observations[8] = (solver.KING, -solver.KING)
@@ -140,6 +173,33 @@ class RaftHatTests(unittest.TestCase):
             observations[10] = (solver.KING, -solver.KING)
             with self.assertRaises(vision.VisionError):
                 vision.read_board(self.frame)
+
+    def test_model_only_breaks_an_uncertain_nonleader_side_on_direct_reads(self):
+        candidates = (solver.TURTLE, -solver.TURTLE)
+        observed = [candidates, (solver.DOLPHIN,), (solver.KING, -solver.KING)] + [(0,)] * 9
+        with patch.object(vision, "pick_side", return_value=-solver.TURTLE) as pick:
+            with patch.object(vision, "observe", side_effect=observed):
+                resolved = tuple(vision.observe_board(self.frame, rows=3))
+            self.assertEqual(resolved, ((-solver.TURTLE,), *observed[1:]))
+            pick.assert_called_once()
+            with patch.object(vision, "observe", side_effect=observed):
+                tracked = tuple(vision.observe_board(self.frame, rows=3, tracking=True))
+            self.assertEqual(tracked, tuple(observed))
+            pick.assert_called_once()
+
+    def test_partial_dolphin_pattern_and_profile_outweigh_conflicting_model(self):
+        kind = solver.DOLPHIN
+        hat = hats.Hat(kind, hats.references()[kind][0], 3933, 150)
+        for markers, costs, expected in (
+                ((0, -1, None, 0, -1, 0, 0, 0), (.0834, .0714), -kind),
+                ((0, None, None, 0, -1, 0, None, 0), (.0806, .0653), -kind),
+                ((0, -1, None, 0, -1, 0, 0, 0), (.072, .071), None),
+                ((0, -1, None, 1, -1, 0, 0, 0), (.0834, .0714), kind)):
+            with self.subTest(markers=markers, costs=costs):
+                with (patch.object(vision, "pick_side", return_value=kind),
+                      patch.object(vision, "describe", return_value=(hat,)),
+                      patch.object(vision, "pose_costs", return_value=costs)):
+                    self.assertEqual(vision.resolve_hat_side(self.frame, 0, markers, kind), expected)
 
     def test_ambiguous_whale_uses_the_direction_from_a_wider_profile(self):
         kind = solver.WHALE

@@ -6,11 +6,11 @@ Holodori-Auto is a Windows program that automates **High & Low**, **Fishing**, *
 
 ## Download
 
-Download `Holodori-Auto-v1.3.0-windows.7z` from [Releases](https://github.com/harrykuang-dev/Holodori-Auto/releases/latest), extract it with 7-Zip and run `Holodori-Auto.exe`. Keep the complete folder together. Python and CUDA Toolkit do not need to be installed separately.
+Download `Holodori-Auto-v1.3.1-windows.7z` from [Releases](https://github.com/harrykuang-dev/Holodori-Auto/releases/latest), extract it with 7-Zip and run `Holodori-Auto.exe`. Keep the complete folder together. Python and CUDA Toolkit do not need to be installed separately.
 
 The standard package includes DirectML for Jump Rope and Cooking. Jump Rope requires a GPU supported by DirectML or TensorRT. Cooking can fall back to CPU.
 
-For TensorRT on a compatible NVIDIA GPU, download `Holodori-Auto-v1.3.0-tensorrt.7z` from [Releases](https://github.com/harrykuang-dev/Holodori-Auto/releases/latest). Close the program and extract the archive into the folder containing `Holodori-Auto.exe` so that `accelerators/tensorrt/` is beside the executable. Restart the program. The first TensorRT run builds an engine for your GPU and caches it for later runs.
+For TensorRT on a compatible NVIDIA GPU, download `Holodori-Auto-v1.3.1-tensorrt.7z` from [Releases](https://github.com/harrykuang-dev/Holodori-Auto/releases/latest). Close the program and extract the archive into the folder containing `Holodori-Auto.exe` so that `accelerators/tensorrt/` is beside the executable. Restart the program. The first TensorRT run builds an engine for your GPU and caches it for later runs.
 
 ## Usage
 
@@ -80,4 +80,4 @@ The [technical documentation](document/README.md) includes the [architecture and
 
 ## Notices
 
-Jump Rope 1.3.3 and its YOLO-derived weights use **AGPL-3.0-only**; Fishing uses **MIT**. Existing MIT notices for components referenced by High & Low and Cooking remain included. NVIDIA libraries, other dependencies and game artwork retain their own terms. See [licensing and corresponding source](LICENSES.md). The [v1.3.0 source archive](https://github.com/harrykuang-dev/Holodori-Auto/archive/refs/tags/v1.3.0.zip) contains all five feature implementations. The [source origins](document/SOURCE-ORIGINS.json) record the original repositories and commits.
+Jump Rope 1.3.3 and its YOLO-derived weights use **AGPL-3.0-only**; Fishing uses **MIT**. Existing MIT notices for components referenced by High & Low and Cooking remain included. NVIDIA libraries, other dependencies and game artwork retain their own terms. See [licensing and corresponding source](LICENSES.md). The [v1.3.1 source archive](https://github.com/harrykuang-dev/Holodori-Auto/archive/refs/tags/v1.3.1.zip) contains all five feature implementations. The [source origins](document/SOURCE-ORIGINS.json) record the original repositories and commits.

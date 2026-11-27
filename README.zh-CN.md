@@ -6,11 +6,11 @@ Holodori-Auto 是一款 Windows 自动化程序，支持 *hololive Dreams* 的**
 
 ## 下载
 
-从 [Releases](https://github.com/harrykuang-dev/Holodori-Auto/releases/latest) 下载 `Holodori-Auto-v1.3.0-windows.7z`，使用 7-Zip 解压后运行 `Holodori-Auto.exe`。请保留完整文件夹，无需另外安装 Python 或 CUDA Toolkit。
+从 [Releases](https://github.com/harrykuang-dev/Holodori-Auto/releases/latest) 下载 `Holodori-Auto-v1.3.1-windows.7z`，使用 7-Zip 解压后运行 `Holodori-Auto.exe`。请保留完整文件夹，无需另外安装 Python 或 CUDA Toolkit。
 
 标准版内置 DirectML，供跳绳和料理使用。跳绳需要支持 DirectML 或 TensorRT 的 GPU。料理也可回退到 CPU。
 
-兼容的 NVIDIA GPU 可使用可选的 TensorRT 组件。在 [Releases](https://github.com/harrykuang-dev/Holodori-Auto/releases/latest) 下载 `Holodori-Auto-v1.3.0-tensorrt.7z`。关闭程序，将压缩包解压到 `Holodori-Auto.exe` 所在的文件夹。确认 `accelerators/tensorrt/` 位于可执行文件旁，再重新启动程序。首次使用 TensorRT 会为本机 GPU 创建引擎并保留缓存。
+兼容的 NVIDIA GPU 可使用可选的 TensorRT 组件。在 [Releases](https://github.com/harrykuang-dev/Holodori-Auto/releases/latest) 下载 `Holodori-Auto-v1.3.1-tensorrt.7z`。关闭程序，将压缩包解压到 `Holodori-Auto.exe` 所在的文件夹。确认 `accelerators/tensorrt/` 位于可执行文件旁，再重新启动程序。首次使用 TensorRT 会为本机 GPU 创建引擎并保留缓存。
 
 ## 使用方式
 
@@ -80,4 +80,4 @@ Holodori-Auto 以 `main.py` 为统一入口。五个功能的源代码均位于 
 
 ## 声明与许可
 
-跳绳 1.3.3 与 YOLO 衍生权重采用 **AGPL-3.0-only**，钓鱼采用 **MIT**。猜高低与料理引用组件的现有 MIT 声明继续保留；NVIDIA 运行库、其他依赖及游戏美术维持各自条款。详见[许可与对应源代码](LICENSES.md)。[v1.3.0 源代码压缩包](https://github.com/harrykuang-dev/Holodori-Auto/archive/refs/tags/v1.3.0.zip)包含五个功能的源代码。[来源记录](document/SOURCE-ORIGINS.json)保留原始仓库和提交。
+跳绳 1.3.3 与 YOLO 衍生权重采用 **AGPL-3.0-only**，钓鱼采用 **MIT**。猜高低与料理引用组件的现有 MIT 声明继续保留；NVIDIA 运行库、其他依赖及游戏美术维持各自条款。详见[许可与对应源代码](LICENSES.md)。[v1.3.1 源代码压缩包](https://github.com/harrykuang-dev/Holodori-Auto/archive/refs/tags/v1.3.1.zip)包含五个功能的源代码。[来源记录](document/SOURCE-ORIGINS.json)保留原始仓库和提交。

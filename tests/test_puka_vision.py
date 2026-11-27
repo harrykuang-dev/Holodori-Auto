@@ -322,6 +322,24 @@ class PukaSettlementTests(unittest.TestCase):
 
 
 class PukaTrackingTests(unittest.TestCase):
+    def test_selection_rechecks_a_transient_board_mismatch_before_clicking(self):
+        solver = import_module('solver')
+        move = solver.Move(2, 5)
+        ticks = count(step=.2)
+        clock = SimpleNamespace(monotonic=lambda: next(ticks), sleep=lambda _: None)
+        game = SimpleNamespace(capture=Mock(side_effect=['initial', 'different',
+                                                        'initial', 'initial', 'selected']))
+
+        def click(*_):
+            self.assertEqual(game.capture.call_count, 4)
+
+        game.click = Mock(side_effect=click)
+        with (patch.object(pilot, 'time', clock),
+              patch.object(pilot, 'source_point', return_value=(10, 10)),
+              patch.object(pilot, 'selection_ready', side_effect=lambda frame, *_: frame == 'selected')):
+            pilot.select_move(game, 'initial', move, lambda frame: frame)
+        game.click.assert_called_once_with(10, 10)
+
     def test_selection_retries_only_on_the_same_board(self):
         solver = import_module('solver')
         move = solver.Move(2, 5)
