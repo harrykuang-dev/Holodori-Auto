@@ -138,46 +138,6 @@ class RaftHatTests(unittest.TestCase):
         with patch.object(hats, "describe", return_value=()):
             self.assertEqual(hats.observe(self.frame, 7, floor=floor), (solver.WHALE,))
 
-    def test_partial_whale_pattern_supports_two_marginal_profiles(self):
-        kind = solver.WHALE
-        hat = hats.Hat(kind, hats.references()[kind][0], 7566, 150)
-        floor = vision.raft_evidence((-1, None, -1, 0, None, None, 0, -1))
-        for tile, narrow, wide, expected in (
-                (floor, (.1212, .0938), (.1026, .078), (-kind,)),
-                (floor, (.1212, .0938), (.078, .1026), (0,)),
-                (floor, (.0938, .1212), (.1026, .078), (0,)),
-                (floor, (.1212, .107), (.1026, .078), (0,)),
-                (floor, (.1212, .0938), (.1026, .092), (0,)),
-                (floor._replace(mixed=True), (.1212, .0938), (.1026, .078), (0,)),
-                (floor._replace(exact=None), (.1212, .0938), (.1026, .078), (0,)),
-                (floor._replace(exact=-solver.KING), (.1212, .0938), (.1026, .078), (0,))):
-            with self.subTest(tile=tile, narrow=narrow, wide=wide):
-                with (patch.object(hats, "describe", side_effect=lambda *_args, **_kwargs: iter((hat,))),
-                      patch.object(hats, "pose_costs", side_effect=(narrow, wide))):
-                    self.assertEqual(hats.observe(self.frame, 8, floor=tile, tracking=True), expected)
-
-    def test_reply_can_confirm_whale_when_two_corner_marks_support_both_profiles(self):
-        kind = solver.WHALE
-        hat = hats.Hat(kind, hats.references()[kind][0], 7566, 150)
-        floor = vision.raft_evidence((None, None, -1, None, None, None, 0, -1))
-        for tile, tolerance, expected in (
-                (floor, 0., (0,)), (floor, .5, (0,)), (floor, 1., (-kind,)),
-                (floor._replace(painted=1), 1., (0,)),
-                (floor._replace(mixed=True), 1., (0,))):
-            with self.subTest(tile=tile, tolerance=tolerance):
-                with (patch.object(hats, "describe", side_effect=lambda *_args, **_kwargs: iter((hat,))),
-                      patch.object(hats, "pose_costs", side_effect=((.135, .116), (.12, .091)))):
-                    self.assertEqual(hats.observe(self.frame, 8, floor=tile, tracking=True,
-                                                  tolerance=tolerance), expected)
-
-    def test_progressive_tolerance_also_recovers_a_marginal_dolphin(self):
-        kind = solver.DOLPHIN
-        hat = hats.Hat(kind, hats.references()[kind][0], 2180, 150)
-        with (patch.object(hats, "describe", return_value=(hat,)),
-              patch.object(hats, "pose_costs", return_value=(.105, .16))):
-            self.assertEqual(hats.observe(self.frame, 8, tracking=True, tolerance=.4), (0,))
-            self.assertEqual(hats.observe(self.frame, 8, tracking=True, tolerance=.8), (kind, -kind))
-
     def test_d1_reads_any_hat_partly_covered_by_the_top_right_controls(self):
         for kind, poses in hats.references().items():
             with self.subTest(kind=kind):

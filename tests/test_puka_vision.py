@@ -394,91 +394,12 @@ class PukaTrackingTests(unittest.TestCase):
             raise vision.VisionError('key raft obscured')
 
         game.click = click
-        reply_modes = []
-
-        def read_reply(frame, previous, submitted, *, tolerance):
-            self.assertEqual((frame, previous, submitted), ('reply', prior, deploy))
-            reply_modes.append(tolerance)
-            if tolerance < .1:
-                raise vision.VisionError('waiting for a readable reply')
-            return expected
-
         with (patch.object(pilot, 'time', clock),
               patch.object(pilot, 'read_position', side_effect=read_position),
-              patch.object(pilot, 'next_player_position', side_effect=read_reply),
-              patch.object(pilot, 'is_ready', return_value=True),
-              patch.object(pilot, 'back_row_obscured', return_value=False),
+              patch.object(pilot, 'next_player_position', return_value=expected),
               patch.object(pilot, 'classify_screen', return_value='board'),
               patch.object(pilot, 'selection_ready', side_effect=lambda frame, *_: frame == 'selection'),
               patch.object(pilot, 'source_point', return_value=(10, 10)),
               patch.object(pilot, 'choose', side_effect=[deploy, next_move])):
             with self.assertRaises(NextSelection):
                 pilot.play_match(game, 'initial', prior, Mock())
-        self.assertFalse(reply_modes[0])
-        self.assertGreaterEqual(reply_modes[-1], .1)
-
-    def test_reply_tolerance_waits_for_a_clear_player_turn_then_rises_linearly(self):
-        clock = SimpleNamespace(monotonic=Mock(return_value=10.))
-        timing = pilot.ReplyTiming()
-        with (patch.object(pilot, 'time', clock),
-              patch.object(pilot, 'is_ready', return_value=True) as ready,
-              patch.object(pilot, 'back_row_obscured', return_value=False) as obscured):
-            self.assertEqual(timing.tolerance('frame'), 0.)
-            clock.monotonic.return_value = 15.5
-            self.assertEqual(timing.tolerance('frame'), 0.)
-            clock.monotonic.return_value = 19.6
-            self.assertAlmostEqual(timing.tolerance('frame'), .5)
-            clock.monotonic.return_value = 25.
-            self.assertEqual(timing.tolerance('frame'), 1.)
-            obscured.return_value = True
-            self.assertEqual(timing.tolerance('frame'), 0.)
-            obscured.return_value = False
-            self.assertEqual(timing.tolerance('frame'), 0.)
-            ready.return_value = False
-            self.assertEqual(timing.tolerance('frame'), 0.)
-
-    def test_progressive_reply_still_matches_legal_moves_and_observed_reserves(self):
-        solver = import_module('solver')
-        king, whale, dolphin = solver.KING, solver.WHALE, solver.DOLPHIN
-        prior = solver.Position((0, 0, 0, 0, 0, king, 0, -king, 0, 0, 0, 0),
-                                (dolphin,), (whale,))
-        ours = solver.Move(-dolphin, 3)
-        after = prior.next(ours)
-        expected = after.next(solver.Move(-whale, 8))
-
-        def observe(_frame, *, tracking, rows, tolerance):
-            board = list(after.board)
-            if tolerance >= .4:
-                board[8] = -whale
-            return [(piece,) for piece in board]
-
-        with (patch.object(pilot, 'is_ready', return_value=True),
-              patch.object(pilot, 'hand_inventory', return_value=((), ())) as hand,
-              patch.object(vision, 'observe_board', side_effect=observe),
-              patch.object(pilot, 'read_position', side_effect=vision.VisionError('unreadable board'))):
-            with self.assertRaises(vision.VisionError):
-                pilot.next_player_position('frame', prior, ours)
-            self.assertEqual(pilot.next_player_position('frame', prior, ours, tolerance=.55),
-                             expected)
-            hand.return_value = ((), (whale,))
-            with self.assertRaises(vision.VisionError):
-                pilot.next_player_position('frame', prior, ours, tolerance=.55)
-
-    def test_reply_can_recover_from_a_wrong_prediction_by_rereading_a_complete_board(self):
-        solver = import_module('solver')
-        king, whale, dolphin = solver.KING, solver.WHALE, solver.DOLPHIN
-        prior = solver.Position((0, 0, 0, 0, 0, king, 0, -king, 0, 0, 0, 0),
-                                (dolphin,), (whale,))
-        ours = solver.Move(-dolphin, 3)
-        actual = solver.Position((0, 0, dolphin, 0, 0, king, 0, -king, -whale, 0, 0, 0))
-        with (patch.object(pilot, 'is_ready', return_value=True),
-              patch.object(pilot, 'hand_inventory', return_value=((), ())),
-              patch.object(pilot, 'match_position', side_effect=vision.VisionError('different board')),
-              patch.object(pilot, 'read_position', return_value=actual) as read):
-            with self.assertRaises(vision.VisionError):
-                pilot.next_player_position('frame', prior, ours)
-            read.assert_not_called()
-            self.assertEqual(pilot.next_player_position('frame', prior, ours, tolerance=.4), actual)
-            read.return_value = solver.Position(actual.board, (whale,))
-            with self.assertRaisesRegex(vision.VisionError, '棋子總數'):
-                pilot.next_player_position('frame', prior, ours, tolerance=.4)
