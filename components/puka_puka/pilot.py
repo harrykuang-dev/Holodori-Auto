@@ -1,56 +1,96 @@
 """Read a solo match, choose moves, and verify each click against the next frame."""
 
 import time
+from dataclasses import replace
 from functools import partial
 
-from solver import BLUE, NAMES, WHALE, moves, recommend, square, terminal
+from solver import BLUE, NAMES, moves, recommend, square, terminal
 from stages import CHALLENGE_ENTRIES, CLICK, MENU_STATES, REFILL_STATES, RESULT_STATES, classify_screen
-from vision import (VisionError, hand_inventory, hand_read, highlighted, is_ready, match_position,
+from vision import (VisionError, back_row_obscured, hand_inventory, hand_read, highlighted, is_ready, match_position,
                     point, read_position, selected_layout_visible, selected_piece, source_arrow)
 
 
 POST_MATCH_OVERLAYS = {"reward", "event_next"}
-RELAX_REPLY_AFTER = 2.5
+NORMAL_REPLY_SECONDS = 1.6
+RELAX_REPLY_AFTER = NORMAL_REPLY_SECONDS + 4.
+RELAX_REPLY_OVER = 8.
 
 
 class StopPlay(RuntimeError):
     pass
 
 
-def next_player_position(frame, pos, move, *, relaxed_reply=False):
+class ReplyTiming:
+    def __init__(self):
+        self.ready_since = None
+
+    def tolerance(self, frame):
+        if not is_ready(frame) or back_row_obscured(frame):
+            self.ready_since = None
+            return 0.
+        now = time.monotonic()
+        if self.ready_since is None:
+            self.ready_since = now
+        return min(1., max(0., (now - self.ready_since - RELAX_REPLY_AFTER) / RELAX_REPLY_OVER))
+
+
+def reread_position(frame, previous, tolerance):
+    # Use the count from this match, including reserves, even when it began mid-game.
+    def checked(observed):
+        before = sum(map(bool, previous.board)) + len(previous.blue) + len(previous.orange)
+        now = sum(map(bool, observed.board)) + len(observed.blue) + len(observed.orange)
+        if now != before:
+            raise VisionError("重新讀盤時棋子總數不符")
+        return observed
+
+    try:
+        return checked(read_position(frame, rows=previous.rows))
+    except VisionError:
+        if not tolerance:
+            raise
+    return checked(read_position(frame, rows=previous.rows, tolerance=tolerance))
+
+
+def next_player_position(frame, pos, move, *, tolerance=0.):
     if not is_ready(frame):
         raise VisionError("等待我方回合")
     after = pos.next(move)
-    hands = hand_inventory(frame)
-    replies = [(reply, after.next(reply)) for reply in moves(after)]
-    candidates = [position for _, position in replies if terminal(position) is None]
+    replies = (after.next(reply) for reply in moves(after))
+    candidates = [position for position in replies if terminal(position) is None]
     # The game can show the blue legend before the opponent's move is visible.
     candidates.append(after)
+
+    def confirmed(observed):
+        if observed == after:
+            raise VisionError("等待對方完成落子")
+        return observed
+
     try:
-        observed = match_position(frame, candidates, previous=after, hands=hands)
+        return confirmed(match_position(frame, candidates, previous=after, hands=hand_inventory(frame)))
     except VisionError:
-        if not relaxed_reply:
+        if not tolerance:
             raise
-        deployments = {reply.target: position for reply, position in replies
-                       if reply.source == -WHALE and (position.blue, position.orange) == hands
-                       and terminal(position) is None}
-        if not deployments:
-            raise
-        observed = match_position(frame, deployments.values(), previous=after, hands=hands,
-                                  relaxed_reply_squares=deployments)
-    if observed == after:
-        raise VisionError("等待對方完成落子")
-    return observed
+        try:
+            observed = match_position(frame, candidates, previous=after, tolerance=tolerance,
+                                      hands=hand_inventory(frame, tolerance=tolerance))
+            return confirmed(observed)
+        except VisionError:
+            # The preceding move may have been read incorrectly. Re-anchor to a complete board.
+            observed = reread_position(frame, pos, tolerance)
+            if observed == replace(after, turn=BLUE):
+                raise VisionError("等待對方完成落子")
+            return observed
 
 
-def source_point(frame, pos, move):
+def source_point(frame, pos, move, *, tolerance=0.):
     if move.source >= 0:
         return point(move.source, rows=pos.rows)
-    capture_icons = hand_read(frame, BLUE)
-    candidates = [(x, y) for x, y, p in capture_icons if p == -move.source]
-    if hand_inventory(frame) != (pos.blue, pos.orange) or not candidates:
-        raise StopPlay("无法确认部署用的候补图标")
-    return candidates[0]
+    for level in (0., tolerance) if tolerance else (0.,):
+        if hand_inventory(frame, tolerance=level) == (pos.blue, pos.orange):
+            for x, y, piece in hand_read(frame, BLUE, tolerance=level):
+                if piece == -move.source:
+                    return x, y
+    raise StopPlay("无法确认部署用的候补图标")
 
 
 def selection_ready(frame, pos, move):
@@ -61,7 +101,7 @@ def selection_ready(frame, pos, move):
             and highlighted(frame, move.target, rows=pos.rows))
 
 
-def select_move(game, pos, move, read_current):
+def select_move(game, pos, move, read_current, *, reply_timing=None):
     def unchanged(frame):
         if read_current(frame) != pos:
             raise VisionError("求解期间棋盘已变化")
@@ -70,7 +110,8 @@ def select_move(game, pos, move, read_current):
     for _ in range(2):
         # Retry a source click only after confirming the same unselected board.
         frame, _ = wait_for(game, unchanged, 4, stable_for=.3)
-        game.click(*source_point(frame, pos, move))
+        tolerance = reply_timing.tolerance(frame) if reply_timing is not None else 0.
+        game.click(*source_point(frame, pos, move, tolerance=tolerance))
         deadline = time.monotonic() + 4
         while time.monotonic() < deadline:
             if selection_ready(game.capture(), pos, move):
@@ -91,7 +132,7 @@ def wait_for(game, read, seconds, *, stable_for=0):
     last = None
     first_seen = start
     error = "画面尚未就绪"
-    while time.monotonic() - start < seconds:
+    while seconds is None or time.monotonic() - start < seconds:
         frame = game.capture()
         try:
             answer = read(frame)
@@ -177,36 +218,55 @@ def settle(game, state, notify):
 def play_match(game, frame, pos, notify):
     history = []
     read_current = partial(read_position, rows=pos.rows)
+    current_timing = None
     endings = RESULT_STATES | CHALLENGE_ENTRIES | POST_MATCH_OVERLAYS | {"tutorial"}
     while True:
         if terminal(pos) is not None or not any(moves(pos)):
             return wait_menu(game, endings, 32, stable_for=.7)
         move = choose(pos, history, notify)
-        select_move(game, pos, move, read_current)
+        try:
+            select_move(game, pos, move, read_current, reply_timing=current_timing)
+        except StopPlay:
+            recovery = ReplyTiming()
+
+            def read_again(new_frame, previous=pos):
+                scene = classify_screen(new_frame)
+                if scene in endings:
+                    return scene
+                return reread_position(new_frame, previous, recovery.tolerance(new_frame))
+
+            frame, recovered = wait_for(game, read_again, None, stable_for=.7)
+            if isinstance(recovered, str):
+                return recovered
+            pos = recovered
+            history.clear()
+            read_current = read_again
+            current_timing = recovery
+            continue
         game.click(*point(move.target, selected=True, rows=pos.rows))
         after = pos.next(move)
         history.extend((pos, after))
-        submitted_at = time.monotonic()
+        timing = ReplyTiming()
 
-        def read_reply(new_frame, previous=pos, submitted=move, started=submitted_at):
+        def read_reply(new_frame, previous=pos, submitted=move, timing=timing):
             return next_player_position(new_frame, previous, submitted,
-                                        relaxed_reply=time.monotonic() - started >= RELAX_REPLY_AFTER)
+                                        tolerance=timing.tolerance(new_frame))
 
         def read_next(new_frame):
             scene = classify_screen(new_frame)
             if scene in endings:
                 return scene
-            # Do not accept the old board or end-of-turn animation as the opponent's response.
-            if after.turn not in after.board:
-                return None
             return read_reply(new_frame)
 
         # The result splash can flash before the stage's tutorial overlay opens.
-        frame, reply = wait_for(game, read_next, 32, stable_for=.7)
+        frame, reply = wait_for(game, read_next, None, stable_for=.7)
         if isinstance(reply, str):
             return reply
         pos = reply
         read_current = read_reply
+        current_timing = timing
+        if not any(after.next(candidate) == pos for candidate in moves(after)):
+            history.clear()
         changes = [f"{square(i)}={NAMES[abs(p)] or '空'}" for i, p in enumerate(pos.board)
                    if p != after.board[i]]
         notify("reply", move.label(), "，".join(changes))

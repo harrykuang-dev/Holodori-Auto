@@ -9,7 +9,7 @@ Holodori-Auto는 게임 화면 인식을 기반으로 하는 *hololive Dreams*�
 
 Windows 10 또는 11(x64)과 Windows용 게임 클라이언트를 사용하세요. **게임 창은 16:9 비율만 지원합니다.** 게임 창이 화면에 보이도록 유지하세요.
 
-1. [릴리스](https://github.com/harrykuang-dev/Holodori-Auto/releases/latest)에서 `Holodori-Auto-v1.3.2-windows.7z`를 다운로드하고 7-Zip으로 압축을 푼 뒤, 해당 폴더에서 `Holodori-Auto.exe`를 실행합니다.
+1. [릴리스](https://github.com/harrykuang-dev/Holodori-Auto/releases/latest)에서 `Holodori-Auto-v1.3.1-windows.7z`를 다운로드하고 7-Zip으로 압축을 푼 뒤, 해당 폴더에서 `Holodori-Auto.exe`를 실행합니다.
 2. *hololive Dreams*에서 미니게임에 들어간 뒤 Holodori-Auto에서 해당 기능을 선택합니다. **시작**을 클릭하거나 공통 시작 단축키를 누릅니다. 기능을 전환하기 전에 **중지**를 클릭하세요.
 
 표준 패키지에는 DirectML이 포함되어 있습니다. **줄넘기**에는 DirectML 또는 TensorRT를 지원하는 GPU가 필요하며, **모아 쿠킹**은 CPU로도 실행할 수 있습니다. 호환되는 NVIDIA GPU에서 TensorRT를 사용하려면 릴리스에서 [Holodori-Auto-v1.3.1-tensorrt.7z](https://github.com/harrykuang-dev/Holodori-Auto/releases/download/v1.3.1/Holodori-Auto-v1.3.1-tensorrt.7z)를 다운로드합니다. 프로그램을 종료하고 `accelerators/tensorrt/`가 `Holodori-Auto.exe` 옆에 오도록 압축을 푼 뒤 다시 실행하세요. TensorRT를 처음 사용하면 해당 GPU용 엔진을 만들어 이후 실행에서 재사용합니다.

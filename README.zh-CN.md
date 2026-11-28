@@ -9,7 +9,7 @@ Holodori-Auto 是一款基于画面识别的 *hololive Dreams* Windows 自动化
 
 使用 Windows 10 或 11（x64）及 Windows 游戏客户端。**仅支持 16:9 的游戏窗口。** 请保持游戏窗口可见。
 
-1. 从[发布页面](https://github.com/harrykuang-dev/Holodori-Auto/releases/latest)下载 `Holodori-Auto-v1.3.2-windows.7z`，用 7-Zip 解压，然后从解压后的文件夹运行 `Holodori-Auto.exe`。
+1. 从[发布页面](https://github.com/harrykuang-dev/Holodori-Auto/releases/latest)下载 `Holodori-Auto-v1.3.1-windows.7z`，用 7-Zip 解压，然后从解压后的文件夹运行 `Holodori-Auto.exe`。
 2. 进入 *hololive Dreams* 中的小游戏，选择 Holodori-Auto 中对应的功能，点击**开始**或按共用开始快捷键。切换功能前先点击**停止**。
 
 标准版内置 DirectML。**跳跳大绳**需要支持 DirectML 或 TensorRT 的 GPU，**拼配厨房**也可使用 CPU。使用兼容 NVIDIA 显卡时，可从发布页面下载可选的 [Holodori-Auto-v1.3.1-tensorrt.7z](https://github.com/harrykuang-dev/Holodori-Auto/releases/download/v1.3.1/Holodori-Auto-v1.3.1-tensorrt.7z)。关闭程序，解压后将 `accelerators/tensorrt/` 放在 `Holodori-Auto.exe` 旁，再重新启动。首次使用 TensorRT 会为该 GPU 创建引擎，供后续运行复用。
