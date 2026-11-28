@@ -9,10 +9,10 @@ All five features share the language setting and Start/Stop shortcuts.
 
 Use Windows 10 or 11 (x64) with the Windows game client. **Only 16:9 game windows are supported.** Keep the game window visible.
 
-1. Download `Holodori-Auto-v1.3.1-windows.7z` from [Releases](https://github.com/harrykuang-dev/Holodori-Auto/releases/latest), extract it with 7-Zip, and run `Holodori-Auto.exe` from the extracted folder.
+1. Download `Holodori-Auto-v1.3.2-windows.7z` from [Releases](https://github.com/harrykuang-dev/Holodori-Auto/releases/latest), extract it with 7-Zip, and run `Holodori-Auto.exe` from the extracted folder.
 2. Enter the minigame in *hololive Dreams*. Select the matching feature in Holodori-Auto and click **Start** or press the shared Start shortcut. Click **Stop** before switching features.
 
-The standard package includes DirectML. **Hoppin' Rope** requires a GPU that supports DirectML or TensorRT. **Collect Cooking** can fall back to the CPU. On a compatible NVIDIA GPU, you can install the optional `Holodori-Auto-v1.3.1-tensorrt.7z` from Releases. Close the program, extract the add-on so `accelerators/tensorrt/` sits beside `Holodori-Auto.exe`, then reopen the program. The first TensorRT run builds a GPU-specific engine for later reuse.
+The standard package includes DirectML. **Hoppin' Rope** requires a GPU that supports DirectML or TensorRT. **Collect Cooking** can fall back to the CPU. On a compatible NVIDIA GPU, you can install the optional [Holodori-Auto-v1.3.1-tensorrt.7z](https://github.com/harrykuang-dev/Holodori-Auto/releases/download/v1.3.1/Holodori-Auto-v1.3.1-tensorrt.7z) from Releases. Close the program, extract the add-on so `accelerators/tensorrt/` sits beside `Holodori-Auto.exe`, then reopen the program. The first TensorRT run builds a GPU-specific engine for later reuse.
 
 ## Run and build from source
 

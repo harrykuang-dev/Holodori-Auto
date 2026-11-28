@@ -9,10 +9,10 @@ Holodori-Auto は、ゲーム画面の画像認識を使う *hololive Dreams* �
 
 Windows 10 または 11（x64）と Windows 版のゲームクライアントを使用してください。**ゲームウィンドウはアスペクト比 16:9 のみ対応しています。** ゲームウィンドウは表示したままにしてください。
 
-1. [リリース](https://github.com/harrykuang-dev/Holodori-Auto/releases/latest)から `Holodori-Auto-v1.3.1-windows.7z` をダウンロードし、7-Zip で展開します。展開先のフォルダーから `Holodori-Auto.exe` を実行します。
+1. [リリース](https://github.com/harrykuang-dev/Holodori-Auto/releases/latest)から `Holodori-Auto-v1.3.2-windows.7z` をダウンロードし、7-Zip で展開します。展開先のフォルダーから `Holodori-Auto.exe` を実行します。
 2. *hololive Dreams* でミニゲームを開き、Holodori-Auto で対応する機能を選びます。**開始**をクリックするか、共通の開始ショートカットを押します。機能を切り替える前に**停止**をクリックしてください。
 
-標準版には DirectML が含まれます。**ホッピン・ロープ**には DirectML または TensorRT 対応の GPU が必要です。**そろえてクッキング**は CPU でも実行できます。対応する NVIDIA GPU で TensorRT を使う場合は、リリースから `Holodori-Auto-v1.3.1-tensorrt.7z` をダウンロードします。プログラムを終了し、`accelerators/tensorrt/` が `Holodori-Auto.exe` の隣に来るよう展開してから再起動します。初回使用時に GPU 用のエンジンを作成し、次回から再利用します。
+標準版には DirectML が含まれます。**ホッピン・ロープ**には DirectML または TensorRT 対応の GPU が必要です。**そろえてクッキング**は CPU でも実行できます。対応する NVIDIA GPU で TensorRT を使う場合は、リリースから [Holodori-Auto-v1.3.1-tensorrt.7z](https://github.com/harrykuang-dev/Holodori-Auto/releases/download/v1.3.1/Holodori-Auto-v1.3.1-tensorrt.7z) をダウンロードします。プログラムを終了し、`accelerators/tensorrt/` が `Holodori-Auto.exe` の隣に来るよう展開してから再起動します。初回使用時に GPU 用のエンジンを作成し、次回から再利用します。
 
 ## ソースからの実行とビルド
 

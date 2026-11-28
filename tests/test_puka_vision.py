@@ -394,12 +394,52 @@ class PukaTrackingTests(unittest.TestCase):
             raise vision.VisionError('key raft obscured')
 
         game.click = click
+        reply_modes = []
+
+        def read_reply(frame, previous, submitted, *, relaxed_reply):
+            self.assertEqual((frame, previous, submitted), ('reply', prior, deploy))
+            reply_modes.append(relaxed_reply)
+            if not relaxed_reply:
+                raise vision.VisionError('waiting for a readable reply')
+            return expected
+
         with (patch.object(pilot, 'time', clock),
               patch.object(pilot, 'read_position', side_effect=read_position),
-              patch.object(pilot, 'next_player_position', return_value=expected),
+              patch.object(pilot, 'next_player_position', side_effect=read_reply),
               patch.object(pilot, 'classify_screen', return_value='board'),
               patch.object(pilot, 'selection_ready', side_effect=lambda frame, *_: frame == 'selection'),
               patch.object(pilot, 'source_point', return_value=(10, 10)),
               patch.object(pilot, 'choose', side_effect=[deploy, next_move])):
             with self.assertRaises(NextSelection):
                 pilot.play_match(game, 'initial', prior, Mock())
+        self.assertFalse(reply_modes[0])
+        self.assertTrue(reply_modes[-1])
+
+    def test_relaxed_reply_requires_a_visible_legal_whale_deployment_and_matching_reserves(self):
+        solver = import_module('solver')
+        king, whale, dolphin = solver.KING, solver.WHALE, solver.DOLPHIN
+        prior = solver.Position((0, 0, 0, 0, 0, king, 0, -king, 0, 0, 0, 0),
+                                (dolphin,), (whale,))
+        ours = solver.Move(-dolphin, 3)
+        after = prior.next(ours)
+        expected = after.next(solver.Move(-whale, 8))
+
+        def observe(_frame, *, tracking, rows, relaxed_reply_squares):
+            board = list(after.board)
+            if 8 in relaxed_reply_squares:
+                board[8] = -whale
+            return [(piece,) for piece in board]
+
+        with (patch.object(pilot, 'is_ready', return_value=True),
+              patch.object(pilot, 'hand_inventory', return_value=((), ())) as hand,
+              patch.object(vision, 'observe_board', side_effect=observe) as observation):
+            with self.assertRaises(vision.VisionError):
+                pilot.next_player_position('frame', prior, ours)
+            self.assertEqual(pilot.next_player_position('frame', prior, ours, relaxed_reply=True),
+                             expected)
+            self.assertNotIn(5, observation.call_args.kwargs['relaxed_reply_squares'])
+            hand.return_value = ((), (whale,))
+            observation.reset_mock()
+            with self.assertRaises(vision.VisionError):
+                pilot.next_player_position('frame', prior, ours, relaxed_reply=True)
+            self.assertFalse(observation.call_args.kwargs['relaxed_reply_squares'])
