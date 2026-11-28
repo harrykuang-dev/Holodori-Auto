@@ -9,7 +9,7 @@ Kelima fitur menggunakan pengaturan bahasa dan pintasan mulai serta berhenti yan
 
 Gunakan Windows 10 atau 11 (x64) dan klien game Windows. **Hanya jendela game dengan rasio 16:9 yang didukung.** Pastikan jendela game tetap terlihat.
 
-1. Unduh `Holodori-Auto-v1.3.2-windows.7z` dari [Releases](https://github.com/harrykuang-dev/Holodori-Auto/releases/latest), ekstrak dengan 7-Zip, lalu jalankan `Holodori-Auto.exe` dari folder hasil ekstraksi.
+1. Unduh `Holodori-Auto-v1.3.1-windows.7z` dari [Releases](https://github.com/harrykuang-dev/Holodori-Auto/releases/latest), ekstrak dengan 7-Zip, lalu jalankan `Holodori-Auto.exe` dari folder hasil ekstraksi.
 2. Buka minigame di *hololive Dreams*. Pilih fitur yang sesuai di Holodori-Auto, lalu klik **Mulai** atau tekan pintasan mulai bersama. Klik **Berhenti** sebelum beralih fitur.
 
 Paket standar sudah menyertakan DirectML. **Hoppin' Rope** memerlukan GPU yang mendukung DirectML atau TensorRT. **Collect Cooking** juga dapat menggunakan CPU. Jika GPU NVIDIA Anda kompatibel, unduh komponen opsional [Holodori-Auto-v1.3.1-tensorrt.7z](https://github.com/harrykuang-dev/Holodori-Auto/releases/download/v1.3.1/Holodori-Auto-v1.3.1-tensorrt.7z) dari Releases. Tutup program, ekstrak arsip agar `accelerators/tensorrt/` berada di samping `Holodori-Auto.exe`, lalu jalankan ulang. Saat pertama kali menggunakan TensorRT, program membuat engine untuk GPU tersebut dan menggunakannya kembali pada sesi berikutnya.

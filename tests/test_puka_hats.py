@@ -160,15 +160,23 @@ class RaftHatTests(unittest.TestCase):
         kind = solver.WHALE
         hat = hats.Hat(kind, hats.references()[kind][0], 7566, 150)
         floor = vision.raft_evidence((None, None, -1, None, None, None, 0, -1))
-        for tile, relaxed, expected in (
-                (floor, False, (0,)), (floor, True, (-kind,)),
-                (floor._replace(painted=1), True, (0,)),
-                (floor._replace(mixed=True), True, (0,))):
-            with self.subTest(tile=tile, relaxed=relaxed):
+        for tile, tolerance, expected in (
+                (floor, 0., (0,)), (floor, .5, (0,)), (floor, 1., (-kind,)),
+                (floor._replace(painted=1), 1., (0,)),
+                (floor._replace(mixed=True), 1., (0,))):
+            with self.subTest(tile=tile, tolerance=tolerance):
                 with (patch.object(hats, "describe", side_effect=lambda *_args, **_kwargs: iter((hat,))),
-                      patch.object(hats, "pose_costs", side_effect=((.1212, .0938), (.1026, .078)))):
+                      patch.object(hats, "pose_costs", side_effect=((.135, .116), (.12, .091)))):
                     self.assertEqual(hats.observe(self.frame, 8, floor=tile, tracking=True,
-                                                  relaxed_reply=relaxed), expected)
+                                                  tolerance=tolerance), expected)
+
+    def test_progressive_tolerance_also_recovers_a_marginal_dolphin(self):
+        kind = solver.DOLPHIN
+        hat = hats.Hat(kind, hats.references()[kind][0], 2180, 150)
+        with (patch.object(hats, "describe", return_value=(hat,)),
+              patch.object(hats, "pose_costs", return_value=(.105, .16))):
+            self.assertEqual(hats.observe(self.frame, 8, tracking=True, tolerance=.4), (0,))
+            self.assertEqual(hats.observe(self.frame, 8, tracking=True, tolerance=.8), (kind, -kind))
 
     def test_d1_reads_any_hat_partly_covered_by_the_top_right_controls(self):
         for kind, poses in hats.references().items():

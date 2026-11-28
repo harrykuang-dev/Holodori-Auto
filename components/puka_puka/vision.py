@@ -166,7 +166,7 @@ def back_row_obscured(frame):
     return True
 
 
-def raft_markers(raster, *, covered=()):
+def raft_markers(raster, *, covered=(), tolerance=0.):
     markers = []
     weak_orange = []
     for edge, (x, y) in enumerate(RAFT_EDGES):
@@ -179,8 +179,9 @@ def raft_markers(raster, *, covered=()):
                      orange.mean(),
                      ((b > 164) & (r > 147) & (abs(b-r) < 45) & (abs(g-r) < 35)).mean())
         winner = int(np.argmax(strengths))
-        marker = (BLUE, ORANGE, 0)[winner] if strengths[winner] > .48 else None
-        if marker == ORANGE and (orange & (g < 125)).mean() <= .48:
+        confidence = .48 - .12*tolerance
+        marker = (BLUE, ORANGE, 0)[winner] if strengths[winner] > confidence else None
+        if marker == ORANGE and (orange & (g < 125)).mean() <= confidence:
             weak_orange.append(len(markers))
         markers.append(marker)
     if BLUE in markers:
@@ -190,7 +191,7 @@ def raft_markers(raster, *, covered=()):
     return markers
 
 
-def raft_evidence(markers):
+def raft_evidence(markers, *, tolerance=0.):
     blue, orange = markers.count(BLUE), markers.count(ORANGE)
     visible = sum(mark is not None for mark in markers)
     painted, other = max(blue, orange), min(blue, orange)
@@ -209,7 +210,7 @@ def raft_evidence(markers):
             opposite = 3 if side == BLUE else 4
             if kind != TURTLE or markers[opposite] != 0:
                 continue
-        if white_misses <= (0 if other else 1) or (kind == KING and not other and painted >= 3):
+        if white_misses <= (0 if other else 1 + tolerance) or (kind == KING and not other and painted >= 3):
             # A crown's silhouette is nearly symmetric. Several same-color edge marks
             # identify its team despite pale hair or reflections over the other edges.
             compatible.append(side * kind)
@@ -219,7 +220,7 @@ def raft_evidence(markers):
     return TileEvidence(tuple(compatible), unique, painted, visible, mixed=bool(other))
 
 
-def single_mark_hat(patch, row, markers, choices):
+def single_mark_hat(patch, row, markers, choices, *, tolerance=0.):
     # An occluded deck can still confirm the side when its visible mark agrees with the hat.
     painted = [(i, mark) for i, mark in enumerate(markers) if mark in (BLUE, ORANGE)]
     if len(painted) != 1:
@@ -230,16 +231,17 @@ def single_mark_hat(patch, row, markers, choices):
     kind = TURTLE if clipped else abs(choices[0])
     if not kind or not MOVE_DIAGRAMS[kind][edge if side == BLUE else MIRROR_EDGES[edge]]:
         return None
-    hat = next((candidate for candidate in describe(patch, row) if candidate.kind == kind), None)
-    if hat is None or (clipped and hat.area < 900):
+    hat = next((candidate for candidate in describe(patch, row, tolerance=tolerance)
+                if candidate.kind == kind), None)
+    if hat is None or (clipped and hat.area < 900 - 180*tolerance):
         return None
     blue, orange = pose_costs(hat.pose, references()[kind])
     cost, reverse = (blue, orange) if side == BLUE else (orange, blue)
     maximum, difference = (.12, .025) if clipped else (.09, .018)
-    return side * kind if cost < maximum and reverse - cost > difference else None
+    return side * kind if cost < maximum + .02*tolerance and reverse - cost > difference*(1 - .35*tolerance) else None
 
 
-def resolve_hat_side(patch, row, markers, kind):
+def resolve_hat_side(patch, row, markers, kind, *, tolerance=0.):
     predicted = pick_side(patch, (kind, -kind))
     painted = [(edge, mark) for edge, mark in enumerate(markers) if mark in (BLUE, ORANGE)]
     if not painted:
@@ -252,12 +254,12 @@ def resolve_hat_side(patch, row, markers, kind):
 
     # Shadows and reflections can make a printed mark look white. Corroborate
     # the colored marks with the hat profile before trusting a partial pattern.
-    hat = next((hat for hat in describe(patch, row) if hat.kind == kind), None)
+    hat = next((hat for hat in describe(patch, row, tolerance=tolerance) if hat.kind == kind), None)
     if hat is not None:
         blue, orange = pose_costs(hat.pose, references()[kind])
         cost, reverse = (blue, orange) if side == BLUE else (orange, blue)
         minimum_gap = .012 if len(painted) == 1 else .008
-        if cost <= .08 and reverse - cost >= minimum_gap:
+        if cost <= .08 + .02*tolerance and reverse - cost >= minimum_gap*(1 - .35*tolerance):
             return side * kind
     if len(painted) >= 2 and predicted == -side * kind:
         # Neither source is decisive once several aptly positioned marks contradict the model.
@@ -265,7 +267,7 @@ def resolve_hat_side(patch, row, markers, kind):
     return predicted
 
 
-def observe_board(frame, *, tracking=False, rows=None, relaxed_reply_squares=()):
+def observe_board(frame, *, tracking=False, rows=None, tolerance=0.):
     if rows is None:
         rows = board_rows(frame) if is_ready(frame) else 3
     if back_row_obscured(frame):
@@ -275,17 +277,16 @@ def observe_board(frame, *, tracking=False, rows=None, relaxed_reply_squares=())
         x, _ = point(index, rows=rows)
         y = HAT_ROWS[rows][row]
         covered = NAMEPLATE_EDGES[rows][index % 4] if row == rows - 1 else ()
-        markers = raft_markers(tile(frame, index, rows=rows), covered=covered)
-        floor = raft_evidence(markers)
+        markers = raft_markers(tile(frame, index, rows=rows), covered=covered, tolerance=tolerance)
+        floor = raft_evidence(markers, tolerance=tolerance)
         if rows == 4 and row == 0:
             # The extra row is farther from the camera. Match its hats at the normal scale.
             patch = cv2.resize(frame[y-39:y+39, x-98:x+98], (230, 91))
         else:
             patch = frame[y-46:y+45, x-115:x+115]
-        choices = observe(patch, index, floor=floor, tracking=tracking,
-                          relaxed_reply=index in relaxed_reply_squares)
+        choices = observe(patch, index, floor=floor, tracking=tracking, tolerance=tolerance)
         if (rows == 4 or covered) and floor and floor.painted == 1 and (len(choices) > 1 or choices == (0,)):
-            if (marked := single_mark_hat(patch, row, markers, choices)) is not None:
+            if (marked := single_mark_hat(patch, row, markers, choices, tolerance=tolerance)) is not None:
                 choices = (marked,)
         uncovered_edges = len(RAFT_EDGES) - len(covered)
         if len(choices) > 1 and markers.count(0) >= min(7, uncovered_edges) and floor is None:
@@ -296,13 +297,13 @@ def observe_board(frame, *, tracking=False, rows=None, relaxed_reply_squares=())
                 floor.painted >= 2 or markers[3] == ORANGE or markers[4] == BLUE):
             raise VisionError(f"尚未確認 {square(index)} 的棋帽")
         if not tracking and len(choices) == 2 and abs(choices[0]) != KING:
-            if (piece := resolve_hat_side(patch, row, markers, abs(choices[0]))) is not None:
+            if (piece := resolve_hat_side(patch, row, markers, abs(choices[0]), tolerance=tolerance)) is not None:
                 choices = (piece,)
         yield choices
 
 
-def read_board(frame, *, rows=None):
-    observations = list(observe_board(frame, rows=rows))
+def read_board(frame, *, rows=None, tolerance=0.):
+    observations = list(observe_board(frame, rows=rows, tolerance=tolerance))
     crowns = [(index, choices) for index, choices in enumerate(observations)
               if abs(choices[0]) == KING]
     if len(crowns) != 2:
@@ -319,12 +320,11 @@ def read_board(frame, *, rows=None):
     return tuple(choices[0] for choices in observations)
 
 
-def match_position(frame, candidates, *, previous, hands, relaxed_reply_squares=()):
+def match_position(frame, candidates, *, previous, hands, tolerance=0.):
     candidates = {pos for pos in candidates if (pos.blue, pos.orange) == hands}
     if not candidates:
         raise VisionError("預期狀態為空")
-    observations = tuple(observe_board(frame, tracking=True, rows=previous.rows,
-                                       relaxed_reply_squares=relaxed_reply_squares))
+    observations = tuple(observe_board(frame, tracking=True, rows=previous.rows, tolerance=tolerance))
 
     def hidden_count(pos):
         hidden = 0
@@ -413,7 +413,7 @@ def is_ready(frame):
     return blue_legend and solo_undo and legend(frame)
 
 
-def hand_read(frame, side):
+def hand_read(frame, side, *, tolerance=0.):
     """Classify the row of captured-piece icons by hat hue, in display order."""
     first = 210 if side == BLUE else 1465
     spacing = 127
@@ -425,14 +425,15 @@ def hand_read(frame, side):
              WHALE: (h >= 106) & (h <= 128)}
     pieces = [None] * len(centers)
     for piece, mask in masks.items():
-        valid = (mask & (s > 90) & (v > 105)).astype(np.uint8)
+        valid = (mask & (s > 90 - 12*tolerance) & (v > 105 - 12*tolerance)).astype(np.uint8)
         _, _, stats, _ = cv2.connectedComponentsWithStats(valid)
         for x, y, w, ch, area in stats[1:]:
-            if not (35 <= w <= 108 and ch >= 30 and area >= 450 and y + ch >= 36):
+            if not (35 - 6*tolerance <= w <= 108 + 6*tolerance and ch >= 30 - 5*tolerance
+                    and area >= 450 - 100*tolerance and y + ch >= 36 - 4*tolerance):
                 continue
             center = int(x + w // 2 + left)
             slot = round(side * (center - first) / spacing)
-            if not (0 <= slot < len(centers) and abs(center - centers[slot]) <= 25):
+            if not (0 <= slot < len(centers) and abs(center - centers[slot]) <= 25 + 5*tolerance):
                 continue
             if pieces[slot] is None or area > pieces[slot][0]:
                 pieces[slot] = (area, center, piece)
@@ -446,13 +447,13 @@ def hand_read(frame, side):
     return row
 
 
-def hand_inventory(frame):
-    return tuple(tuple(sorted(piece for _, _, piece in hand_read(frame, side)))
+def hand_inventory(frame, *, tolerance=0.):
+    return tuple(tuple(sorted(piece for _, _, piece in hand_read(frame, side, tolerance=tolerance)))
                  for side in (BLUE, ORANGE))
 
 
-def read_position(frame, *, rows=None):
+def read_position(frame, *, rows=None, tolerance=0.):
     if not is_ready(frame):
         raise VisionError("尚未確認藍方回合與單人棋盤。")
-    board = read_board(frame, rows=rows)
-    return Position(board, *hand_inventory(frame))
+    board = read_board(frame, rows=rows, tolerance=tolerance)
+    return Position(board, *hand_inventory(frame, tolerance=tolerance))
