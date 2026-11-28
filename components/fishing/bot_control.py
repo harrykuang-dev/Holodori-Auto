@@ -1,5 +1,4 @@
 """Temporal tracking, predictive reel control and confirmed UI retries."""
-from collections import deque
 from dataclasses import dataclass
 import math
 
@@ -137,29 +136,15 @@ class HoldRecovery:
 
 class BiteGuard:
     """Confirm two fresh frames and click only once per visible prompt."""
-    _NORMAL_GAP = .15
-    _MAX_GAP = .42
-
     def __init__(self):
         self.since = None
         self.last = None
-        self.intervals = deque(maxlen=2)
         self.absent = None
         self.clicked = False
 
     def update(self, d, now):
-        if self.last is not None:
-            interval = now-self.last
-            gap_limit = self._NORMAL_GAP
-            # Use prior observations so a single stall cannot extend its own deadline.
-            if len(self.intervals) == self.intervals.maxlen:
-                gap_limit = min(self._MAX_GAP, max(gap_limit, 1.25*min(self.intervals)))
-            if interval < 0 or interval > gap_limit:
-                self.since = None
-            if 0 < interval <= self._MAX_GAP:
-                self.intervals.append(interval)
-            elif interval != 0:
-                self.intervals.clear()
+        if self.last is not None and (now<self.last or now-self.last>.15):
+            self.since = None
         self.last = now
         if not d.tap:
             self.since = None

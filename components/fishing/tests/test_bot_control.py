@@ -85,28 +85,6 @@ class HoldRecoveryTests(unittest.TestCase):
 
 
 class BiteGuardTests(unittest.TestCase):
-    def test_reported_slow_cadence_confirms_each_visible_prompt_once(self):
-        guard = BiteGuard()
-        idle = Detection()
-        tap = Detection(tap=True, scene='tap')
-        samples = [
-            (10.2665, idle), (10.5404, idle), (10.8386, idle), (11.2259, idle),
-            (11.6254, tap), (11.9688, tap), (12.3136, tap), (12.6587, idle),
-            (25.7958, idle), (26.1179, idle), (26.4003, idle), (26.7448, idle),
-            (27.0691, tap), (27.3915, tap), (27.6893, tap), (27.9931, tap),
-        ]
-        clicks = [now for now, detection in samples if guard.update(detection, now)]
-        self.assertEqual(clicks, [11.9688, 27.3915])
-
-    def test_isolated_stall_after_fast_frames_cannot_confirm_prompt(self):
-        guard = BiteGuard()
-        tap = Detection(tap=True)
-        guard.update(Detection(), 0)
-        guard.update(Detection(), .04)
-        self.assertFalse(guard.update(tap, .08))
-        self.assertFalse(guard.update(tap, .38))
-        self.assertTrue(guard.update(tap, .42))
-
     def test_two_fresh_frames_click_once_until_prompt_leaves(self):
         guard = BiteGuard()
         d = Detection(tap=True,scene='tap')
