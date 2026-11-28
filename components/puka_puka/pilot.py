@@ -3,29 +3,41 @@
 import time
 from functools import partial
 
-from solver import BLUE, NAMES, moves, recommend, square, terminal
+from solver import BLUE, NAMES, WHALE, moves, recommend, square, terminal
 from stages import CHALLENGE_ENTRIES, CLICK, MENU_STATES, REFILL_STATES, RESULT_STATES, classify_screen
 from vision import (VisionError, hand_inventory, hand_read, highlighted, is_ready, match_position,
                     point, read_position, selected_layout_visible, selected_piece, source_arrow)
 
 
 POST_MATCH_OVERLAYS = {"reward", "event_next"}
+RELAX_REPLY_AFTER = 2.5
 
 
 class StopPlay(RuntimeError):
     pass
 
 
-def next_player_position(frame, pos, move):
+def next_player_position(frame, pos, move, *, relaxed_reply=False):
     if not is_ready(frame):
         raise VisionError("等待我方回合")
     after = pos.next(move)
     hands = hand_inventory(frame)
-    replies = (after.next(reply) for reply in moves(after))
-    candidates = [reply for reply in replies if terminal(reply) is None]
+    replies = [(reply, after.next(reply)) for reply in moves(after)]
+    candidates = [position for _, position in replies if terminal(position) is None]
     # The game can show the blue legend before the opponent's move is visible.
     candidates.append(after)
-    observed = match_position(frame, candidates, previous=after, hands=hands)
+    try:
+        observed = match_position(frame, candidates, previous=after, hands=hands)
+    except VisionError:
+        if not relaxed_reply:
+            raise
+        deployments = {reply.target: position for reply, position in replies
+                       if reply.source == -WHALE and (position.blue, position.orange) == hands
+                       and terminal(position) is None}
+        if not deployments:
+            raise
+        observed = match_position(frame, deployments.values(), previous=after, hands=hands,
+                                  relaxed_reply_squares=deployments)
     if observed == after:
         raise VisionError("等待對方完成落子")
     return observed
@@ -174,9 +186,11 @@ def play_match(game, frame, pos, notify):
         game.click(*point(move.target, selected=True, rows=pos.rows))
         after = pos.next(move)
         history.extend((pos, after))
+        submitted_at = time.monotonic()
 
-        def read_reply(new_frame, previous=pos, submitted=move):
-            return next_player_position(new_frame, previous, submitted)
+        def read_reply(new_frame, previous=pos, submitted=move, started=submitted_at):
+            return next_player_position(new_frame, previous, submitted,
+                                        relaxed_reply=time.monotonic() - started >= RELAX_REPLY_AFTER)
 
         def read_next(new_frame):
             scene = classify_screen(new_frame)

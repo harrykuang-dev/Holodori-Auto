@@ -97,7 +97,7 @@ def pose_side(blue, orange):
     return BLUE if blue < orange else ORANGE
 
 
-def observe(patch, index, *, floor=None, tracking=False):
+def observe(patch, index, *, floor=None, tracking=False, relaxed_reply=False):
     """Return the admissible signed pieces, or (0,) for an empty square."""
     detected = []
     bank = references()
@@ -130,10 +130,12 @@ def observe(patch, index, *, floor=None, tracking=False):
             wide_blue, wide_orange = pose_costs(wider.pose, references(wide_whale=True)[WHALE])
             facing = WHALE if blue < orange else -WHALE if orange < blue else None
             wide_facing = WHALE if wide_blue < wide_orange else -WHALE if wide_orange < wide_blue else None
-            # Three clean corners can support a marginal whale when both crops agree on its side.
-            supported = (facing is not None and facing == wide_facing == floor.exact
-                         and floor.painted >= 3 and not floor.mixed
-                         and min(blue, orange) <= .10 and min(wide_blue, wide_orange) <= .085)
+            # Two crops and clean deck marks must agree before accepting a marginal whale.
+            exact_floor = floor.exact == facing and floor.painted >= 3
+            partial_reply = relaxed_reply and floor.exact is None and floor.painted >= 2
+            supported = (facing == wide_facing and facing in floor.compatible and not floor.mixed
+                         and (exact_floor or partial_reply) and min(blue, orange) <= .10
+                         and min(wide_blue, wide_orange) <= .085)
             if min(wide_blue, wide_orange) > .065 and not supported:
                 continue
             blue, orange = wide_blue, wide_orange

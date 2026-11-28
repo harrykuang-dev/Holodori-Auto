@@ -265,7 +265,7 @@ def resolve_hat_side(patch, row, markers, kind):
     return predicted
 
 
-def observe_board(frame, *, tracking=False, rows=None):
+def observe_board(frame, *, tracking=False, rows=None, relaxed_reply_squares=()):
     if rows is None:
         rows = board_rows(frame) if is_ready(frame) else 3
     if back_row_obscured(frame):
@@ -282,7 +282,8 @@ def observe_board(frame, *, tracking=False, rows=None):
             patch = cv2.resize(frame[y-39:y+39, x-98:x+98], (230, 91))
         else:
             patch = frame[y-46:y+45, x-115:x+115]
-        choices = observe(patch, index, floor=floor, tracking=tracking)
+        choices = observe(patch, index, floor=floor, tracking=tracking,
+                          relaxed_reply=index in relaxed_reply_squares)
         if (rows == 4 or covered) and floor and floor.painted == 1 and (len(choices) > 1 or choices == (0,)):
             if (marked := single_mark_hat(patch, row, markers, choices)) is not None:
                 choices = (marked,)
@@ -318,11 +319,12 @@ def read_board(frame, *, rows=None):
     return tuple(choices[0] for choices in observations)
 
 
-def match_position(frame, candidates, *, previous, hands):
+def match_position(frame, candidates, *, previous, hands, relaxed_reply_squares=()):
     candidates = {pos for pos in candidates if (pos.blue, pos.orange) == hands}
     if not candidates:
         raise VisionError("預期狀態為空")
-    observations = tuple(observe_board(frame, tracking=True, rows=previous.rows))
+    observations = tuple(observe_board(frame, tracking=True, rows=previous.rows,
+                                       relaxed_reply_squares=relaxed_reply_squares))
 
     def hidden_count(pos):
         hidden = 0

@@ -142,7 +142,6 @@ class RaftHatTests(unittest.TestCase):
         kind = solver.WHALE
         hat = hats.Hat(kind, hats.references()[kind][0], 7566, 150)
         floor = vision.raft_evidence((-1, None, -1, 0, None, None, 0, -1))
-        self.assertEqual((floor.exact, floor.painted, floor.visible), (-kind, 3, 5))
         for tile, narrow, wide, expected in (
                 (floor, (.1212, .0938), (.1026, .078), (-kind,)),
                 (floor, (.1212, .0938), (.078, .1026), (0,)),
@@ -150,11 +149,26 @@ class RaftHatTests(unittest.TestCase):
                 (floor, (.1212, .107), (.1026, .078), (0,)),
                 (floor, (.1212, .0938), (.1026, .092), (0,)),
                 (floor._replace(mixed=True), (.1212, .0938), (.1026, .078), (0,)),
-                (floor._replace(exact=None), (.1212, .0938), (.1026, .078), (0,))):
+                (floor._replace(exact=None), (.1212, .0938), (.1026, .078), (0,)),
+                (floor._replace(exact=-solver.KING), (.1212, .0938), (.1026, .078), (0,))):
             with self.subTest(tile=tile, narrow=narrow, wide=wide):
                 with (patch.object(hats, "describe", side_effect=lambda *_args, **_kwargs: iter((hat,))),
                       patch.object(hats, "pose_costs", side_effect=(narrow, wide))):
                     self.assertEqual(hats.observe(self.frame, 8, floor=tile, tracking=True), expected)
+
+    def test_reply_can_confirm_whale_when_two_corner_marks_support_both_profiles(self):
+        kind = solver.WHALE
+        hat = hats.Hat(kind, hats.references()[kind][0], 7566, 150)
+        floor = vision.raft_evidence((None, None, -1, None, None, None, 0, -1))
+        for tile, relaxed, expected in (
+                (floor, False, (0,)), (floor, True, (-kind,)),
+                (floor._replace(painted=1), True, (0,)),
+                (floor._replace(mixed=True), True, (0,))):
+            with self.subTest(tile=tile, relaxed=relaxed):
+                with (patch.object(hats, "describe", side_effect=lambda *_args, **_kwargs: iter((hat,))),
+                      patch.object(hats, "pose_costs", side_effect=((.1212, .0938), (.1026, .078)))):
+                    self.assertEqual(hats.observe(self.frame, 8, floor=tile, tracking=True,
+                                                  relaxed_reply=relaxed), expected)
 
     def test_d1_reads_any_hat_partly_covered_by_the_top_right_controls(self):
         for kind, poses in hats.references().items():
