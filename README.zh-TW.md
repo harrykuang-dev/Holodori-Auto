@@ -9,10 +9,10 @@ Holodori-Auto 是一款以畫面辨識為基礎的 *hololive Dreams* Windows 自
 
 使用 Windows 10 或 11（x64）及 Windows 遊戲客戶端。**僅支援 16:9 的遊戲視窗。** 請保持遊戲視窗可見。
 
-1. 從[發行頁面](https://github.com/harrykuang-dev/Holodori-Auto/releases/latest)下載 `Holodori-Auto-v1.3.1-windows.7z`，使用 7-Zip 解壓縮，再從解壓縮的資料夾執行 `Holodori-Auto.exe`。
+1. 從[發行頁面](https://github.com/harrykuang-dev/Holodori-Auto/releases/latest)下載 `Holodori-Auto-v1.3.2-windows.7z`，使用 7-Zip 解壓縮，再從解壓縮的資料夾執行 `Holodori-Auto.exe`。
 2. 進入 *hololive Dreams* 的小遊戲，選擇 Holodori-Auto 中對應的功能，點擊**開始**或按共用開始快捷鍵。切換功能前先點擊**停止**。
 
-標準版內建 DirectML。**蹦蹦大跳繩**需要支援 DirectML 或 TensorRT 的 GPU，**食材妙廚房**可回退至 CPU。相容的 NVIDIA 顯示卡可從發行頁面下載選用的 `Holodori-Auto-v1.3.1-tensorrt.7z`。先關閉程式，解壓縮後將 `accelerators/tensorrt/` 放在 `Holodori-Auto.exe` 旁，再重新啟動。首次使用 TensorRT 會為該 GPU 建立引擎，供後續使用。
+標準版內建 DirectML。**蹦蹦大跳繩**需要支援 DirectML 或 TensorRT 的 GPU，**食材妙廚房**可回退至 CPU。相容的 NVIDIA 顯示卡可從發行頁面下載選用的 [Holodori-Auto-v1.3.1-tensorrt.7z](https://github.com/harrykuang-dev/Holodori-Auto/releases/download/v1.3.1/Holodori-Auto-v1.3.1-tensorrt.7z)。先關閉程式，解壓縮後將 `accelerators/tensorrt/` 放在 `Holodori-Auto.exe` 旁，再重新啟動。首次使用 TensorRT 會為該 GPU 建立引擎，供後續使用。
 
 ## 從原始碼執行與建置
 

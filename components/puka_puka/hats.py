@@ -127,9 +127,16 @@ def observe(patch, index, *, floor=None, tracking=False):
             wider = next(describe(patch, index // 4, wide_whale=True), None)
             if wider is None:
                 continue
-            blue, orange = pose_costs(wider.pose, references(wide_whale=True)[WHALE])
-            if min(blue, orange) > .065:
+            wide_blue, wide_orange = pose_costs(wider.pose, references(wide_whale=True)[WHALE])
+            facing = WHALE if blue < orange else -WHALE if orange < blue else None
+            wide_facing = WHALE if wide_blue < wide_orange else -WHALE if wide_orange < wide_blue else None
+            # Three clean corners can support a marginal whale when both crops agree on its side.
+            supported = (facing is not None and facing == wide_facing == floor.exact
+                         and floor.painted >= 3 and not floor.mixed
+                         and min(blue, orange) <= .10 and min(wide_blue, wide_orange) <= .085)
+            if min(wide_blue, wide_orange) > .065 and not supported:
                 continue
+            blue, orange = wide_blue, wide_orange
         detected.append((hat.area, hat.kind, blue, orange))
     if not detected:
         if floor and floor.exact is not None and floor.painted >= 3 and floor.visible >= 6:
